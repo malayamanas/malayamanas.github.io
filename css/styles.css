@@ -24,12 +24,16 @@ h1 {
   font-size: 3.5rem;
 }
 
+@media screen and (min-width: 1020px) {
+
 .title-img {
   max-width: 55%;
   height: auto;
   transform: rotate(25deg);
   position: absolute;
   margin-left: 100px;
+  }
+
 }
 
 .download-btn {
