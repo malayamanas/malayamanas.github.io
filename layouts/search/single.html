@@ -1,0 +1,361 @@
+{{ define "main" }}
+  <div class="post">
+    <h1 class="post-title">{{ .Title }}</h1>
+    <div class="post-content">
+      {{ .Content }}
+
+      <div id="search-container">
+        <div class="search-controls">
+          <div class="search-input-container">
+            <input type="text" id="search-input" placeholder="Search for walkthroughs..." />
+            <button type="button" id="search-button">Search</button>
+          </div>
+
+          <div class="filter-controls">
+            <label for="difficulty-filter">Difficulty:</label>
+            <select id="difficulty-filter">
+              <option value="">All Difficulties</option>
+            </select>
+
+            <label for="os-filter">Operating System:</label>
+            <select id="os-filter">
+              <option value="">All OS</option>
+            </select>
+
+            <label for="tag-filter">Tags:</label>
+            <select id="tag-filter">
+              <option value="">All Tags</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="search-results">
+          <div id="results-count"></div>
+          <div id="results-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+  .search-controls {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #1a1a1a;
+    border-radius: 5px;
+  }
+
+  .search-input-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  #search-input {
+    flex: 1;
+    padding: 0.5rem;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 3px;
+  }
+
+  #search-button {
+    padding: 0.5rem 1rem;
+    background: #ff6b35;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  #search-button:hover {
+    background: #e55a2b;
+  }
+
+  .filter-controls {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-controls label {
+    color: #ccc;
+    font-weight: bold;
+  }
+
+  .filter-controls select {
+    padding: 0.3rem;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 3px;
+  }
+
+  #search-results {
+    margin-top: 2rem;
+  }
+
+  #results-count {
+    color: #ccc;
+    margin-bottom: 1rem;
+    font-style: italic;
+  }
+
+  .search-result {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #1a1a1a;
+    border-radius: 5px;
+    border-left: 3px solid #ff6b35;
+  }
+
+  .search-result h3 {
+    margin: 0 0 0.5rem 0;
+  }
+
+  .search-result h3 a {
+    color: #ff6b35;
+    text-decoration: none;
+  }
+
+  .search-result h3 a:hover {
+    text-decoration: underline;
+  }
+
+  .result-meta {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+  }
+
+  .difficulty {
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-weight: bold;
+    margin-right: 0.5rem;
+  }
+
+  .difficulty.easy { background: #4CAF50; color: white; }
+  .difficulty.medium { background: #FF9800; color: white; }
+  .difficulty.hard { background: #F44336; color: white; }
+  .difficulty.insane { background: #9C27B0; color: white; }
+
+  .os, .date {
+    color: #ccc;
+    margin-right: 0.5rem;
+  }
+
+  .result-description {
+    margin: 0.5rem 0;
+    color: #ddd;
+  }
+
+  .result-tags {
+    margin-top: 0.5rem;
+  }
+
+  .tag {
+    display: inline-block;
+    background: #333;
+    color: #ff6b35;
+    padding: 0.2rem 0.5rem;
+    margin-right: 0.3rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 768px) {
+    .search-input-container {
+      flex-direction: column;
+    }
+
+    #search-button {
+      align-self: flex-start;
+    }
+
+    .filter-controls {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .filter-controls label,
+    .filter-controls select {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+  }
+  </style>
+
+  <script>
+  // Dynamic client-side search functionality using Hugo-generated data
+  const posts = [
+    {{ range .Site.RegularPages }}{{ if eq .Section "posts" }}{
+      title: "{{ .Title | htmlEscape | safeJS }}",
+      url: "{{ .Permalink }}",
+      description: "{{ (.Description | default .Summary | plainify) | htmlEscape | safeJS }}",
+      tags: [{{ range $i, $tag := .Params.tags }}{{ if $i }},{{ end }}"{{ $tag }}"{{ end }}],
+      difficulty: "{{ if .Params.difficulty }}{{ index .Params.difficulty 0 }}{{ else }}unknown{{ end }}",
+      os: "{{ $os := "unknown" }}{{ range .Params.tags }}{{ if or (in . "linux") (in . "nix") }}{{ $os = "linux" }}{{ else if or (in . "windows") (in . "win") }}{{ $os = "windows" }}{{ end }}{{ end }}{{ $os }}",
+      date: "{{ .Date.Format "2006-01-02" }}",
+      content: "{{ (.Content | plainify | truncate 500) | htmlEscape | safeJS }}"
+    },{{ end }}{{ end }}
+  ];
+
+  console.log('Posts loaded:', posts);
+  console.log('Number of posts:', posts.length);
+
+  function filterPosts() {
+    const searchInput = document.getElementById('search-input');
+    const difficultyFilter = document.getElementById('difficulty-filter');
+    const osFilter = document.getElementById('os-filter');
+    const tagFilter = document.getElementById('tag-filter');
+
+    if (!searchInput || !difficultyFilter || !osFilter || !tagFilter) {
+      console.log('Some elements not found');
+      return;
+    }
+
+    const searchTerm = searchInput.value.toLowerCase();
+    const difficultyValue = difficultyFilter.value.toLowerCase();
+    const osValue = osFilter.value.toLowerCase();
+    const tagValue = tagFilter.value.toLowerCase();
+
+    console.log('Searching for:', searchTerm, 'Difficulty:', difficultyValue, 'OS:', osValue, 'Tag:', tagValue);
+
+    const filteredPosts = posts.filter(post => {
+      const matchesSearch = !searchTerm ||
+        post.title.toLowerCase().includes(searchTerm) ||
+        post.description.toLowerCase().includes(searchTerm) ||
+        (post.content && post.content.toLowerCase().includes(searchTerm)) ||
+        (post.tags && post.tags.some(tag => tag && tag.toLowerCase().includes(searchTerm)));
+
+      const matchesDifficulty = !difficultyValue || (post.difficulty && post.difficulty.toLowerCase() === difficultyValue);
+      const matchesOS = !osValue || (post.os && post.os.toLowerCase() === osValue);
+      const matchesTag = !tagValue || (post.tags && post.tags.some(tag => tag && tag.toLowerCase().includes(tagValue)));
+
+      return matchesSearch && matchesDifficulty && matchesOS && matchesTag;
+    });
+
+    console.log('Filtered results:', filteredPosts.length);
+    displayResults(filteredPosts);
+  }
+
+  function displayResults(results) {
+    const resultsCount = document.getElementById('results-count');
+    const resultsList = document.getElementById('results-list');
+
+    if (!resultsCount || !resultsList) {
+      console.log('Results elements not found');
+      return;
+    }
+
+    console.log('Displaying results:', results);
+    resultsCount.textContent = `Found ${results.length} result(s)`;
+
+    if (results.length === 0) {
+      resultsList.innerHTML = '<p>No walkthroughs found matching your criteria.</p>';
+      return;
+    }
+
+    const html = results.map(post => {
+      console.log('Processing post:', post);
+
+      return `
+        <div class="search-result">
+          <h3><a href="${post.url}">${post.title}</a></h3>
+          <p class="result-meta">
+            <span class="difficulty ${post.difficulty}">${post.difficulty.toUpperCase()}</span>
+            <span class="os">${post.os.toUpperCase()}</span>
+            <span class="date">${post.date}</span>
+          </p>
+          <p class="result-description">${post.description}</p>
+          <div class="result-tags">
+            ${post.tags && post.tags.length > 0 ? post.tags.map(tag => `<span class="tag">#${tag}</span>`).join(' ') : '<span class="tag">No tags</span>'}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    console.log('Generated HTML:', html);
+    resultsList.innerHTML = html;
+  }
+
+  function populateFilters() {
+    const difficultyFilter = document.getElementById('difficulty-filter');
+    const osFilter = document.getElementById('os-filter');
+    const tagFilter = document.getElementById('tag-filter');
+
+    // Extract unique values from posts
+    const difficulties = [...new Set(posts.map(post => post.difficulty).filter(d => d && d !== 'unknown'))].sort();
+    const operatingSystems = [...new Set(posts.map(post => post.os).filter(os => os && os !== 'unknown'))].sort();
+    const allTags = [...new Set(posts.flatMap(post => post.tags || []).filter(tag => tag))].sort();
+
+    // Populate difficulty filter
+    difficulties.forEach(difficulty => {
+      const option = document.createElement('option');
+      option.value = difficulty.toLowerCase();
+      option.textContent = difficulty.toUpperCase();
+      difficultyFilter.appendChild(option);
+    });
+
+    // Populate OS filter
+    operatingSystems.forEach(os => {
+      const option = document.createElement('option');
+      option.value = os.toLowerCase();
+      option.textContent = os.toUpperCase();
+      osFilter.appendChild(option);
+    });
+
+    // Populate tags filter
+    allTags.forEach(tag => {
+      const option = document.createElement('option');
+      option.value = tag.toLowerCase();
+      option.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
+      tagFilter.appendChild(option);
+    });
+
+    console.log('Filters populated:', { difficulties, operatingSystems, allTags });
+  }
+
+  // Initialize when DOM is loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, setting up search');
+
+    const searchInput = document.getElementById('search-input');
+    const searchButton = document.getElementById('search-button');
+    const difficultyFilter = document.getElementById('difficulty-filter');
+    const osFilter = document.getElementById('os-filter');
+    const tagFilter = document.getElementById('tag-filter');
+
+    if (searchInput && searchButton && difficultyFilter && osFilter && tagFilter) {
+      // Populate filter options dynamically
+      populateFilters();
+
+      // Event listeners
+      searchInput.addEventListener('input', filterPosts);
+      difficultyFilter.addEventListener('change', filterPosts);
+      osFilter.addEventListener('change', filterPosts);
+      tagFilter.addEventListener('change', filterPosts);
+
+      // Search button click
+      searchButton.addEventListener('click', filterPosts);
+
+      // Enter key in search input
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          filterPosts();
+        }
+      });
+
+      // Initialize with all posts
+      console.log('Initializing search with all posts');
+      filterPosts();
+    } else {
+      console.log('Some search elements not found during initialization');
+    }
+  });
+  </script>
+{{ end }}

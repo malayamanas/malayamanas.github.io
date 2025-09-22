@@ -1,3 +1,55 @@
-baseURL = 'https://example.org/'
-languageCode = 'en-us'
-title = 'My New Hugo Site'
+baseURL = "https://malayamanas.github.io"
+languageCode = "en-us"
+title = "VAPT Walkthroughs"
+theme = "Terminal"
+
+[params]
+  homeInfoParams.Title = "VAPT Walkthroughs Blog"
+  homeInfoParams.Content = "A collection of detailed write-ups for VAPT walkthrough videos, including key steps, techniques, and security fixes."
+  ShowReadingTime = true
+  ShowShareButtons = true
+  ShowPostNavLinks = true
+  ShowCodeCopyButtons = true
+  theme = "dark"
+
+[params.pageStyle]  # Optional: Customize further
+    showHeading = true
+
+[params.profileMode]
+  enabled = false
+
+[params.socialIcons]
+  github = "https://github.com/malayamanas/htbboxeswlakthrough"
+  youtube = "https://www.youtube.com/@ippsec"
+  twitter = "https://x.com/ippsec"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+[taxonomies]
+  tag = "tags"
+  difficulty = "difficulty"
+
+[menu]
+  [[menu.main]]
+    identifier = "home"
+    name = "Home"
+    url = "/"
+    weight = 10
+  [[menu.main]]
+    identifier = "search"
+    name = "Search"
+    url = "/search"
+    weight = 20
+  [[menu.main]]
+    identifier = "tags"
+    name = "Tags"
+    url = "/tags"
+    weight = 30
+  [[menu.main]]
+    identifier = "difficulty"
+    name = "Difficulty"
+    url = "/difficulty"
+    weight = 40
