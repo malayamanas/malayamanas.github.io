@@ -2,6 +2,7 @@ baseURL = "https://malayamanas.github.io"
 languageCode = "en-us"
 title = "VAPT Walkthroughs"
 theme = "Terminal"
+publishDir = "docs"
 
 [params]
   homeInfoParams.Title = "VAPT Walkthroughs Blog"
