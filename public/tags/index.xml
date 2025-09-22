@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on VAPT Walkthroughs</title>
+    <link>http://localhost:1313/tags/</link>
+    <description>Recent content in Tags on VAPT Walkthroughs</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 22 Sep 2025 05:45:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Command-Injection</title>
+      <link>http://localhost:1313/tags/command-injection/</link>
+      <pubDate>Mon, 22 Sep 2025 05:45:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/command-injection/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Insane-Windows</title>
+      <link>http://localhost:1313/tags/insane-windows/</link>
+      <pubDate>Mon, 22 Sep 2025 05:45:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/insane-windows/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Lfi</title>
+      <link>http://localhost:1313/tags/lfi/</link>
+      <pubDate>Mon, 22 Sep 2025 05:45:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/lfi/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Padding-Oracle</title>
+      <link>http://localhost:1313/tags/padding-oracle/</link>
+      <pubDate>Mon, 22 Sep 2025 05:45:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/padding-oracle/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Privilege-Escalation</title>
+      <link>http://localhost:1313/tags/privilege-escalation/</link>
+      <pubDate>Mon, 22 Sep 2025 05:45:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/privilege-escalation/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ssi</title>
+      <link>http://localhost:1313/tags/ssi/</link>
+      <pubDate>Mon, 22 Sep 2025 05:45:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/ssi/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ssrf</title>
+      <link>http://localhost:1313/tags/ssrf/</link>
+      <pubDate>Mon, 22 Sep 2025 05:45:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/ssrf/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Viewstate-Deserialization</title>
+      <link>http://localhost:1313/tags/viewstate-deserialization/</link>
+      <pubDate>Mon, 22 Sep 2025 05:45:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/viewstate-deserialization/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Web</title>
+      <link>http://localhost:1313/tags/web/</link>
+      <pubDate>Mon, 22 Sep 2025 05:45:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/web/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Insane-Linux</title>
+      <link>http://localhost:1313/tags/insane-linux/</link>
+      <pubDate>Fri, 15 Mar 2024 10:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/insane-linux/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ldap</title>
+      <link>http://localhost:1313/tags/ldap/</link>
+      <pubDate>Fri, 15 Mar 2024 10:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/ldap/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Memory-Forensics</title>
+      <link>http://localhost:1313/tags/memory-forensics/</link>
+      <pubDate>Fri, 15 Mar 2024 10:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/memory-forensics/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Meterpreter</title>
+      <link>http://localhost:1313/tags/meterpreter/</link>
+      <pubDate>Fri, 15 Mar 2024 10:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/meterpreter/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Protocol-Smuggling</title>
+      <link>http://localhost:1313/tags/protocol-smuggling/</link>
+      <pubDate>Fri, 15 Mar 2024 10:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/protocol-smuggling/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Proxy</title>
+      <link>http://localhost:1313/tags/proxy/</link>
+      <pubDate>Fri, 15 Mar 2024 10:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/proxy/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ssh-Reconstruction</title>
+      <link>http://localhost:1313/tags/ssh-reconstruction/</link>
+      <pubDate>Fri, 15 Mar 2024 10:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/ssh-reconstruction/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

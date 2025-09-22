@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Privilege-Escalation on VAPT Walkthroughs</title>
+    <link>http://localhost:1313/tags/privilege-escalation/</link>
+    <description>Recent content in Privilege-Escalation on VAPT Walkthroughs</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 22 Sep 2025 05:45:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/privilege-escalation/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Perspective HTB - Insane Windows Box Walkthrough</title>
+      <link>http://localhost:1313/posts/perspective-htb-walkthrough/</link>
+      <pubDate>Mon, 22 Sep 2025 05:45:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/perspective-htb-walkthrough/</guid>
+      <description>&lt;h1 id=&#34;perspective-htb---insane-windows-box-walkthrough&#34;&gt;Perspective HTB - Insane Windows Box Walkthrough&lt;/h1&gt;&#xA;&lt;div style=&#34;position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;&#34;&gt;&#xA;      &lt;iframe allow=&#34;accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen&#34; loading=&#34;eager&#34; referrerpolicy=&#34;strict-origin-when-cross-origin&#34; src=&#34;https://www.youtube.com/embed/tmK0GIvnq6s?autoplay=0&amp;amp;controls=1&amp;amp;end=0&amp;amp;loop=0&amp;amp;mute=0&amp;amp;start=0&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; title=&#34;YouTube video&#34;&gt;&lt;/iframe&gt;&#xA;    &lt;/div&gt;&#xA;&#xA;&lt;p&gt;Perspective is an Insane difficulty Windows machine from Hack The Box that showcases advanced ASP.NET exploitation techniques. This machine requires expertise in web application security, cryptographic attacks, and Windows privilege escalation, featuring a complex attack chain involving Server-Side Includes, ViewState deserialization, SSRF, and padding oracle attacks.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
