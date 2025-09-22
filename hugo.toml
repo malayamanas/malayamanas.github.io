@@ -4,6 +4,9 @@ title = "VAPT Walkthroughs"
 theme = "Terminal"
 publishDir = "docs"
 
+[pagination]
+  pagerSize = 5
+
 [params]
   homeInfoParams.Title = "VAPT Walkthroughs Blog"
   homeInfoParams.Content = "A collection of detailed write-ups for VAPT walkthrough videos, including key steps, techniques, and security fixes."

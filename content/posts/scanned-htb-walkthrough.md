@@ -10,7 +10,7 @@ description: "Complete walkthrough of Scanned HTB machine featuring chroot jail 
 
 # Scanned HTB - Insane Linux Box Walkthrough
 
-{{< youtube tmK0GIvnq6s >}}
+{{< youtube FoQuNsCyQz0>}}
 
 Scanned is a Insane difficulty Linux machine from Hack The Box that demonstrates advanced sandbox escape techniques. This machine requires expertise in Linux internals, particularly chroot jail escapes, file descriptor manipulation, and privilege escalation via path hijacking. The exploitation chain involves escaping a malware sandbox application, exfiltrating data through ptrace syscall logging, and escalating privileges through library hijacking.
 
