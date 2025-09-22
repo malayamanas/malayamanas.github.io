@@ -3,4 +3,14 @@
  &lt;iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" loading="eager" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/tmK0GIvnq6s?autoplay=0&amp;amp;controls=1&amp;amp;end=0&amp;amp;loop=0&amp;amp;mute=0&amp;amp;start=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" title="YouTube video"&gt;&lt;/iframe&gt;
  &lt;/div&gt;
 
-&lt;p&gt;Perspective is an Insane difficulty Windows machine from Hack The Box that showcases advanced ASP.NET exploitation techniques. This machine requires expertise in web application security, cryptographic attacks, and Windows privilege escalation, featuring a complex attack chain involving Server-Side Includes, ViewState deserialization, SSRF, and padding oracle attacks.&lt;/p&gt;</description></item></channel></rss>
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Initial Reconnaissance&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Perform Nmap scan on the target IP (10.10.11.151) to identify open ports: SSH (22) and HTTP (80) running IIS.&lt;/li&gt;
+&lt;li&gt;Access the web app on port 80, which redirects to perspective.htb (add to /etc/hosts).&lt;/li&gt;
+&lt;li&gt;Identify the web app as an ASP.NET application by testing file extensions (e.g., .aspx gives different 404 error).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;User Registration and Login&lt;/strong&gt;:&lt;/p&gt;</description></item></channel></rss>
