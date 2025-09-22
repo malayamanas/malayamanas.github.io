@@ -41,7 +41,7 @@ Response is an Insane difficulty Linux machine from Hack The Box that truly live
 - **Technique**: Protocol spoofing/mitm on LDAP (port 389); inconsistent AI-generated responses required trial-and-error
 
 #### 5. Phish Internal FTP Info via Chat
-- As admin in chat, message user "Bob" and convince him to share internal FTP details (172.18.5.5:2121, ftpuser:secret12345)
+- As admin in chat, message user "Bob" and convince him to share internal FTP details ([INTERNAL-FTP-IP]:2121, ftpuser:secret12345)
 - **Technique**: Social engineering/phishing in real-time chat application
 
 #### 6. Cross-Protocol Forgery to Exfiltrate Creds

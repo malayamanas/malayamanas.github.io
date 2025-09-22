@@ -28,7 +28,7 @@
 &lt;li&gt;
 &lt;p&gt;&lt;strong&gt;Initial Reconnaissance&lt;/strong&gt;:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;Perform Nmap scan on the target IP (10.10.11.151) to identify open ports: SSH (22) and HTTP (80) running IIS.&lt;/li&gt;
+&lt;li&gt;Perform Nmap scan on the target IP ([TARGET-IP]) to identify open ports: SSH (22) and HTTP (80) running IIS.&lt;/li&gt;
 &lt;li&gt;Access the web app on port 80, which redirects to perspective.htb (add to /etc/hosts).&lt;/li&gt;
 &lt;li&gt;Identify the web app as an ASP.NET application by testing file extensions (e.g., .aspx gives different 404 error).&lt;/li&gt;
 &lt;/ul&gt;
