@@ -1,18 +1,18 @@
 ---
-title: "Sync HTB - Hard Linux Box Walkthrough"
+title: "Sink HTB - Insane Linux Box Walkthrough"
 date: 2025-09-22T06:30:00Z
-tags: ["hard-linux", "web", "gitea", "http-smuggling", "gunicorn", "haproxy", "aws-localstack", "kms", "secrets-manager", "privilege-escalation"]
-difficulty: ["hard"]
+tags: ["insane-linux", "web", "gitea", "http-smuggling", "gunicorn", "haproxy", "aws-localstack", "kms", "secrets-manager", "privilege-escalation"]
+difficulty: ["insane"]
 categories: ["HTB", "Linux"]
 draft: false
-description: "Complete walkthrough of Sync HTB machine featuring HTTP request smuggling in Gunicorn/HAProxy, Gitea exploitation, AWS LocalStack enumeration, KMS decryption, and multi-container stabilization"
+description: "Complete walkthrough of Sink HTB machine featuring HTTP request smuggling in Gunicorn/HAProxy, Gitea exploitation, AWS LocalStack enumeration, KMS decryption, and multi-container stabilization"
 ---
 
-# Sync HTB - Hard Linux Box Walkthrough
+# Sink HTB - Insane Linux Box Walkthrough
 
 {{< youtube 8gf5YvvY1yc >}}
 
-Below is a chronological extraction of the key exploitation steps and techniques used in the provided data, based on the narrative of the "Sync" box from Hack The Box, as described in the YouTube video transcript. The steps are organized in the order they were performed, focusing on the critical actions and techniques used to progress through the exploitation process.
+Below is a chronological extraction of the key exploitation steps and techniques used in the provided data, based on the narrative of the "Sink" box from Hack The Box, as described in the YouTube video transcript. The steps are organized in the order they were performed, focusing on the critical actions and techniques used to progress through the exploitation process.
 
 ---
 
@@ -45,7 +45,7 @@ Below is a chronological extraction of the key exploitation steps and techniques
      - Researched Gunicorn 20.0.0's vulnerability to HTTP smuggling due to improper chunked encoding handling (fixed in later versions).
      - Crafted a malicious HTTP request using Burp Suite, adding `Transfer-Encoding: chunked` and a vertical tab (`\x0b`, base64-encoded as `cw==`) to exploit the mismatch.
      - Set a specific `Content-Length` header (e.g., 280 or 290) to smuggle a second request, capturing another user's session cookie by appending their request data to a note.
-     - Repeated the request multiple times to win the race condition, capturing a session cookie ending in `ey`, which granted admin access to `sync.htb`.
+     - Repeated the request multiple times to win the race condition, capturing a session cookie ending in `ey`, which granted admin access to `sink.htb`.
 
 5. **Privilege Escalation via Stolen Admin Credentials**
    - **Technique**: Session hijacking and credential reuse.
@@ -66,7 +66,7 @@ Below is a chronological extraction of the key exploitation steps and techniques
      - On the `marcus` account, confirmed no Elasticsearch or Kibana services (ports 9200 and 5601 not listening).
      - Used `aws_local` CLI to interact with Local Stack, listing CloudTrail log streams (`aws_local logs describe-log-streams --log-group-name cloudtrail`).
      - Retrieved log events (`aws_local logs get-log-events`) showing `RotateSecret` actions, indicating AWS Secrets Manager usage.
-     - Listed secrets (`aws_local secretsmanager list-secrets`), identifying `jira_support` (user: `david`, password), `sync_panel` (user: `albert`), and `jenkins_login` (no user `john` found in `/etc/passwd`).
+     - Listed secrets (`aws_local secretsmanager list-secrets`), identifying `jira_support` (user: `david`, password), `sink_panel` (user: `albert`), and `jenkins_login` (no user `john` found in `/etc/passwd`).
      - Used `david`'s password to switch user (`su david`) on the box.
 
 8. **Decryption of Encrypted File**
@@ -108,7 +108,7 @@ This sequence reflects the logical progression from reconnaissance to root acces
 
 ## Security Gaps and Remediation
 
-Based on the provided data from the "Sync" Hack The Box exploitation, several vulnerabilities and misconfigurations in services and systems were exploited to gain unauthorized access. Below is a list of the identified gaps in each service or system, along with recommended fixes categorized as either source code fixes or configuration fixes. The gaps are derived from the exploitation steps and techniques described, focusing on the vulnerabilities that enabled the attack.
+Based on the provided data from the "Sink" Hack The Box exploitation, several vulnerabilities and misconfigurations in services and systems were exploited to gain unauthorized access. Below is a list of the identified gaps in each service or system, along with recommended fixes categorized as either source code fixes or configuration fixes. The gaps are derived from the exploitation steps and techniques described, focusing on the vulnerabilities that enabled the attack.
 
 ---
 
@@ -168,7 +168,7 @@ Based on the provided data from the "Sync" Hack The Box exploitation, several vu
        - Disable raw file access for unauthenticated users in Gitea's configuration (`[repository] DISABLE_HTTP_GIT = true`).
 
 #### 6. AWS Local Stack - Exposed AWS Secrets in Secrets Manager
-   - **Gap**: The AWS Local Stack instance exposed sensitive credentials (`jira_support`, `sync_panel`, `jenkins_login`) via the Secrets Manager (`aws_local secretsmanager list-secrets` and `get-secret-value`), accessible to the `marcus` user. These credentials included usernames and passwords for other system users (e.g., `david`).
+   - **Gap**: The AWS Local Stack instance exposed sensitive credentials (`jira_support`, `sink_panel`, `jenkins_login`) via the Secrets Manager (`aws_local secretsmanager list-secrets` and `get-secret-value`), accessible to the `marcus` user. These credentials included usernames and passwords for other system users (e.g., `david`).
    - **Impact**: Allowed privilege escalation by retrieving credentials for higher-privilege users.
    - **Fixes**:
      - **Source Code Fix**:
@@ -272,11 +272,11 @@ Based on the provided data from the "Sync" Hack The Box exploitation, several vu
 - **Security Training**: Educate developers and administrators on secure coding practices, such as avoiding sensitive data in Git commits and implementing proper input validation.
 - **Network Segmentation**: Isolate services (e.g., Gitea, Gunicorn, Local Stack) on separate network segments or VLANs to limit lateral movement if one service is compromised.
 
-These fixes address the specific vulnerabilities exploited in the "Sync" box, ensuring a more secure configuration and reducing the attack surface.
+These fixes address the specific vulnerabilities exploited in the "Sink" box, ensuring a more secure configuration and reducing the attack surface.
 
 ## Conclusion
 
-Sync is an excellent machine that demonstrates the complexity of modern web application security and cloud service integration. It requires expertise in:
+Sink is an excellent machine that demonstrates the complexity of modern web application security and cloud service integration. It requires expertise in:
 - HTTP request smuggling and protocol manipulation
 - Git repository analysis and version enumeration
 - AWS LocalStack service interaction and enumeration
