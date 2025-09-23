@@ -1,18 +1,18 @@
 ---
-title: "Pleasure HTB - Insane Linux Box Walkthrough"
+title: "Dyplesher HTB - Insane Linux Box Walkthrough"
 date: 2025-09-22T08:00:00Z
 tags: ["insane-linux", "minecraft", "git-exposure", "memcached", "gogs", "java-plugin", "rabbitmq", "packet-capture", "privilege-escalation", "lua-scripting"]
 difficulty: ["insane"]
 categories: ["HTB", "Linux"]
 draft: false
-description: "Complete walkthrough of Pleasure HTB machine featuring Git repository exposure, Memcached exploitation, Minecraft plugin development for RCE, packet capture analysis, and RabbitMQ exploitation with Lua scripting"
+description: "Complete walkthrough of Dyplesher HTB machine featuring Git repository exposure, Memcached exploitation, Minecraft plugin development for RCE, packet capture analysis, and RabbitMQ exploitation with Lua scripting"
 ---
 
-# Pleasure HTB - Insane Linux Box Walkthrough
+# Dyplesher HTB - Insane Linux Box Walkthrough
 
 {{< youtube F6oSpOWOjSQ >}}
 
-Below is a chronological extraction of the key exploitation steps and techniques used in the "Pleasure" machine from Hack The Box, as described in the provided transcript. The steps are derived from the detailed walkthrough and organized to reflect the sequence of actions taken to gain initial access, escalate privileges, and achieve the final objective.
+Below is a chronological extraction of the key exploitation steps and techniques used in the "Dyplesher" machine from Hack The Box, as described in the provided transcript. The steps are derived from the detailed walkthrough and organized to reflect the sequence of actions taken to gain initial access, escalate privileges, and achieve the final objective.
 
 ## Key Exploitation Steps and Techniques in Chronological Order
 
@@ -96,7 +96,7 @@ This sequence reflects the attacker's progression from reconnaissance to root ac
 
 ## Security Gaps and Remediation
 
-Below is a detailed analysis of the gaps in each service or system identified in the "Pleasure" machine from Hack The Box, as described in the provided transcript. For each gap, I've outlined the vulnerability, its impact, and recommended fixes, focusing on proper source code or configuration changes to secure the systems. The fixes are designed to address the specific vulnerabilities exploited in the walkthrough while ensuring the systems remain functional.
+Below is a detailed analysis of the gaps in each service or system identified in the "Dyplesher" machine from Hack The Box, as described in the provided transcript. For each gap, I've outlined the vulnerability, its impact, and recommended fixes, focusing on proper source code or configuration changes to secure the systems. The fixes are designed to address the specific vulnerabilities exploited in the walkthrough while ensuring the systems remain functional.
 
 ---
 
@@ -482,7 +482,7 @@ Below is a detailed analysis of the gaps in each service or system identified in
 ---
 
 ### Summary of Fixes
-The vulnerabilities in the "Pleasure" machine stemmed from misconfigurations, insecure coding practices, and inadequate access controls across multiple services. Key fixes include:
+The vulnerabilities in the "Dyplesher" machine stemmed from misconfigurations, insecure coding practices, and inadequate access controls across multiple services. Key fixes include:
 - **Web Server**: Block `.git` exposure, secure virtual hosts, and prevent arbitrary file writes.
 - **Memcached**: Strengthen authentication, restrict key access, and fix firewall rules.
 - **Gogs**: Enforce strong credentials and restrict repository access.
@@ -496,7 +496,7 @@ Implementing these fixes ensures the systems are hardened against the specific a
 
 ## Conclusion
 
-Pleasure is an excellent machine that demonstrates the complexity of modern gaming server environments and the interconnected nature of multiple services. It requires expertise in:
+Dyplesher is an excellent machine that demonstrates the complexity of modern gaming server environments and the interconnected nature of multiple services. It requires expertise in:
 - Web application security and Git repository exploitation
 - Memcached authentication and data extraction techniques
 - Java development and Minecraft plugin creation for RCE
