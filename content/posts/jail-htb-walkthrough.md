@@ -1,14 +1,14 @@
 ---
-title: "Jail HTB - Medium Linux Box Walkthrough"
+title: "Jail HTB - Insane Linux Box Walkthrough"
 date: 2025-09-22T11:00:00Z
-tags: ["medium-linux", "nmap", "gobuster", "buffer-overflow", "nfs", "selinux-escape", "privilege-escalation", "ssh-keys", "sudo-misconfiguration", "rar-cracking", "source-code-analysis", "custom-binary", "32-bit", "centos"]
-difficulty: ["medium"]
+tags: ["insane-linux", "nmap", "gobuster", "buffer-overflow", "nfs", "selinux-escape", "privilege-escalation", "ssh-keys", "sudo-misconfiguration", "rar-cracking", "source-code-analysis", "custom-binary", "32-bit", "centos"]
+difficulty: ["insane"]
 categories: ["HTB", "Linux"]
 draft: false
 description: "Complete walkthrough of Jail HTB machine featuring custom binary buffer overflow exploitation, NFS user ID spoofing, SELinux sandbox escape, SSH key cracking, and multiple privilege escalation techniques"
 ---
 
-# Jail HTB - Medium Linux Box Walkthrough
+# Jail HTB - Insane Linux Box Walkthrough
 
 ## Key Exploitation Steps and Techniques
 
@@ -31,7 +31,7 @@ Below is a chronological extraction of the key exploitation steps and techniques
 - **Technique**: Manual web browsing and directory enumeration with Gobuster.
 - **Steps**:
   - Access the web server at `http://[TARGET-IP]`. No significant content found in the main page or `robots.txt`.
-  - Run Gobuster to enumerate directories: `gobuster dir -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt -u http://[TARGET-IP] -o gobuster.log -t 25`.
+  - Run Gobuster to enumerate directories: `gobuster dir -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-insane.txt -u http://[TARGET-IP] -o gobuster.log -t 25`.
 - **Findings**:
   - Discovered `/jailuser/dev/` directory containing three files: `compile.sh`, `jail` (binary), and `jail.c` (source code).
 
