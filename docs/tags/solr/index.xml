@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Solr on VAPT Walkthroughs</title><link>https://malayamanas.github.io/tags/solr/</link><description>Recent content in Solr on VAPT Walkthroughs</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 22 Sep 2025 07:45:00 +0000</lastBuildDate><atom:link href="https://malayamanas.github.io/tags/solr/index.xml" rel="self" type="application/rss+xml"/><item><title>Laser HTB - Insane Linux Box Walkthrough</title><link>https://malayamanas.github.io/posts/laser-htb-walkthrough/</link><pubDate>Mon, 22 Sep 2025 07:45:00 +0000</pubDate><guid>https://malayamanas.github.io/posts/laser-htb-walkthrough/</guid><description>&lt;h1 id="laser-htb---insane-linux-box-walkthrough"&gt;Laser HTB - Insane Linux Box Walkthrough&lt;/h1&gt;
+&lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;"&gt;
+ &lt;iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" loading="eager" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/vD3jSJlc0ro?autoplay=0&amp;amp;controls=1&amp;amp;end=0&amp;amp;loop=0&amp;amp;mute=0&amp;amp;start=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" title="YouTube video"&gt;&lt;/iframe&gt;
+ &lt;/div&gt;
+
+&lt;h2 id="exploitation-steps"&gt;Exploitation Steps&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Initial Reconnaissance with Nmap&lt;/strong&gt;: Perform an Nmap scan to identify open ports: 22 (SSH), 9000 (unknown service, possibly HTTP/2-based), and 9100 (JetDirect printer port). Technique: Port scanning and service enumeration.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Printer Interaction with PRET Toolkit&lt;/strong&gt;: Use the Printer Exploitation Toolkit (PRET) to connect to port 9100 via PJL mode. List directories and dump a queued print job from /pjl/jobs, resulting in Base64-encoded encrypted data. Technique: Printer protocol exploitation for data dumping.&lt;/p&gt;</description></item></channel></rss>
