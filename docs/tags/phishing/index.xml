@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Phishing on VAPT Walkthroughs</title><link>https://malayamanas.github.io/tags/phishing/</link><description>Recent content in Phishing on VAPT Walkthroughs</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 22 Sep 2025 07:00:00 +0000</lastBuildDate><atom:link href="https://malayamanas.github.io/tags/phishing/index.xml" rel="self" type="application/rss+xml"/><item><title>Attended HTB - Hard OpenBSD Box Walkthrough</title><link>https://malayamanas.github.io/posts/attended-htb-walkthrough/</link><pubDate>Mon, 22 Sep 2025 07:00:00 +0000</pubDate><guid>https://malayamanas.github.io/posts/attended-htb-walkthrough/</guid><description>&lt;h1 id="attended-htb---hard-openbsd-box-walkthrough"&gt;Attended HTB - Hard OpenBSD Box Walkthrough&lt;/h1&gt;
+&lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;"&gt;
+ &lt;iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" loading="eager" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/ABVR8EgXsQU?autoplay=0&amp;amp;controls=1&amp;amp;end=0&amp;amp;loop=0&amp;amp;mute=0&amp;amp;start=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" title="YouTube video"&gt;&lt;/iframe&gt;
+ &lt;/div&gt;
+
+&lt;h2 id="exploitation-steps"&gt;Exploitation Steps&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Initial Reconnaissance (Nmap Scan)&lt;/strong&gt;: Perform an Nmap scan on the target IP ([TARGET-IP]) to identify open ports: SSH on 22 and SMTP on 25. Discover hostname attended.htb, potential user &amp;ldquo;gully&amp;rdquo;, OS OpenBSD, and SMTP server OpenSMTPD.&lt;/p&gt;</description></item></channel></rss>
