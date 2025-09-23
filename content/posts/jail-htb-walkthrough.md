@@ -10,6 +10,8 @@ description: "Complete walkthrough of Jail HTB machine featuring custom binary b
 
 # Jail HTB - Insane Linux Box Walkthrough
 
+{{< youtube 80-73OYcrrk >}}
+
 ## Key Exploitation Steps and Techniques
 
 Below is a chronological extraction of the key exploitation steps and techniques used to compromise the "Jail" machine from Hack The Box, as described in the provided data. The process involves multiple stages, including initial enumeration, exploiting vulnerabilities, and privilege escalation.
