@@ -1,14 +1,14 @@
 ---
-title: "Attended HTB - Hard OpenBSD Box Walkthrough"
+title: "Attended HTB - Insane OpenBSD Box Walkthrough"
 date: 2025-09-22T07:00:00Z
-tags: ["hard-openbsd", "smtp", "phishing", "vim-rce", "cve-2019-12735", "buffer-overflow", "rop-chain", "privilege-escalation", "c2", "ssh"]
-difficulty: ["hard"]
+tags: ["insane-openbsd", "smtp", "phishing", "vim-rce", "cve-2019-12735", "buffer-overflow", "rop-chain", "privilege-escalation", "c2", "ssh"]
+difficulty: ["insane"]
 categories: ["HTB", "OpenBSD"]
 draft: false
 description: "Complete walkthrough of Attended HTB machine featuring SMTP phishing, Vim RCE exploitation, custom HTTP C2 development, buffer overflow analysis, and ROP chain construction for privilege escalation"
 ---
 
-# Attended HTB - Hard OpenBSD Box Walkthrough
+# Attended HTB - Insane OpenBSD Box Walkthrough
 
 {{< youtube ABVR8EgXsQU >}}
 
@@ -101,7 +101,7 @@ Attended is an excellent machine that demonstrates the complexity of modern atta
 - Legacy vulnerability exploitation (CVE-2019-12735)
 - Custom command-and-control development and deployment
 - Buffer overflow analysis and ROP chain construction
-- OpenBSD-specific binary exploitation and system hardening
+- OpenBSD-specific binary exploitation and system insaneening
 - Multi-stage privilege escalation through cron job abuse
 
 The machine emphasizes the importance of keeping software updated, implementing proper input validation, and securing custom binaries with appropriate privilege separation and bounds checking.
