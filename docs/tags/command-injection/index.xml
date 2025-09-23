@@ -1,4 +1,21 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Command-Injection on VAPT Walkthroughs</title><link>https://malayamanas.github.io/tags/command-injection/</link><description>Recent content in Command-Injection on VAPT Walkthroughs</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 22 Sep 2025 08:45:00 +0000</lastBuildDate><atom:link href="https://malayamanas.github.io/tags/command-injection/index.xml" rel="self" type="application/rss+xml"/><item><title>Fortune HTB - Insane OpenBSD Box Walkthrough</title><link>https://malayamanas.github.io/posts/fortune-htb-walkthrough/</link><pubDate>Mon, 22 Sep 2025 08:45:00 +0000</pubDate><guid>https://malayamanas.github.io/posts/fortune-htb-walkthrough/</guid><description>&lt;h1 id="fortune-htb---insane-openbsd-box-walkthrough"&gt;Fortune HTB - Insane OpenBSD Box Walkthrough&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Command-Injection on VAPT Walkthroughs</title><link>https://malayamanas.github.io/tags/command-injection/</link><description>Recent content in Command-Injection on VAPT Walkthroughs</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 22 Sep 2025 09:30:00 +0000</lastBuildDate><atom:link href="https://malayamanas.github.io/tags/command-injection/index.xml" rel="self" type="application/rss+xml"/><item><title>Mischief HTB - Insane Linux Box Walkthrough</title><link>https://malayamanas.github.io/posts/mischief-htb-walkthrough/</link><pubDate>Mon, 22 Sep 2025 09:30:00 +0000</pubDate><guid>https://malayamanas.github.io/posts/mischief-htb-walkthrough/</guid><description>&lt;h1 id="mischief-htb---insane-linux-box-walkthrough"&gt;Mischief HTB - Insane Linux Box Walkthrough&lt;/h1&gt;
+&lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;"&gt;
+ &lt;iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" loading="eager" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/GKo6xoB1g4Q?autoplay=0&amp;amp;controls=1&amp;amp;end=0&amp;amp;loop=0&amp;amp;mute=0&amp;amp;start=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" title="YouTube video"&gt;&lt;/iframe&gt;
+ &lt;/div&gt;
+
+&lt;h2 id="key-exploitation-steps-and-techniques"&gt;Key Exploitation Steps and Techniques&lt;/h2&gt;
+&lt;p&gt;Here are the key exploitation steps and techniques from the provided data, presented in chronological order:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Initial Reconnaissance with Nmap&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Run Nmap with default scripts (&lt;code&gt;-sC&lt;/code&gt;) and version enumeration (&lt;code&gt;-sV&lt;/code&gt;) on the target IP (&lt;code&gt;[TARGET-IP]&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Details&lt;/strong&gt;: Identified port 22 (SSH) open, running OpenSSH 7.6p1 on Ubuntu 4, published in 2018. SSH exploits were deemed unlikely due to the recent version, and brute-forcing was avoided to prevent account lockouts or detection.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Command&lt;/strong&gt;: &lt;code&gt;nmap -sC -sV -oA nmap/mischief [TARGET-IP]&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;UDP Scan for Additional Services&lt;/strong&gt;:&lt;/p&gt;</description></item><item><title>Fortune HTB - Insane OpenBSD Box Walkthrough</title><link>https://malayamanas.github.io/posts/fortune-htb-walkthrough/</link><pubDate>Mon, 22 Sep 2025 08:45:00 +0000</pubDate><guid>https://malayamanas.github.io/posts/fortune-htb-walkthrough/</guid><description>&lt;h1 id="fortune-htb---insane-openbsd-box-walkthrough"&gt;Fortune HTB - Insane OpenBSD Box Walkthrough&lt;/h1&gt;
 &lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;"&gt;
  &lt;iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" loading="eager" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/_BLd046r-co?autoplay=0&amp;amp;controls=1&amp;amp;end=0&amp;amp;loop=0&amp;amp;mute=0&amp;amp;start=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" title="YouTube video"&gt;&lt;/iframe&gt;
  &lt;/div&gt;
