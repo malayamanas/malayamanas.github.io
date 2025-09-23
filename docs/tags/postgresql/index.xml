@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Postgresql on VAPT Walkthroughs</title><link>https://malayamanas.github.io/tags/postgresql/</link><description>Recent content in Postgresql on VAPT Walkthroughs</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 22 Sep 2025 08:45:00 +0000</lastBuildDate><atom:link href="https://malayamanas.github.io/tags/postgresql/index.xml" rel="self" type="application/rss+xml"/><item><title>Fortune HTB - Insane OpenBSD Box Walkthrough</title><link>https://malayamanas.github.io/posts/fortune-htb-walkthrough/</link><pubDate>Mon, 22 Sep 2025 08:45:00 +0000</pubDate><guid>https://malayamanas.github.io/posts/fortune-htb-walkthrough/</guid><description>&lt;h1 id="fortune-htb---insane-openbsd-box-walkthrough"&gt;Fortune HTB - Insane OpenBSD Box Walkthrough&lt;/h1&gt;
+&lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;"&gt;
+ &lt;iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" loading="eager" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/_BLd046r-co?autoplay=0&amp;amp;controls=1&amp;amp;end=0&amp;amp;loop=0&amp;amp;mute=0&amp;amp;start=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" title="YouTube video"&gt;&lt;/iframe&gt;
+ &lt;/div&gt;
+
+&lt;h2 id="exploitation-steps"&gt;Exploitation Steps&lt;/h2&gt;
+&lt;p&gt;Below is a chronological extraction of the key exploitation steps and techniques used in the &amp;ldquo;Fortune&amp;rdquo; Hack The Box challenge, as described in the provided transcript:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Initial Reconnaissance with Nmap&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Technique&lt;/strong&gt;: Port scanning and service enumeration&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Step&lt;/strong&gt;: Ran &lt;code&gt;nmap -sC -sV -oA nmap/fortune [TARGET-IP]&lt;/code&gt; to identify open ports and services.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Findings&lt;/strong&gt;:
+&lt;ul&gt;
+&lt;li&gt;Port 22 (SSH, OpenSSH 7.9)&lt;/li&gt;
+&lt;li&gt;Port 80 (HTTP, OpenBSD httpd)&lt;/li&gt;
+&lt;li&gt;Port 443 (HTTPS, requires client certificate, TLS randomness issue noted)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Web Enumeration on Port 443 (HTTPS)&lt;/strong&gt;&lt;/p&gt;</description></item></channel></rss>
