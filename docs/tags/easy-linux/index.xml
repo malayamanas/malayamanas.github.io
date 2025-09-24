@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Easy-Linux on VAPT Walkthroughs</title><link>https://malayamanas.github.io/tags/easy-linux/</link><description>Recent content in Easy-Linux on VAPT Walkthroughs</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 22 Sep 2025 13:00:00 +0000</lastBuildDate><atom:link href="https://malayamanas.github.io/tags/easy-linux/index.xml" rel="self" type="application/rss+xml"/><item><title>Bashed HTB - Easy Linux Box Walkthrough</title><link>https://malayamanas.github.io/posts/bashed-htb-walkthrough/</link><pubDate>Mon, 22 Sep 2025 13:00:00 +0000</pubDate><guid>https://malayamanas.github.io/posts/bashed-htb-walkthrough/</guid><description>&lt;h1 id="bashed-htb---easy-linux-box-walkthrough"&gt;Bashed HTB - Easy Linux Box Walkthrough&lt;/h1&gt;
+&lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;"&gt;
+ &lt;iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" loading="eager" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/2DqdPcbYcy8?autoplay=0&amp;amp;controls=1&amp;amp;end=0&amp;amp;loop=0&amp;amp;mute=0&amp;amp;start=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" title="YouTube video"&gt;&lt;/iframe&gt;
+ &lt;/div&gt;
+
+&lt;h2 id="key-exploitation-steps-and-techniques"&gt;Key Exploitation Steps and Techniques&lt;/h2&gt;
+&lt;h3 id="exploitation-chain-chronological-order"&gt;Exploitation Chain (Chronological Order)&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Initial Enumeration with Nmap&lt;/strong&gt;: Perform an Nmap scan (&lt;code&gt;nmap -sC -sV -oA initial [TARGET-IP]&lt;/code&gt;) to identify open ports, discovering port 80 running Apache 2.4.18 on Ubuntu.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Determine OS Version&lt;/strong&gt;: Search for Ubuntu versions associated with Apache 2.4.18, concluding it&amp;rsquo;s Ubuntu Xenial 16.04.&lt;/p&gt;</description></item></channel></rss>
