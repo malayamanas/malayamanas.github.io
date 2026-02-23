@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reference Appendix — FortiSIEM Advanced Search SQL</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">FortiSIEM&#8202;|&#8202;Advanced Search SQL</a>
+  <a href="index.html">Introduction</a>
+  <a href="beginner.html">Beginner</a>
+  <a href="intermediate.html">Intermediate</a>
+  <a href="advanced.html">Advanced</a>
+  <a href="soc-workflow.html">SOC Workflow</a>
+  <a href="reference.html" class="active">Reference</a>
+</nav>
+<div class="page-wrapper">
+<h1 id="reference-appendix">Reference Appendix</h1>
+<p><span class="level-badge level-all">All Levels</span></p>
+<p>Fast-lookup reference for working analysts. Use this while writing queries — you don't need to memorize it.</p>
+<h2 id="key-event-attributes">Key Event Attributes</h2>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Data Type</th>
+<th>Description</th>
+<th>Example Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>phRecvTime</code></td>
+<td>DateTime</td>
+<td>When FortiSIEM received the event</td>
+<td><code>2024-11-15 14:30:00</code></td>
+</tr>
+<tr>
+<td><code>phRecvHour</code></td>
+<td>UInt8</td>
+<td>Hour of receive time (0–23)</td>
+<td><code>14</code></td>
+</tr>
+<tr>
+<td><code>reptDevName</code></td>
+<td>String</td>
+<td>Reporting device hostname</td>
+<td><code>fw-edge-01</code></td>
+</tr>
+<tr>
+<td><code>reptDevIpAddrV4</code></td>
+<td>IPv4</td>
+<td>Reporting device IP address</td>
+<td><code>10.0.1.1</code></td>
+</tr>
+<tr>
+<td><code>reptDevIpAddrV6</code></td>
+<td>IPv6</td>
+<td>Reporting device IPv6 address</td>
+<td><code>::1</code></td>
+</tr>
+<tr>
+<td><code>reptVendor</code></td>
+<td>String</td>
+<td>Device vendor name</td>
+<td><code>Fortinet</code></td>
+</tr>
+<tr>
+<td><code>reptModel</code></td>
+<td>String</td>
+<td>Device model</td>
+<td><code>FortiGate-100F</code></td>
+</tr>
+<tr>
+<td><code>srcIpAddrV4</code></td>
+<td>IPv4</td>
+<td>Source IP address</td>
+<td><code>192.168.1.50</code></td>
+</tr>
+<tr>
+<td><code>srcIpAddrV6</code></td>
+<td>IPv6</td>
+<td>Source IPv6 address</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>srcIpPort</code></td>
+<td>UInt16</td>
+<td>Source port</td>
+<td><code>54321</code></td>
+</tr>
+<tr>
+<td><code>destIpAddrV4</code></td>
+<td>IPv4</td>
+<td>Destination IP address</td>
+<td><code>8.8.8.8</code></td>
+</tr>
+<tr>
+<td><code>destIpAddrV6</code></td>
+<td>IPv6</td>
+<td>Destination IPv6 address</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>destIpPort</code></td>
+<td>UInt16</td>
+<td>Destination port</td>
+<td><code>443</code></td>
+</tr>
+<tr>
+<td><code>eventType</code></td>
+<td>String</td>
+<td>FortiSIEM event type identifier</td>
+<td><code>PH_NET_FIREWALL_DENY</code></td>
+</tr>
+<tr>
+<td><code>appName</code></td>
+<td>String</td>
+<td>Application / process name</td>
+<td><code>sshd</code></td>
+</tr>
+<tr>
+<td><code>appTransport</code></td>
+<td>String</td>
+<td>Transport protocol</td>
+<td><code>TCP</code></td>
+</tr>
+<tr>
+<td><code>eventName</code></td>
+<td>String</td>
+<td>Human-readable event name</td>
+<td><code>Firewall Deny</code></td>
+</tr>
+<tr>
+<td><code>eventSeverity</code></td>
+<td>String</td>
+<td>Severity level</td>
+<td><code>HIGH</code></td>
+</tr>
+<tr>
+<td><code>eventSeverityCat</code></td>
+<td>String</td>
+<td>Severity category</td>
+<td><code>2</code></td>
+</tr>
+<tr>
+<td><code>phEventCategory</code></td>
+<td>UInt8</td>
+<td>Event category (see table below)</td>
+<td><code>4</code></td>
+</tr>
+<tr>
+<td><code>eventParsedOk</code></td>
+<td>UInt8</td>
+<td>1 = parsed successfully</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td><code>user</code></td>
+<td>String</td>
+<td>Username associated with event</td>
+<td><code>jsmith</code></td>
+</tr>
+<tr>
+<td><code>domain</code></td>
+<td>String</td>
+<td>Domain name</td>
+<td><code>corp.example.com</code></td>
+</tr>
+<tr>
+<td><code>hostName</code></td>
+<td>String</td>
+<td>Hostname in event payload</td>
+<td><code>workstation-42</code></td>
+</tr>
+<tr>
+<td><code>fileName</code></td>
+<td>String</td>
+<td>File name in event</td>
+<td><code>malware.exe</code></td>
+</tr>
+<tr>
+<td><code>filePath</code></td>
+<td>String</td>
+<td>Full file path</td>
+<td><code>C:\Users\jsmith\Downloads\</code></td>
+</tr>
+<tr>
+<td><code>fileHash</code></td>
+<td>String</td>
+<td>File hash (MD5/SHA256)</td>
+<td><code>d41d8cd98f00b204e9800998ecf8427e</code></td>
+</tr>
+<tr>
+<td><code>procName</code></td>
+<td>String</td>
+<td>Process name</td>
+<td><code>powershell.exe</code></td>
+</tr>
+<tr>
+<td><code>parentProcName</code></td>
+<td>String</td>
+<td>Parent process name</td>
+<td><code>winlogon.exe</code></td>
+</tr>
+<tr>
+<td><code>cmdLine</code></td>
+<td>String</td>
+<td>Command line arguments</td>
+<td><code>powershell.exe -enc SGVsbG8=</code></td>
+</tr>
+<tr>
+<td><code>sentBytes</code></td>
+<td>UInt64</td>
+<td>Bytes sent</td>
+<td><code>10240</code></td>
+</tr>
+<tr>
+<td><code>recvBytes</code></td>
+<td>UInt64</td>
+<td>Bytes received</td>
+<td><code>2048</code></td>
+</tr>
+<tr>
+<td><code>sentPkts</code></td>
+<td>UInt64</td>
+<td>Packets sent</td>
+<td><code>15</code></td>
+</tr>
+<tr>
+<td><code>recvPkts</code></td>
+<td>UInt64</td>
+<td>Packets received</td>
+<td><code>8</code></td>
+</tr>
+<tr>
+<td><code>duration</code></td>
+<td>UInt32</td>
+<td>Connection duration in seconds</td>
+<td><code>120</code></td>
+</tr>
+<tr>
+<td><code>natSrcIpAddrV4</code></td>
+<td>IPv4</td>
+<td>NAT source IP</td>
+<td><code>203.0.113.1</code></td>
+</tr>
+<tr>
+<td><code>natDestIpAddrV4</code></td>
+<td>IPv4</td>
+<td>NAT destination IP</td>
+<td><code>10.0.1.5</code></td>
+</tr>
+<tr>
+<td><code>natSrcIpPort</code></td>
+<td>UInt16</td>
+<td>NAT source port</td>
+<td><code>12345</code></td>
+</tr>
+<tr>
+<td><code>natDestIpPort</code></td>
+<td>UInt16</td>
+<td>NAT destination port</td>
+<td><code>443</code></td>
+</tr>
+<tr>
+<td><code>rawEvent</code></td>
+<td>String</td>
+<td>Original unparsed log line</td>
+<td><code>Nov 15 14:30:00 fw deny...</code></td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-note"><strong>Note</strong>This is a representative list of commonly used attributes. Your FortiSIEM instance may have additional custom attributes. Browse the full list at Admin &gt; Device Support &gt; Event Attributes.</div>
+<hr />
+<h2 id="pheventcategory-values">phEventCategory Values</h2>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Name</th>
+<th>Description</th>
+<th>Typical Sources</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>Internal</td>
+<td>FortiSIEM system-generated events</td>
+<td>FortiSIEM supervisor, workers</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>Network</td>
+<td>Network infrastructure events</td>
+<td>Firewall, router, switch, VPN</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>Server</td>
+<td>Server operating system events</td>
+<td>Windows, Linux, Unix servers</td>
+</tr>
+<tr>
+<td><code>3</code></td>
+<td>Application</td>
+<td>Application-level events</td>
+<td>Web servers, databases, middleware</td>
+</tr>
+<tr>
+<td><code>4</code></td>
+<td>Security</td>
+<td>Security tool events</td>
+<td>IDS/IPS, AV, WAF, CASB</td>
+</tr>
+<tr>
+<td><code>5</code></td>
+<td>Cloud</td>
+<td>Cloud platform events</td>
+<td>AWS, Azure, GCP, SaaS</td>
+</tr>
+<tr>
+<td><code>6</code></td>
+<td>Endpoint</td>
+<td>Endpoint agent events</td>
+<td>EDR agents, FortiClient</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="functions-quick-reference">Functions Quick Reference</h2>
+<h3 id="aggregate-functions">Aggregate Functions</h3>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Syntax</th>
+<th>Backends</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>COUNT</code></td>
+<td><code>COUNT(*)</code></td>
+<td>All</td>
+<td><code>COUNT(*)</code></td>
+</tr>
+<tr>
+<td><code>COUNT DISTINCT</code></td>
+<td><code>COUNT(DISTINCT attr)</code></td>
+<td>All</td>
+<td><code>COUNT(DISTINCT srcIpAddrV4)</code></td>
+</tr>
+<tr>
+<td><code>SUM</code></td>
+<td><code>SUM(attr)</code></td>
+<td>All</td>
+<td><code>SUM(sentBytes)</code></td>
+</tr>
+<tr>
+<td><code>AVG</code></td>
+<td><code>AVG(attr)</code></td>
+<td>All</td>
+<td><code>AVG(duration)</code></td>
+</tr>
+<tr>
+<td><code>MAX</code></td>
+<td><code>MAX(attr)</code></td>
+<td>All</td>
+<td><code>MAX(phRecvTime)</code></td>
+</tr>
+<tr>
+<td><code>MIN</code></td>
+<td><code>MIN(attr)</code></td>
+<td>All</td>
+<td><code>MIN(phRecvTime)</code></td>
+</tr>
+<tr>
+<td><code>FIRST</code></td>
+<td><code>FIRST(attr)</code></td>
+<td>EventDB, CH</td>
+<td><code>FIRST(srcIpAddrV4)</code></td>
+</tr>
+<tr>
+<td><code>LAST</code></td>
+<td><code>LAST(attr)</code></td>
+<td>EventDB, CH</td>
+<td><code>LAST(srcIpAddrV4)</code></td>
+</tr>
+<tr>
+<td><code>STDDEV</code></td>
+<td><code>STDDEV(attr)</code></td>
+<td>All</td>
+<td><code>STDDEV(sentBytes)</code></td>
+</tr>
+<tr>
+<td><code>VARIANCE</code></td>
+<td><code>VARIANCE(attr)</code></td>
+<td>All</td>
+<td><code>VARIANCE(sentBytes)</code></td>
+</tr>
+<tr>
+<td><code>MEDIAN</code></td>
+<td><code>MEDIAN(attr)</code></td>
+<td>CH</td>
+<td><code>MEDIAN(duration)</code></td>
+</tr>
+<tr>
+<td><code>MODE</code></td>
+<td><code>MODE(attr)</code></td>
+<td>CH</td>
+<td><code>MODE(destIpPort)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="time-functions">Time Functions</h3>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Syntax</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>now()</code></td>
+<td><code>now()</code></td>
+<td>Current timestamp</td>
+</tr>
+<tr>
+<td><code>toDate()</code></td>
+<td><code>toDate(phRecvTime)</code></td>
+<td>Extract date portion</td>
+</tr>
+<tr>
+<td><code>HourOfDay()</code></td>
+<td><code>HourOfDay(phRecvTime)</code></td>
+<td>Hour 0–23</td>
+</tr>
+<tr>
+<td><code>DayOfWeek()</code></td>
+<td><code>DayOfWeek(phRecvTime)</code></td>
+<td>Day 0 (Sun) – 6 (Sat)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="string-functions">String Functions</h3>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Syntax</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>LEN</code></td>
+<td><code>LEN(attr)</code></td>
+<td>String length</td>
+</tr>
+<tr>
+<td><code>TRIM</code></td>
+<td><code>TRIM(attr)</code></td>
+<td>Remove leading/trailing whitespace</td>
+</tr>
+<tr>
+<td><code>LTRIM</code></td>
+<td><code>LTRIM(attr)</code></td>
+<td>Remove leading whitespace</td>
+</tr>
+<tr>
+<td><code>RTRIM</code></td>
+<td><code>RTRIM(attr)</code></td>
+<td>Remove trailing whitespace</td>
+</tr>
+<tr>
+<td><code>TO_UPPER</code></td>
+<td><code>TO_UPPER(attr)</code></td>
+<td>Convert to uppercase</td>
+</tr>
+<tr>
+<td><code>TO_LOWER</code></td>
+<td><code>TO_LOWER(attr)</code></td>
+<td>Convert to lowercase</td>
+</tr>
+<tr>
+<td><code>SUB_STR</code></td>
+<td><code>SUB_STR(attr, start, len)</code></td>
+<td>Extract substring</td>
+</tr>
+<tr>
+<td><code>REPLACE</code></td>
+<td><code>REPLACE(attr, old, new)</code></td>
+<td>Replace substring</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cmdb-dictionary-functions">CMDB / Dictionary Functions</h3>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Syntax</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dictHas()</code></td>
+<td><code>dictHas('dict', key)</code></td>
+<td>True if key is in dictionary</td>
+</tr>
+<tr>
+<td><code>DeviceToCMDBAttr()</code></td>
+<td><code>DeviceToCMDBAttr(ip, 'attr')</code></td>
+<td>Get CMDB attribute for device IP</td>
+</tr>
+<tr>
+<td><code>LookupTableHas()</code></td>
+<td><code>LookupTableHas('table', value)</code></td>
+<td>True if value is in lookup table</td>
+</tr>
+<tr>
+<td><code>LookupTableGet()</code></td>
+<td><code>LookupTableGet('table', key, 'col')</code></td>
+<td>Get column value from lookup table</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="common-query-patterns-cheat-sheet">Common Query Patterns — Cheat Sheet</h2>
+<h3 id="top-n-by-count">Top N by Count</h3>
+<pre><code class="language-sql">SELECT reptDevName, COUNT(*) AS Total
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600) AND eventParsedOk = 1
+GROUP BY reptDevName
+ORDER BY Total DESC
+LIMIT 10
+</code></pre>
+<h3 id="time-window-comparison-today-vs-yesterday">Time-Window Comparison (Today vs Yesterday)</h3>
+<pre><code class="language-sql">SELECT DISTINCT reptDevName AS &quot;New Today&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400) AND eventParsedOk = 1
+AND reptDevName NOT IN (
+    SELECT DISTINCT reptDevName FROM fsiem.events
+    WHERE phRecvTime BETWEEN (now() - 172800) AND (now() - 86400)
+      AND eventParsedOk = 1
+)
+</code></pre>
+<h3 id="multi-condition-filter">Multi-Condition Filter</h3>
+<pre><code class="language-sql">SELECT srcIpAddrV4, destIpAddrV4, destIpPort, COUNT(*) AS C
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+  AND eventParsedOk = 1
+  AND (reptDevName = 'fw-01' OR reptDevName = 'fw-02')
+  AND destIpPort IN (22, 23, 3389, 5900)
+GROUP BY srcIpAddrV4, destIpAddrV4, destIpPort
+ORDER BY C DESC LIMIT 20
+</code></pre>
+<h3 id="cmdb-group-filter">CMDB Group Filter</h3>
+<pre><code class="language-sql">SELECT reptDevName, eventType, COUNT(*) AS Total
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+  AND eventParsedOk = 1
+  AND dictHas('DeviceIp2DeviceGroup', reptDevIpAddrV4)
+GROUP BY reptDevName, eventType
+ORDER BY Total DESC LIMIT 20
+</code></pre>
+<h3 id="ioc-sweep">IOC Sweep</h3>
+<pre><code class="language-sql">SELECT srcIpAddrV4, eventType, COUNT(*) AS Hits, MAX(phRecvTime) AS Last
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND eventParsedOk = 1
+  AND LookupTableHas('Threat_IOC_IPs', srcIpAddrV4)
+GROUP BY srcIpAddrV4, eventType
+ORDER BY Hits DESC LIMIT 50
+</code></pre>
+<h3 id="top-n-per-group-window-function">Top N Per Group (Window Function)</h3>
+<pre><code class="language-sql">SELECT * FROM (
+    SELECT reptDevName, eventType, COUNT(*) AS C,
+           RANK() OVER (PARTITION BY reptDevName ORDER BY COUNT(*) DESC) AS rnk
+    FROM fsiem.events
+    WHERE phRecvTime &gt; (now() - 3600) AND eventParsedOk = 1
+    GROUP BY reptDevName, eventType
+) t WHERE rnk &lt;= 5 ORDER BY reptDevName, rnk LIMIT 100
+</code></pre>
+<h3 id="baseline-deviation-z-score">Baseline Deviation (Z-Score)</h3>
+<pre><code class="language-sql">WITH avg_data AS (
+    SELECT reptDevName, AVG(dc) AS avg_c, STDDEV(dc) AS std_c
+    FROM (
+        SELECT reptDevName, COUNT(*) AS dc
+        FROM fsiem.events
+        WHERE phRecvTime BETWEEN (now() - 604800) AND (now() - 86400)
+          AND eventParsedOk = 1
+        GROUP BY reptDevName, toDate(phRecvTime)
+    ) d GROUP BY reptDevName
+),
+today AS (
+    SELECT reptDevName, COUNT(*) AS tc
+    FROM fsiem.events
+    WHERE phRecvTime &gt; (now() - 86400) AND eventParsedOk = 1
+    GROUP BY reptDevName
+)
+SELECT t.reptDevName, t.tc AS Today, ROUND(a.avg_c,0) AS Avg,
+       ROUND((t.tc - a.avg_c) / a.std_c, 2) AS ZScore
+FROM today t JOIN avg_data a ON t.reptDevName = a.reptDevName
+WHERE a.std_c &gt; 0 AND ABS((t.tc - a.avg_c) / a.std_c) &gt; 2
+ORDER BY ABS((t.tc - a.avg_c) / a.std_c) DESC LIMIT 20
+</code></pre>
+<hr />
+<h2 id="common-errors-and-fixes">Common Errors and Fixes</h2>
+<table>
+<thead>
+<tr>
+<th>Error</th>
+<th>Likely Cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Table fsiem.events doesn't exist</code></td>
+<td>Not using ClickHouse backend</td>
+<td>Confirm ClickHouse is active: Admin &gt; ClickHouse Operational Overview</td>
+</tr>
+<tr>
+<td><code>Unknown column 'attrName'</code></td>
+<td>Attribute not in default schema</td>
+<td>Add it via the Attributes used dropdown, then re-run</td>
+</tr>
+<tr>
+<td><code>Syntax error near '...'</code></td>
+<td>Typo in SQL</td>
+<td>Use FortiAI Fix Errors or check the highlighted token</td>
+</tr>
+<tr>
+<td>Results are empty</td>
+<td>Time range too narrow or wrong filters</td>
+<td>Verify <code>phRecvTime</code> range; start with <code>LIMIT 10</code> and <code>COUNT(*)</code> to check data exists</td>
+</tr>
+<tr>
+<td>Query runs very slowly</td>
+<td>No time bound or <code>SELECT *</code></td>
+<td>Add <code>phRecvTime &gt; (now() - N)</code> and specify column names</td>
+</tr>
+<tr>
+<td><code>dictHas() error</code></td>
+<td>Wrong dictionary name</td>
+<td>Use the CMDB Group Converter tool to auto-generate the correct <code>dictHas()</code> call</td>
+</tr>
+<tr>
+<td><code>LookupTableHas() returns no results</code></td>
+<td>Table name mismatch or empty table</td>
+<td>Verify table name at Admin &gt; General Settings &gt; Lookup Tables</td>
+</tr>
+<tr>
+<td><code>RANK() / ROW_NUMBER() not supported</code></td>
+<td>Using EventDB backend</td>
+<td>Window functions require ClickHouse; confirm backend version</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="time-reference">Time Reference</h2>
+<table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Seconds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 minute</td>
+<td><code>60</code></td>
+</tr>
+<tr>
+<td>15 minutes</td>
+<td><code>900</code></td>
+</tr>
+<tr>
+<td>30 minutes</td>
+<td><code>1800</code></td>
+</tr>
+<tr>
+<td>1 hour</td>
+<td><code>3600</code></td>
+</tr>
+<tr>
+<td>6 hours</td>
+<td><code>21600</code></td>
+</tr>
+<tr>
+<td>12 hours</td>
+<td><code>43200</code></td>
+</tr>
+<tr>
+<td>24 hours</td>
+<td><code>86400</code></td>
+</tr>
+<tr>
+<td>2 days</td>
+<td><code>172800</code></td>
+</tr>
+<tr>
+<td>7 days</td>
+<td><code>604800</code></td>
+</tr>
+<tr>
+<td>30 days</td>
+<td><code>2592000</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="official-documentation">Official Documentation</h2>
+<ul>
+<li><a href="https://docs.fortinet.com/document/fortisiem/7.4.2/user-guide/431900/creating-a-new-advanced-search">Creating a New Advanced Search — FortiSIEM 7.4.2</a></li>
+<li><a href="https://docs.fortinet.com/document/fortisiem/7.4.0/user-guide/176480/advanced-search-examples">Advanced Search Examples — FortiSIEM 7.4.0</a></li>
+<li><a href="https://docs.fortinet.com/document/fortisiem/7.4.2/user-guide/909482/functions-in-analytics">Functions in Analytics — FortiSIEM 7.4.2</a></li>
+<li><a href="https://docs.fortinet.com/document/fortisiem/7.4.0/user-guide/42752/working-with-event-attributes">Working with Event Attributes — FortiSIEM 7.4.0</a></li>
+<li><a href="https://docs.fortinet.com/document/fortisiem/7.4.2/fortisiem-reference-architecture-using-clickhouse/522282/clickhouse-overview">ClickHouse Overview — FortiSIEM 7.4.2</a></li>
+</ul>
+</div>
+<footer>
+  FortiSIEM Advanced Search SQL Training &mdash; FortiSIEM 7.4.x &mdash;
+  Built with <a href="https://python-markdown.github.io/">Python-Markdown</a>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  document.querySelectorAll('pre code').forEach(el => {
+    hljs.highlightElement(el);
+  });
+</script>
+</body>
+</html>

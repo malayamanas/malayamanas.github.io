@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOC Workflow: IR, Threat Hunting & Alert Tuning — FortiSIEM Advanced Search SQL</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">FortiSIEM&#8202;|&#8202;Advanced Search SQL</a>
+  <a href="index.html">Introduction</a>
+  <a href="beginner.html">Beginner</a>
+  <a href="intermediate.html">Intermediate</a>
+  <a href="advanced.html">Advanced</a>
+  <a href="soc-workflow.html" class="active">SOC Workflow</a>
+  <a href="reference.html">Reference</a>
+</nav>
+<div class="page-wrapper">
+<h1 id="soc-workflow-ir-threat-hunting-alert-tuning">SOC Workflow: IR, Threat Hunting &amp; Alert Tuning</h1>
+<p><span class="level-badge level-all">All Levels</span></p>
+<p>This module shows how Advanced Search SQL integrates into the daily operations of a SOC analyst — from incident response pivoting to proactive threat hunting, alert tuning, and dashboard creation.</p>
+<h2 id="incident-response-with-advanced-search">Incident Response with Advanced Search</h2>
+<p>When an alert fires, your first goal is to <strong>understand scope and timeline</strong>. Advanced Search gives you a direct line to the raw event data.</p>
+<h3 id="the-ir-query-workflow">The IR Query Workflow</h3>
+<pre><code>Alert fires
+     │
+     ▼
+Step 1: Confirm — does the data match the alert?
+     │
+     ▼
+Step 2: Scope — what other systems are involved?
+     │
+     ▼
+Step 3: Timeline — when did it start/end?
+     │
+     ▼
+Step 4: Evidence — export query results for the incident ticket
+</code></pre>
+<h3 id="example-ransomware-lateral-movement-scoping">Example: Ransomware Lateral Movement Scoping</h3>
+<p><strong>Scenario:</strong> Your EDR fired a ransomware detection on host <code>10.0.2.15</code>. You need to determine if it has moved laterally.</p>
+<p><strong>Step 1 — Confirm the host is in your event data:</strong></p>
+<pre><code class="language-sql">SELECT phRecvTime, reptDevName, reptDevIpAddrV4, eventType
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND (reptDevIpAddrV4 = '10.0.2.15' OR srcIpAddrV4 = '10.0.2.15')
+  AND eventParsedOk = 1
+ORDER BY phRecvTime DESC
+LIMIT 20
+</code></pre>
+<p><strong>Step 2 — What internal IPs has it connected to?</strong></p>
+<pre><code class="language-sql">SELECT
+  destIpAddrV4                    AS &quot;Destination&quot;,
+  destIpPort                      AS &quot;Port&quot;,
+  COUNT(*)                        AS &quot;Connections&quot;,
+  MIN(phRecvTime)                 AS &quot;First&quot;,
+  MAX(phRecvTime)                 AS &quot;Last&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND srcIpAddrV4 = '10.0.2.15'
+  AND destIpAddrV4 LIKE '10.%'
+  AND eventParsedOk = 1
+GROUP BY destIpAddrV4, destIpPort
+ORDER BY COUNT(*) DESC
+LIMIT 30
+</code></pre>
+<p><strong>Step 3 — Build an event timeline:</strong></p>
+<pre><code class="language-sql">SELECT
+  phRecvTime                      AS &quot;Time&quot;,
+  reptDevName                     AS &quot;Reporter&quot;,
+  eventType                       AS &quot;Event Type&quot;,
+  srcIpAddrV4                     AS &quot;Src IP&quot;,
+  destIpAddrV4                    AS &quot;Dst IP&quot;,
+  destIpPort                      AS &quot;Dst Port&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND (srcIpAddrV4 = '10.0.2.15' OR destIpAddrV4 = '10.0.2.15')
+  AND eventParsedOk = 1
+ORDER BY phRecvTime ASC
+LIMIT 200
+</code></pre>
+<div class="callout callout-soc"><strong>SOC Tip</strong>Export the timeline query results to CSV (use the download button in Query Results) and attach to your incident ticket as evidence. Include the SQL query itself so the evidence is reproducible.</div>
+<p><strong>Step 4 — Identify other potentially compromised hosts:</strong></p>
+<pre><code class="language-sql">WITH contacted AS (
+    SELECT DISTINCT destIpAddrV4 AS contacted_ip
+    FROM fsiem.events
+    WHERE phRecvTime &gt; (now() - 86400)
+      AND srcIpAddrV4 = '10.0.2.15'
+      AND eventParsedOk = 1
+)
+SELECT
+  e.srcIpAddrV4                   AS &quot;Potentially Infected Host&quot;,
+  e.destIpAddrV4                  AS &quot;It Connected To&quot;,
+  e.destIpPort                    AS &quot;Port&quot;,
+  COUNT(*)                        AS &quot;Connections&quot;
+FROM fsiem.events e
+INNER JOIN contacted c ON e.srcIpAddrV4 = c.contacted_ip
+WHERE e.phRecvTime &gt; (now() - 86400)
+  AND e.destIpPort NOT IN (80, 443, 53, 123, 22)
+  AND e.eventParsedOk = 1
+GROUP BY e.srcIpAddrV4, e.destIpAddrV4, e.destIpPort
+ORDER BY COUNT(*) DESC
+LIMIT 30
+</code></pre>
+<h2 id="threat-hunting-methodology">Threat Hunting Methodology</h2>
+<p>Threat hunting is structured, hypothesis-driven investigation. Follow this process:</p>
+<pre><code>1. Form a hypothesis
+   (e.g., &quot;An attacker is using living-off-the-land binaries&quot;)
+        │
+        ▼
+2. Identify the data that would prove/disprove it
+        │
+        ▼
+3. Write and run the query
+        │
+        ▼
+4. Analyze results — find anomalies
+        │
+        ▼
+5. Pivot: investigate anomalies with follow-up queries
+        │
+        ▼
+6. Document findings (either close the hunt or open an incident)
+</code></pre>
+<h3 id="mitre-attck-aligned-hunt-queries">MITRE ATT&amp;CK-Aligned Hunt Queries</h3>
+<p><strong>T1059 — Command and Scripting Interpreter:</strong></p>
+<pre><code class="language-sql">-- Look for scripting interpreters executed outside business hours
+SELECT
+  reptDevName                     AS &quot;Host&quot;,
+  appName                         AS &quot;Process&quot;,
+  COUNT(*)                        AS &quot;Executions&quot;,
+  MIN(phRecvTime)                 AS &quot;First&quot;,
+  MAX(phRecvTime)                 AS &quot;Last&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 604800)
+  AND eventParsedOk = 1
+  AND appName IN ('powershell.exe', 'cmd.exe', 'wscript.exe',
+                  'cscript.exe', 'mshta.exe', 'certutil.exe')
+  AND (HourOfDay(phRecvTime) &lt; 7 OR HourOfDay(phRecvTime) &gt; 19)
+GROUP BY reptDevName, appName
+ORDER BY COUNT(*) DESC
+LIMIT 30
+</code></pre>
+<p><strong>T1071 — Application Layer Protocol (C2 over HTTP/S):</strong></p>
+<pre><code class="language-sql">SELECT
+  srcIpAddrV4                     AS &quot;Internal Host&quot;,
+  destIpAddrV4                    AS &quot;External Dest&quot;,
+  COUNT(*)                        AS &quot;Connections&quot;,
+  COUNT(DISTINCT HourOfDay(phRecvTime)) AS &quot;Active Hours&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 604800)
+  AND eventParsedOk = 1
+  AND destIpPort IN (80, 443, 8080, 8443)
+  AND srcIpAddrV4 LIKE '10.%'
+  AND destIpAddrV4 NOT LIKE '10.%'
+GROUP BY srcIpAddrV4, destIpAddrV4
+HAVING COUNT(*) &gt; 500
+ORDER BY COUNT(*) DESC
+LIMIT 20
+</code></pre>
+<p><strong>T1110 — Brute Force:</strong></p>
+<pre><code class="language-sql">SELECT
+  srcIpAddrV4                     AS &quot;Attacker IP&quot;,
+  destIpAddrV4                    AS &quot;Target IP&quot;,
+  eventType                       AS &quot;Event Type&quot;,
+  COUNT(*)                        AS &quot;Attempts&quot;,
+  MIN(phRecvTime)                 AS &quot;Start&quot;,
+  MAX(phRecvTime)                 AS &quot;End&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND eventParsedOk = 1
+  AND eventType LIKE '%LOGIN_FAIL%'
+GROUP BY srcIpAddrV4, destIpAddrV4, eventType
+HAVING COUNT(*) &gt; 50
+ORDER BY COUNT(*) DESC
+LIMIT 20
+</code></pre>
+<h2 id="alert-tuning-with-advanced-search">Alert Tuning with Advanced Search</h2>
+<p>Before you can tune an alert rule, you need to understand why it's firing. Advanced Search helps you identify false positive patterns.</p>
+<h3 id="step-1-find-the-false-positive-source">Step 1: Find the False Positive Source</h3>
+<pre><code class="language-sql">SELECT
+  reptDevName                     AS &quot;Device&quot;,
+  srcIpAddrV4                     AS &quot;Source IP&quot;,
+  destIpAddrV4                    AS &quot;Dest IP&quot;,
+  COUNT(*)                        AS &quot;Hits&quot;,
+  MIN(phRecvTime)                 AS &quot;First&quot;,
+  MAX(phRecvTime)                 AS &quot;Last&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 604800)
+  AND eventParsedOk = 1
+  AND eventType = 'PH_RULE_YOUR_RULE_NAME_HERE'
+GROUP BY reptDevName, srcIpAddrV4, destIpAddrV4
+ORDER BY COUNT(*) DESC
+LIMIT 20
+</code></pre>
+<h3 id="step-2-confirm-the-source-is-legitimate">Step 2: Confirm the Source is Legitimate</h3>
+<pre><code class="language-sql">SELECT eventType, COUNT(*) AS Count
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 604800)
+  AND reptDevName = 'scanner-host-01'
+  AND eventParsedOk = 1
+GROUP BY eventType
+ORDER BY Count DESC
+LIMIT 20
+</code></pre>
+<div class="callout callout-soc"><strong>SOC Tip</strong>If you confirm a device is a legitimate scanner, vulnerability assessment tool, or monitoring system, document this in CMDB and add it to an exception group that your rule already filters — rather than rewriting the rule.</div>
+<h3 id="step-3-quantify-the-tuning-impact">Step 3: Quantify the Tuning Impact</h3>
+<pre><code class="language-sql">SELECT
+  CASE
+    WHEN reptDevIpAddrV4 = '10.0.8.5' THEN 'Scanner (FP)'
+    ELSE 'Other Sources'
+  END                             AS &quot;Source Category&quot;,
+  COUNT(*)                        AS &quot;Alert Count&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 604800)
+  AND eventType = 'PH_RULE_YOUR_RULE_NAME_HERE'
+  AND eventParsedOk = 1
+GROUP BY &quot;Source Category&quot;
+</code></pre>
+<h2 id="dashboard-building-from-saved-searches">Dashboard Building from Saved Searches</h2>
+<p>Advanced Search queries can be saved and scheduled as recurring reports that feed dashboards.</p>
+<p><strong>To save a query:</strong>
+1. Write and validate your query in the Query Console
+2. Click <strong>Save</strong> in the toolbar
+3. Give it a descriptive name (e.g., <code>SOC_Top_Talkers_1H</code>)
+4. It appears under Resources &gt; Reports &gt; Advanced Search</p>
+<p><strong>To schedule a report:</strong>
+1. Navigate to Resources &gt; Reports &gt; Advanced Search
+2. Select your saved query → <strong>Schedule</strong>
+3. Set frequency, recipients, and output format (PDF/CSV)</p>
+<p><strong>To add to a dashboard:</strong>
+1. Navigate to Dashboard
+2. Add widget → Report → select your saved Advanced Search
+3. Set refresh interval</p>
+<div class="callout callout-soc"><strong>SOC Tip</strong>Build a "Morning Brief" dashboard with 3-4 key Advanced Search widgets: top event sources, overnight anomalies (Z-score query), IOC hits, and failed auth attempts. Run it first thing every shift.</div>
+<h2 id="fortiai-in-soc-investigations">FortiAI in SOC Investigations</h2>
+<p>FortiSIEM 7.4 integrates FortiAI across the investigation workflow:</p>
+<table>
+<thead>
+<tr>
+<th>FortiAI Feature</th>
+<th>How to Use It</th>
+<th>SOC Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Generate SQL</td>
+<td>Describe query in English → get SQL</td>
+<td>Fast query drafting for novel scenarios</td>
+</tr>
+<tr>
+<td>Fix Errors</td>
+<td>Click Fix Errors on a failed query</td>
+<td>Recover from syntax mistakes quickly</td>
+</tr>
+<tr>
+<td>Summarize Results</td>
+<td>Click Summarize after query runs</td>
+<td>Quick natural-language summary for reports</td>
+</tr>
+<tr>
+<td>Event Analysis</td>
+<td>In Incidents view → Analyze with FortiAI</td>
+<td>Contextual explanation of event chains</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-warn"><strong>Warning</strong>FortiAI is a productivity accelerator, not a replacement for analyst judgment. Always review AI-generated SQL for correctness, appropriate time bounds, and logical accuracy before running against production.</div>
+<h2 id="soar-integration-fortisiem-74">SOAR Integration (FortiSIEM 7.4)</h2>
+<p>FortiSIEM 7.4 introduced native SOAR automation. Advanced Search queries can trigger or feed into automated playbooks:</p>
+<ul>
+<li><strong>Incident enrichment:</strong> SOAR playbooks auto-run scoping queries when an incident is created</li>
+<li><strong>Evidence collection:</strong> Query results attached automatically to incident tickets</li>
+<li><strong>Automated triage:</strong> Low-severity incidents auto-resolved if follow-up queries confirm known-good patterns</li>
+</ul>
+<div class="callout callout-note"><strong>Note</strong>SOAR playbook configuration is beyond the scope of this training guide. Refer to the FortiSIEM 7.4 Administration Guide for playbook authoring documentation.</div>
+<hr />
+<p><strong>Module 4 complete.</strong> See the <a href="reference.html">Reference</a> appendix for quick lookups, cheat sheets, and common error fixes.</p>
+</div>
+<footer>
+  FortiSIEM Advanced Search SQL Training &mdash; FortiSIEM 7.4.x &mdash;
+  Built with <a href="https://python-markdown.github.io/">Python-Markdown</a>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  document.querySelectorAll('pre code').forEach(el => {
+    hljs.highlightElement(el);
+  });
+</script>
+</body>
+</html>

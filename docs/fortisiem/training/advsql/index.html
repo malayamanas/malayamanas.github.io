@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FortiSIEM Advanced Search SQL — Training Guide — FortiSIEM Advanced Search SQL</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">FortiSIEM&#8202;|&#8202;Advanced Search SQL</a>
+  <a href="index.html" class="active">Introduction</a>
+  <a href="beginner.html">Beginner</a>
+  <a href="intermediate.html">Intermediate</a>
+  <a href="advanced.html">Advanced</a>
+  <a href="soc-workflow.html">SOC Workflow</a>
+  <a href="reference.html">Reference</a>
+</nav>
+<div class="page-wrapper">
+<h1 id="fortisiem-advanced-search-sql-training-guide">FortiSIEM Advanced Search SQL — Training Guide</h1>
+<p><span class="level-badge level-all">All Levels</span></p>
+<p>Welcome to the FortiSIEM Advanced Search SQL training guide. This resource covers everything from your first query to advanced threat hunting techniques, with hands-on lab exercises throughout.</p>
+<h2 id="what-is-advanced-search">What Is Advanced Search?</h2>
+<p>FortiSIEM Advanced Search is a <strong>ClickHouse-powered SQL query interface</strong> introduced in FortiSIEM 7.3 and expanded in 7.4.x. It allows SOC analysts to write free-form SQL queries directly against the FortiSIEM event database — giving you full analytical power beyond what the Structured Search interface provides.</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Structured Search</th>
+<th>Advanced Search</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interface</td>
+<td>Drag-and-drop filters</td>
+<td>SQL query editor</td>
+</tr>
+<tr>
+<td>Flexibility</td>
+<td>Moderate</td>
+<td>Full SQL power</td>
+</tr>
+<tr>
+<td>Learning curve</td>
+<td>Low</td>
+<td>Moderate</td>
+</tr>
+<tr>
+<td>Use case</td>
+<td>Quick lookups</td>
+<td>Complex analytics, threat hunting</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>EventDB / ClickHouse</td>
+<td>ClickHouse only</td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-note"><strong>Note</strong>Advanced Search requires a <strong>ClickHouse</strong> event database backend. Verify this with your FortiSIEM admin before proceeding. Navigate to Admin &gt; ClickHouse Operational Overview to confirm.</div>
+<h2 id="navigating-to-advanced-search">Navigating to Advanced Search</h2>
+<ol>
+<li>Log in to FortiSIEM</li>
+<li>Click <strong>Analytics</strong> in the top navigation bar</li>
+<li>Select <strong>Advanced Search</strong> from the left sidebar</li>
+</ol>
+<p>The interface loads with three main panels:</p>
+<pre><code>┌─────────────────────────────────────────────────────┐
+│  QUERY CONSOLE                                      │
+│  [ SQL query editor — type your query here ]        │
+├──────────────────┬──────────────────────────────────┤
+│  DATABASE SCHEMA │  QUERY RESULTS                   │
+│  fsiem.events    │  [ Results appear here after     │
+│  ├ phRecvTime    │    running the query ]            │
+│  ├ reptDevName   │                                   │
+│  └ ...           │                                   │
+└──────────────────┴──────────────────────────────────┘
+</code></pre>
+<h3 id="panel-descriptions">Panel Descriptions</h3>
+<table>
+<thead>
+<tr>
+<th>Panel</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Query Console</td>
+<td>Write and run SQL queries. Use the run button or <code>Ctrl+Enter</code>.</td>
+</tr>
+<tr>
+<td>Database Schema</td>
+<td>Browse available columns in <code>fsiem.events</code>. Click to insert attribute names.</td>
+</tr>
+<tr>
+<td>Attributes used</td>
+<td>Dropdown to add less-common attributes to your query scope.</td>
+</tr>
+<tr>
+<td>Query Results</td>
+<td>Displays result rows, supports full-screen and export.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="running-a-built-in-search">Running a Built-In Search</h2>
+<p>FortiSIEM ships with 30+ built-in Advanced Search queries for common SOC tasks.</p>
+<p><strong>Method 1 — From Resources:</strong>
+1. Go to <strong>Resources &gt; Reports &gt; Advanced Search</strong> in the left sidebar
+2. Select a report and click <strong>Run</strong>
+3. The SQL query loads into the Query Console — inspect it to learn</p>
+<p><strong>Method 2 — From Analytics:</strong>
+1. Go to <strong>Analytics &gt; Advanced Search</strong>
+2. Click the <strong>folder icon</strong> in the Query Console toolbar
+3. Select a report, click the dropdown → <strong>Run</strong></p>
+<div class="callout callout-tip"><strong>Tip</strong>Reading built-in queries is one of the fastest ways to learn FortiSIEM SQL patterns. Open each built-in search, read the SQL, and trace what each clause does before writing your own.</div>
+<h2 id="fortiai-sql-assistant">FortiAI SQL Assistant</h2>
+<p>FortiSIEM 7.4 integrates FortiAI directly into Advanced Search for two workflows:</p>
+<h3 id="generate-sql-from-natural-language">Generate SQL from Natural Language</h3>
+<p>Click <strong>FortiAI &gt; Generate SQL</strong> and describe your query in plain English:</p>
+<ul>
+<li><em>"Show me the top 10 source IPs by event count in the last hour"</em></li>
+<li><em>"Find all failed login attempts grouped by username in the last 24 hours"</em></li>
+<li><em>"List devices in the Windows Server group that reported external events today"</em></li>
+</ul>
+<p>FortiAI generates the SQL — review it, adjust it, then run it.</p>
+<h3 id="fix-syntax-errors">Fix Syntax Errors</h3>
+<p>If your query returns a syntax error, click <strong>Fix Errors</strong> and FortiAI will attempt to correct the SQL automatically.</p>
+<div class="callout callout-warn"><strong>Warning</strong>FortiAI-generated queries should always be <strong>reviewed before running</strong> on a production system. Validate the logic, check time ranges, and verify attribute names match your environment.</div>
+<h2 id="data-privacy-notice">Data Privacy Notice</h2>
+<div class="callout callout-warn"><strong>Warning</strong>Advanced Search results are <strong>not anonymized</strong>. Event data including IP addresses, usernames, hostnames, and other PII is displayed in full. Handle query results according to your organization's data handling policy before sharing screenshots or exports.</div>
+<h2 id="whats-next">What's Next</h2>
+<p>Use the navigation above to begin at your skill level:</p>
+<ul>
+<li><strong>New to FortiSIEM SQL?</strong> → Start with <a href="beginner.html">Beginner</a></li>
+<li><strong>Know the basics?</strong> → Jump to <a href="intermediate.html">Intermediate</a></li>
+<li><strong>Ready for complex queries?</strong> → Go to <a href="advanced.html">Advanced</a></li>
+<li><strong>SOC workflow focus?</strong> → See <a href="soc-workflow.html">SOC Workflow</a></li>
+<li><strong>Quick reference?</strong> → See <a href="reference.html">Reference</a></li>
+</ul>
+</div>
+<footer>
+  FortiSIEM Advanced Search SQL Training &mdash; FortiSIEM 7.4.x &mdash;
+  Built with <a href="https://python-markdown.github.io/">Python-Markdown</a>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  document.querySelectorAll('pre code').forEach(el => {
+    hljs.highlightElement(el);
+  });
+</script>
+</body>
+</html>

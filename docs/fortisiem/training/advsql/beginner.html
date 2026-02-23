@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beginner: Your First Queries — FortiSIEM Advanced Search SQL</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">FortiSIEM&#8202;|&#8202;Advanced Search SQL</a>
+  <a href="index.html">Introduction</a>
+  <a href="beginner.html" class="active">Beginner</a>
+  <a href="intermediate.html">Intermediate</a>
+  <a href="advanced.html">Advanced</a>
+  <a href="soc-workflow.html">SOC Workflow</a>
+  <a href="reference.html">Reference</a>
+</nav>
+<div class="page-wrapper">
+<h1 id="beginner-your-first-queries">Beginner: Your First Queries</h1>
+<p><span class="level-badge level-beginner">Beginner</span></p>
+<p>This module takes you from zero to writing functional FortiSIEM SQL queries. No prior SQL experience required — but if you have it, you'll move through this quickly.</p>
+<h2 id="the-data-model">The Data Model</h2>
+<p>All events in FortiSIEM are stored in a single table:</p>
+<pre><code class="language-sql">fsiem.events
+</code></pre>
+<p>Every log line, network flow, authentication event, and system alert that FortiSIEM collects ends up as a row in this table. The columns are <strong>event attributes</strong> — parsed fields extracted from raw log data.</p>
+<h3 id="the-database-schema-panel">The Database Schema Panel</h3>
+<p>In the Advanced Search UI, the <strong>Database Schema</strong> panel on the left lists the most frequently used attributes. These are the columns you can reference directly in queries. Less common attributes are available via the <strong>Attributes used</strong> dropdown.</p>
+<h3 id="core-attributes-reference">Core Attributes Reference</h3>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>phRecvTime</code></td>
+<td>Timestamp</td>
+<td>When FortiSIEM received the event</td>
+<td><code>2024-11-15 14:30:00</code></td>
+</tr>
+<tr>
+<td><code>phRecvHour</code></td>
+<td>Integer</td>
+<td>Hour component of receive time</td>
+<td><code>14</code></td>
+</tr>
+<tr>
+<td><code>reptDevName</code></td>
+<td>String</td>
+<td>Hostname of the reporting device</td>
+<td><code>fw-edge-01</code></td>
+</tr>
+<tr>
+<td><code>reptDevIpAddrV4</code></td>
+<td>IPv4</td>
+<td>IP address of the reporting device</td>
+<td><code>10.0.1.1</code></td>
+</tr>
+<tr>
+<td><code>srcIpAddrV4</code></td>
+<td>IPv4</td>
+<td>Source IP in the event</td>
+<td><code>192.168.1.50</code></td>
+</tr>
+<tr>
+<td><code>destIpAddrV4</code></td>
+<td>IPv4</td>
+<td>Destination IP</td>
+<td><code>8.8.8.8</code></td>
+</tr>
+<tr>
+<td><code>srcIpPort</code></td>
+<td>Integer</td>
+<td>Source port</td>
+<td><code>54321</code></td>
+</tr>
+<tr>
+<td><code>destIpPort</code></td>
+<td>Integer</td>
+<td>Destination port</td>
+<td><code>443</code></td>
+</tr>
+<tr>
+<td><code>eventType</code></td>
+<td>String</td>
+<td>FortiSIEM event classification</td>
+<td><code>PH_AUDIT_ADMIN_LOGIN_SUCCEED</code></td>
+</tr>
+<tr>
+<td><code>appName</code></td>
+<td>String</td>
+<td>Application that generated the event</td>
+<td><code>sshd</code></td>
+</tr>
+<tr>
+<td><code>reptVendor</code></td>
+<td>String</td>
+<td>Device vendor</td>
+<td><code>Fortinet</code></td>
+</tr>
+<tr>
+<td><code>reptModel</code></td>
+<td>String</td>
+<td>Device model</td>
+<td><code>FortiGate</code></td>
+</tr>
+<tr>
+<td><code>eventParsedOk</code></td>
+<td>Integer</td>
+<td>1 = successfully parsed, 0 = failed</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td><code>phEventCategory</code></td>
+<td>Integer</td>
+<td>Event category (see Reference)</td>
+<td><code>1</code></td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-note"><strong>Note</strong>You can add more attributes to your query scope via the <strong>Attributes used</strong> dropdown in the UI. After selecting an attribute, it becomes available in your SQL.</div>
+<h2 id="basic-select-syntax">Basic SELECT Syntax</h2>
+<pre><code class="language-sql">SELECT column1, column2
+FROM fsiem.events
+WHERE condition
+ORDER BY column ASC|DESC
+LIMIT N
+</code></pre>
+<h3 id="your-first-query">Your First Query</h3>
+<pre><code class="language-sql">SELECT eventType, COUNT(*) AS Total
+FROM fsiem.events
+GROUP BY eventType
+ORDER BY COUNT(*) DESC
+LIMIT 10
+</code></pre>
+<p>This returns the top 10 event types by frequency — a useful first look at what your environment is generating.</p>
+<div class="callout callout-tip"><strong>Tip</strong><strong>Always include <code>LIMIT</code></strong> when testing a new query. Without it, a query can return millions of rows and slow down the system. Start with <code>LIMIT 10</code>, verify the logic, then increase if needed.</div>
+<h2 id="filtering-with-where">Filtering with WHERE</h2>
+<h3 id="time-filtering-the-most-important-filter">Time Filtering — The Most Important Filter</h3>
+<p>Almost every production query should include a time filter. FortiSIEM uses <strong><code>phRecvTime</code></strong> as the event timestamp.</p>
+<pre><code class="language-sql">-- Events from the last hour
+WHERE phRecvTime &gt; (now() - 3600)
+
+-- Events from the last 24 hours
+WHERE phRecvTime &gt; (now() - 86400)
+
+-- Events from the last 7 days
+WHERE phRecvTime &gt; (now() - 604800)
+</code></pre>
+<div class="callout callout-tip"><strong>Tip</strong>Time in seconds: 1 hour = 3600, 1 day = 86400, 1 week = 604800.</div>
+<h3 id="filtering-for-successfully-parsed-events">Filtering for Successfully Parsed Events</h3>
+<pre><code class="language-sql">WHERE eventParsedOk = 1
+</code></pre>
+<p>Always add this in production queries — it excludes raw unparsed log lines that would skew your results.</p>
+<h3 id="combining-filters">Combining Filters</h3>
+<pre><code class="language-sql">SELECT reptDevName, eventType, COUNT(*) AS Total
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+  AND eventParsedOk = 1
+GROUP BY reptDevName, eventType
+ORDER BY Total DESC
+LIMIT 20
+</code></pre>
+<h2 id="aggregation">Aggregation</h2>
+<h3 id="count">COUNT</h3>
+<pre><code class="language-sql">-- Count all events
+SELECT COUNT(*) FROM fsiem.events WHERE phRecvTime &gt; (now() - 3600)
+
+-- Count events per device
+SELECT reptDevName, COUNT(*) AS EventCount
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+GROUP BY reptDevName
+</code></pre>
+<h3 id="group-by">GROUP BY</h3>
+<p><code>GROUP BY</code> collapses multiple rows with the same value into one summary row.</p>
+<pre><code class="language-sql">SELECT reptDevName, reptVendor, COUNT(*) AS Total
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+  AND eventParsedOk = 1
+GROUP BY reptDevName, reptVendor
+ORDER BY Total DESC
+LIMIT 10
+</code></pre>
+<h3 id="order-by">ORDER BY</h3>
+<pre><code class="language-sql">ORDER BY Total DESC   -- largest first
+ORDER BY Total ASC    -- smallest first
+ORDER BY reptDevName  -- alphabetical
+</code></pre>
+<h3 id="aliasing-with-as">Aliasing with AS</h3>
+<pre><code class="language-sql">SELECT
+  reptDevName      AS &quot;Device Name&quot;,
+  reptDevIpAddrV4  AS &quot;Device IP&quot;,
+  COUNT(*)         AS &quot;Event Count&quot;,
+  MAX(phRecvTime)  AS &quot;Last Seen&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+  AND eventParsedOk = 1
+GROUP BY reptDevName, reptDevIpAddrV4
+ORDER BY COUNT(*) DESC
+LIMIT 10
+</code></pre>
+<div class="callout callout-note"><strong>Note</strong>Use backticks or double quotes around aliases that contain spaces: <code>`Event Count`</code> or <code>"Event Count"</code>.</div>
+<h2 id="lab-exercises-module-1">Lab Exercises — Module 1</h2>
+<div class="callout callout-lab"><strong>Lab Exercise</strong>Complete all three queries below. Run each one in FortiSIEM's Advanced Search UI and verify you get results before moving on.</div>
+<h3 id="lab-11-top-reporting-devices">Lab 1.1 — Top Reporting Devices</h3>
+<p><strong>Task:</strong> Find the top 10 reporting devices by event count in the last hour, showing device name, IP, and event count.</p>
+<p><strong>Expected query:</strong></p>
+<pre><code class="language-sql">SELECT
+  reptDevName         AS &quot;Device Name&quot;,
+  reptDevIpAddrV4     AS &quot;Device IP&quot;,
+  COUNT(*)            AS &quot;Event Count&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+  AND eventParsedOk = 1
+GROUP BY reptDevName, reptDevIpAddrV4
+ORDER BY COUNT(*) DESC
+LIMIT 10
+</code></pre>
+<p><strong>Verify:</strong> You should see a table with device names and counts. If all counts are 0, check that your time range covers when events were last received.</p>
+<hr />
+<h3 id="lab-12-event-type-breakdown-24-hours">Lab 1.2 — Event Type Breakdown (24 Hours)</h3>
+<p><strong>Task:</strong> List every event type seen in the last 24 hours with its count and the most recent time it was seen. Sort by count descending.</p>
+<pre><code class="language-sql">SELECT
+  eventType           AS &quot;Event Type&quot;,
+  COUNT(*)            AS &quot;Count&quot;,
+  MAX(phRecvTime)     AS &quot;Last Seen&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND eventParsedOk = 1
+GROUP BY eventType
+ORDER BY COUNT(*) DESC
+LIMIT 25
+</code></pre>
+<p><strong>Verify:</strong> You should see multiple event types. Note which appear most frequently in your environment — this is your baseline.</p>
+<hr />
+<h3 id="lab-13-unique-source-ips-last-6-hours">Lab 1.3 — Unique Source IPs (Last 6 Hours)</h3>
+<p><strong>Task:</strong> List all unique source IP addresses seen in the last 6 hours, along with how many events each generated. Exclude empty/null source IPs.</p>
+<pre><code class="language-sql">SELECT
+  srcIpAddrV4         AS &quot;Source IP&quot;,
+  COUNT(*)            AS &quot;Event Count&quot;,
+  MAX(phRecvTime)     AS &quot;Last Seen&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 21600)
+  AND eventParsedOk = 1
+  AND srcIpAddrV4 != ''
+GROUP BY srcIpAddrV4
+ORDER BY COUNT(*) DESC
+LIMIT 30
+</code></pre>
+<p><strong>Verify:</strong> You should see a list of IPs. A very high count from a single internal IP could indicate misconfiguration or a scanning host.</p>
+<hr />
+<p><strong>Module 1 complete.</strong> You can now write time-bounded, filtered, aggregated queries. Continue to <a href="intermediate.html">Intermediate</a> to add operators, functions, and CMDB integration.</p>
+</div>
+<footer>
+  FortiSIEM Advanced Search SQL Training &mdash; FortiSIEM 7.4.x &mdash;
+  Built with <a href="https://python-markdown.github.io/">Python-Markdown</a>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  document.querySelectorAll('pre code').forEach(el => {
+    hljs.highlightElement(el);
+  });
+</script>
+</body>
+</html>

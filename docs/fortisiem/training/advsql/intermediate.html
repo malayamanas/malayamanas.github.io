@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intermediate: Operators, Functions & CMDB — FortiSIEM Advanced Search SQL</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">FortiSIEM&#8202;|&#8202;Advanced Search SQL</a>
+  <a href="index.html">Introduction</a>
+  <a href="beginner.html">Beginner</a>
+  <a href="intermediate.html" class="active">Intermediate</a>
+  <a href="advanced.html">Advanced</a>
+  <a href="soc-workflow.html">SOC Workflow</a>
+  <a href="reference.html">Reference</a>
+</nav>
+<div class="page-wrapper">
+<h1 id="intermediate-operators-functions-cmdb">Intermediate: Operators, Functions &amp; CMDB</h1>
+<p><span class="level-badge level-intermediate">Intermediate</span></p>
+<p>This module covers the SQL building blocks that transform basic queries into precise investigation tools: logical operators, aggregate and time functions, string manipulation, and CMDB group integration.</p>
+<h2 id="logical-operators">Logical Operators</h2>
+<h3 id="in-and-not-in">IN and NOT IN</h3>
+<p>Filter for multiple values without chaining OR conditions:</p>
+<pre><code class="language-sql">-- Events from specific devices
+WHERE reptDevName IN ('fw-edge-01', 'fw-edge-02', 'vpn-gw-01')
+
+-- Exclude specific event types
+WHERE eventType NOT IN ('PH_SYS_HEARTBEAT', 'PH_SYS_HEALTH_CPU')
+
+-- Filter by event category
+WHERE phEventCategory IN (0, 4)
+</code></pre>
+<h3 id="like-pattern-matching">LIKE — Pattern Matching</h3>
+<pre><code class="language-sql">-- Events from any device starting with &quot;fw-&quot;
+WHERE reptDevName LIKE 'fw-%'
+
+-- Event types containing &quot;LOGIN&quot;
+WHERE eventType LIKE '%LOGIN%'
+
+-- Source IPs in the 10.0.x.x range
+WHERE srcIpAddrV4 LIKE '10.0.%'
+</code></pre>
+<div class="callout callout-note"><strong>Note</strong><code>%</code> matches any sequence of characters. <code>_</code> matches exactly one character. LIKE is case-sensitive in ClickHouse by default.</div>
+<h3 id="between">BETWEEN</h3>
+<pre><code class="language-sql">-- Events on a specific port range
+WHERE destIpPort BETWEEN 1024 AND 65535
+
+-- Events in a time window
+WHERE phRecvTime BETWEEN '2024-11-01 00:00:00' AND '2024-11-01 23:59:59'
+</code></pre>
+<h3 id="and-or-with-parentheses">AND / OR with Parentheses</h3>
+<p>Use parentheses to control evaluation order:</p>
+<pre><code class="language-sql">WHERE (reptDevName = 'fw-edge-01' OR reptDevName = 'fw-edge-02')
+  AND phRecvTime &gt; (now() - 3600)
+  AND eventParsedOk = 1
+</code></pre>
+<div class="callout callout-warn"><strong>Warning</strong>Without parentheses, <code>AND</code> has higher precedence than <code>OR</code>. <code>A AND B OR C</code> evaluates as <code>(A AND B) OR C</code>, which is often not what you intend. Always use parentheses when mixing AND and OR.</div>
+<h2 id="aggregate-functions">Aggregate Functions</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Syntax</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>COUNT(*)</code></td>
+<td><code>COUNT(*)</code></td>
+<td>Count all rows</td>
+</tr>
+<tr>
+<td><code>COUNT DISTINCT</code></td>
+<td><code>COUNT(DISTINCT attr)</code></td>
+<td>Count unique values</td>
+</tr>
+<tr>
+<td><code>MAX</code></td>
+<td><code>MAX(phRecvTime)</code></td>
+<td>Largest value / most recent time</td>
+</tr>
+<tr>
+<td><code>MIN</code></td>
+<td><code>MIN(phRecvTime)</code></td>
+<td>Smallest value / earliest time</td>
+</tr>
+<tr>
+<td><code>SUM</code></td>
+<td><code>SUM(sentBytes)</code></td>
+<td>Total of a numeric field</td>
+</tr>
+<tr>
+<td><code>AVG</code></td>
+<td><code>AVG(sentBytes)</code></td>
+<td>Average of a numeric field</td>
+</tr>
+<tr>
+<td><code>FIRST</code></td>
+<td><code>FIRST(srcIpAddrV4)</code></td>
+<td>Value from the earliest event</td>
+</tr>
+<tr>
+<td><code>LAST</code></td>
+<td><code>LAST(srcIpAddrV4)</code></td>
+<td>Value from the most recent event</td>
+</tr>
+<tr>
+<td><code>STDDEV</code></td>
+<td><code>STDDEV(sentBytes)</code></td>
+<td>Standard deviation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-rich-device-summary">Example: Rich Device Summary</h3>
+<pre><code class="language-sql">SELECT
+  reptDevName                     AS &quot;Device&quot;,
+  reptVendor                      AS &quot;Vendor&quot;,
+  reptModel                       AS &quot;Model&quot;,
+  COUNT(*)                        AS &quot;Event Count&quot;,
+  COUNT(DISTINCT eventType)       AS &quot;Unique Event Types&quot;,
+  MAX(phRecvTime)                 AS &quot;Last Seen&quot;,
+  MIN(phRecvTime)                 AS &quot;First Seen&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND eventParsedOk = 1
+GROUP BY reptDevName, reptVendor, reptModel
+ORDER BY COUNT(*) DESC
+LIMIT 20
+</code></pre>
+<h2 id="time-functions">Time Functions</h2>
+<h3 id="relative-time-with-now">Relative Time with now()</h3>
+<pre><code class="language-sql">now()                   -- current timestamp
+now() - 3600            -- 1 hour ago
+now() - 86400           -- 24 hours ago
+now() - 604800          -- 7 days ago
+</code></pre>
+<h3 id="hourofday-and-dayofweek">HourOfDay() and DayOfWeek()</h3>
+<p>Useful for identifying patterns tied to business hours or days:</p>
+<pre><code class="language-sql">-- Events by hour of day (spot after-hours activity)
+SELECT
+  HourOfDay(phRecvTime)   AS &quot;Hour&quot;,
+  COUNT(*)                AS &quot;Events&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 604800)
+  AND eventParsedOk = 1
+GROUP BY HourOfDay(phRecvTime)
+ORDER BY HourOfDay(phRecvTime)
+</code></pre>
+<pre><code class="language-sql">-- Events by day of week (0=Sunday, 6=Saturday)
+SELECT
+  DayOfWeek(phRecvTime)   AS &quot;Day&quot;,
+  COUNT(*)                AS &quot;Events&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 604800)
+GROUP BY DayOfWeek(phRecvTime)
+ORDER BY DayOfWeek(phRecvTime)
+</code></pre>
+<h2 id="string-functions">String Functions</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Example</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TO_UPPER(s)</code></td>
+<td><code>TO_UPPER('admin')</code></td>
+<td><code>'ADMIN'</code></td>
+</tr>
+<tr>
+<td><code>TO_LOWER(s)</code></td>
+<td><code>TO_LOWER('ADMIN')</code></td>
+<td><code>'admin'</code></td>
+</tr>
+<tr>
+<td><code>LEN(s)</code></td>
+<td><code>LEN(reptDevName)</code></td>
+<td>Length as integer</td>
+</tr>
+<tr>
+<td><code>TRIM(s)</code></td>
+<td><code>TRIM(' host ')</code></td>
+<td><code>'host'</code></td>
+</tr>
+<tr>
+<td><code>SUB_STR(s,start,len)</code></td>
+<td><code>SUB_STR(srcIpAddrV4,1,3)</code></td>
+<td>First 3 chars</td>
+</tr>
+<tr>
+<td><code>REPLACE(s,old,new)</code></td>
+<td><code>REPLACE(appName,'svc_','')</code></td>
+<td>Strips prefix</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-sql">-- Normalize event types for grouping
+SELECT TO_UPPER(appName) AS App, COUNT(*) AS Total
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+GROUP BY TO_UPPER(appName)
+ORDER BY Total DESC
+LIMIT 15
+</code></pre>
+<h2 id="cmdb-integration">CMDB Integration</h2>
+<p>FortiSIEM's CMDB (Configuration Management Database) organizes devices into hierarchical groups. You can filter queries against these groups using dictionary functions.</p>
+<h3 id="dicthas-group-membership-check">dictHas() — Group Membership Check</h3>
+<pre><code class="language-sql">-- Events from devices in the &quot;Devices &gt; Server &gt; Windows&quot; CMDB group
+SELECT reptDevName, eventType, COUNT(*)
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+  AND dictHas('DeviceIp2DeviceGroup', reptDevIpAddrV4)
+  AND eventParsedOk = 1
+GROUP BY reptDevName, eventType
+ORDER BY COUNT(*) DESC
+LIMIT 20
+</code></pre>
+<div class="callout callout-note"><strong>Note</strong>The CMDB group path syntax depends on your FortiSIEM configuration. Use the <strong>CMDB Group Converter</strong> tool in the Advanced Search UI (toolbar icon) to select a group and auto-generate the <code>dictHas()</code> call for your environment.</div>
+<h3 id="devicetocmdbattr-enrich-results-with-cmdb-data">DeviceToCMDBAttr() — Enrich Results with CMDB Data</h3>
+<pre><code class="language-sql">SELECT
+  reptDevName                             AS &quot;Device&quot;,
+  DeviceToCMDBAttr(reptDevIpAddrV4, 'Location') AS &quot;Location&quot;,
+  COUNT(*)                                AS &quot;Events&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+  AND eventParsedOk = 1
+GROUP BY reptDevName, reptDevIpAddrV4
+ORDER BY COUNT(*) DESC
+LIMIT 15
+</code></pre>
+<h2 id="pheventcategory-values">phEventCategory Values</h2>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Category</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>Internal</td>
+<td>FortiSIEM-generated system events</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>Network</td>
+<td>Network device events (firewall, router, switch)</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>Server</td>
+<td>Server OS events (Windows, Linux)</td>
+</tr>
+<tr>
+<td><code>3</code></td>
+<td>Application</td>
+<td>Application-level events</td>
+</tr>
+<tr>
+<td><code>4</code></td>
+<td>Security</td>
+<td>Security-specific events (IDS, AV, auth)</td>
+</tr>
+<tr>
+<td><code>5</code></td>
+<td>Cloud</td>
+<td>Cloud service events</td>
+</tr>
+<tr>
+<td><code>6</code></td>
+<td>Endpoint</td>
+<td>Endpoint agent events</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-sql">-- Security and network events only
+WHERE phEventCategory IN (1, 4)
+</code></pre>
+<h2 id="soc-workflow-alert-investigation">SOC Workflow: Alert Investigation</h2>
+<p>When you receive an incident alert, Advanced Search lets you rapidly scope the event and gather evidence. Here is the standard pivot workflow:</p>
+<p><strong>Step 1 — Confirm the alert exists in the data:</strong></p>
+<pre><code class="language-sql">SELECT phRecvTime, reptDevName, srcIpAddrV4, destIpAddrV4, eventType
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+  AND srcIpAddrV4 = '10.0.5.44'
+  AND eventParsedOk = 1
+ORDER BY phRecvTime DESC
+LIMIT 50
+</code></pre>
+<p><strong>Step 2 — What event types is this IP generating?</strong></p>
+<pre><code class="language-sql">SELECT eventType, COUNT(*) AS Count, MAX(phRecvTime) AS LastSeen
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND srcIpAddrV4 = '10.0.5.44'
+  AND eventParsedOk = 1
+GROUP BY eventType
+ORDER BY Count DESC
+</code></pre>
+<p><strong>Step 3 — What destinations is it talking to?</strong></p>
+<pre><code class="language-sql">SELECT destIpAddrV4, destIpPort, COUNT(*) AS Count
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND srcIpAddrV4 = '10.0.5.44'
+  AND eventParsedOk = 1
+GROUP BY destIpAddrV4, destIpPort
+ORDER BY Count DESC
+LIMIT 30
+</code></pre>
+<div class="callout callout-soc"><strong>SOC Tip</strong>During IR, always note the <strong>phRecvTime</strong> range of the suspicious activity — this helps you build a precise timeline and scope related events across other devices.</div>
+<h2 id="lab-exercise-module-2">Lab Exercise — Module 2</h2>
+<div class="callout callout-lab"><strong>Lab Exercise</strong><strong>Scenario:</strong> You receive an alert for possible brute-force activity. The alerted source IP is <code>192.168.10.55</code>. Use the three queries below to investigate. Adapt the IP and time window to match your environment.</div>
+<p><strong>Lab 2.1 — Scope the source IP activity:</strong></p>
+<pre><code class="language-sql">SELECT
+  eventType                       AS &quot;Event Type&quot;,
+  COUNT(*)                        AS &quot;Count&quot;,
+  MIN(phRecvTime)                 AS &quot;First Seen&quot;,
+  MAX(phRecvTime)                 AS &quot;Last Seen&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND srcIpAddrV4 = '192.168.10.55'
+  AND eventParsedOk = 1
+GROUP BY eventType
+ORDER BY COUNT(*) DESC
+</code></pre>
+<p><strong>Lab 2.2 — Find targeted destination IPs and ports:</strong></p>
+<pre><code class="language-sql">SELECT
+  destIpAddrV4                    AS &quot;Destination IP&quot;,
+  destIpPort                      AS &quot;Port&quot;,
+  COUNT(*)                        AS &quot;Attempts&quot;,
+  COUNT(DISTINCT eventType)       AS &quot;Event Types&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND srcIpAddrV4 = '192.168.10.55'
+  AND eventParsedOk = 1
+GROUP BY destIpAddrV4, destIpPort
+ORDER BY COUNT(*) DESC
+LIMIT 20
+</code></pre>
+<p><strong>Lab 2.3 — Check activity by hour to identify the attack window:</strong></p>
+<pre><code class="language-sql">SELECT
+  HourOfDay(phRecvTime)           AS &quot;Hour&quot;,
+  COUNT(*)                        AS &quot;Event Count&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 604800)
+  AND srcIpAddrV4 = '192.168.10.55'
+  AND eventParsedOk = 1
+GROUP BY HourOfDay(phRecvTime)
+ORDER BY HourOfDay(phRecvTime)
+</code></pre>
+<p><strong>Questions to answer from your results:</strong>
+1. Is the activity spread evenly across the day, or concentrated in a narrow window?
+2. How many unique destination IPs/ports were targeted?
+3. Are there any successful auth events (<code>SUCCEED</code>) mixed with failures?</p>
+<hr />
+<p><strong>Module 2 complete.</strong> Continue to <a href="advanced.html">Advanced</a> for CTEs, subqueries, and window functions.</p>
+</div>
+<footer>
+  FortiSIEM Advanced Search SQL Training &mdash; FortiSIEM 7.4.x &mdash;
+  Built with <a href="https://python-markdown.github.io/">Python-Markdown</a>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  document.querySelectorAll('pre code').forEach(el => {
+    hljs.highlightElement(el);
+  });
+</script>
+</body>
+</html>

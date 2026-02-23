@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced: CTEs, Subqueries & Window Functions — FortiSIEM Advanced Search SQL</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="index.html">FortiSIEM&#8202;|&#8202;Advanced Search SQL</a>
+  <a href="index.html">Introduction</a>
+  <a href="beginner.html">Beginner</a>
+  <a href="intermediate.html">Intermediate</a>
+  <a href="advanced.html" class="active">Advanced</a>
+  <a href="soc-workflow.html">SOC Workflow</a>
+  <a href="reference.html">Reference</a>
+</nav>
+<div class="page-wrapper">
+<h1 id="advanced-ctes-subqueries-window-functions">Advanced: CTEs, Subqueries &amp; Window Functions</h1>
+<p><span class="level-badge level-advanced">Advanced</span></p>
+<p>This module covers multi-step SQL techniques that unlock complex analytical workflows: Common Table Expressions for readable query composition, subqueries for temporal comparison, window functions for per-group ranking, and performance best practices.</p>
+<h2 id="common-table-expressions-ctes">Common Table Expressions (CTEs)</h2>
+<p>A CTE defines a named, temporary result set you can reference later in the same query. It makes complex multi-step logic readable and maintainable.</p>
+<h3 id="syntax">Syntax</h3>
+<pre><code class="language-sql">WITH cte_name AS (
+    SELECT ...
+    FROM fsiem.events
+    WHERE ...
+),
+second_cte AS (
+    SELECT ...
+    FROM cte_name
+    WHERE ...
+)
+SELECT *
+FROM second_cte
+LIMIT 20
+</code></pre>
+<h3 id="example-two-step-analysis">Example: Two-Step Analysis</h3>
+<p>Find devices that had more than 1000 events in the last hour, then show their event type breakdown:</p>
+<pre><code class="language-sql">WITH high_volume_devices AS (
+    SELECT reptDevName
+    FROM fsiem.events
+    WHERE phRecvTime &gt; (now() - 3600)
+      AND eventParsedOk = 1
+    GROUP BY reptDevName
+    HAVING COUNT(*) &gt; 1000
+)
+SELECT
+  e.reptDevName                   AS &quot;Device&quot;,
+  e.eventType                     AS &quot;Event Type&quot;,
+  COUNT(*)                        AS &quot;Count&quot;
+FROM fsiem.events e
+INNER JOIN high_volume_devices h ON e.reptDevName = h.reptDevName
+WHERE e.phRecvTime &gt; (now() - 3600)
+  AND e.eventParsedOk = 1
+GROUP BY e.reptDevName, e.eventType
+ORDER BY COUNT(*) DESC
+LIMIT 30
+</code></pre>
+<div class="callout callout-tip"><strong>Tip</strong>CTEs are not just organizational — they also prevent you from repeating the same subquery multiple times in a single query, which can significantly improve readability during review and incident handoffs.</div>
+<h2 id="subqueries-and-temporal-comparison">Subqueries and Temporal Comparison</h2>
+<h3 id="not-in-today-but-not-yesterday">NOT IN — "Today But Not Yesterday"</h3>
+<p>One of the most powerful SOC patterns: find devices (or IPs) that appeared in a recent window but not in an earlier baseline window. This surfaces new or anomalous actors.</p>
+<pre><code class="language-sql">-- Devices reporting external events today but not yesterday
+SELECT DISTINCT reptDevName AS &quot;New Reporter Today&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND phEventCategory IN (0, 4)
+  AND eventParsedOk = 1
+  AND reptDevName NOT IN (
+      SELECT DISTINCT reptDevName
+      FROM fsiem.events
+      WHERE phRecvTime BETWEEN (now() - 172800) AND (now() - 86400)
+        AND phEventCategory IN (0, 4)
+        AND eventParsedOk = 1
+  )
+ORDER BY reptDevName
+</code></pre>
+<h3 id="in-with-subquery-filter-to-a-known-set">IN with Subquery — Filter to a Known Set</h3>
+<pre><code class="language-sql">-- Show all events from source IPs that also appear as reporting device IPs
+SELECT srcIpAddrV4, eventType, COUNT(*) AS Count
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+  AND eventParsedOk = 1
+  AND srcIpAddrV4 IN (
+      SELECT DISTINCT reptDevIpAddrV4
+      FROM fsiem.events
+      WHERE phRecvTime &gt; (now() - 3600)
+  )
+GROUP BY srcIpAddrV4, eventType
+ORDER BY Count DESC
+LIMIT 20
+</code></pre>
+<h2 id="window-functions">Window Functions</h2>
+<p>Window functions perform calculations across a set of rows related to the current row — without collapsing them into a single summary row like GROUP BY does.</p>
+<h3 id="rank-over-partition-by-order-by">RANK() OVER (PARTITION BY … ORDER BY …)</h3>
+<p>Get the top N items <strong>per group</strong> — for example, the top 5 event types per reporting device:</p>
+<pre><code class="language-sql">SELECT *
+FROM (
+    SELECT
+        reptDevName,
+        eventType,
+        COUNT(*)            AS EventCount,
+        RANK() OVER (
+            PARTITION BY reptDevName
+            ORDER BY COUNT(*) DESC
+        )                   AS rnk
+    FROM fsiem.events
+    WHERE phRecvTime &gt; (now() - 3600)
+      AND eventParsedOk = 1
+    GROUP BY reptDevName, eventType
+) ranked
+WHERE rnk &lt;= 5
+ORDER BY reptDevName, rnk
+LIMIT 100
+</code></pre>
+<div class="callout callout-note"><strong>Note</strong><code>PARTITION BY reptDevName</code> resets the rank counter for each device. <code>ORDER BY COUNT(*) DESC</code> ranks event types within each device by frequency. The outer <code>WHERE rnk &lt;= 5</code> keeps only the top 5 per device.</div>
+<h3 id="row_number-deduplicate-or-get-latest">ROW_NUMBER() — Deduplicate or Get Latest</h3>
+<pre><code class="language-sql">-- Get the single most recent event per source IP
+SELECT *
+FROM (
+    SELECT
+        srcIpAddrV4,
+        eventType,
+        phRecvTime,
+        ROW_NUMBER() OVER (
+            PARTITION BY srcIpAddrV4
+            ORDER BY phRecvTime DESC
+        ) AS rn
+    FROM fsiem.events
+    WHERE phRecvTime &gt; (now() - 3600)
+      AND eventParsedOk = 1
+      AND srcIpAddrV4 != ''
+) t
+WHERE rn = 1
+LIMIT 50
+</code></pre>
+<h2 id="lookup-tables">Lookup Tables</h2>
+<p>FortiSIEM lookup tables let you enrich query results with external reference data (IOC lists, asset tags, custom mappings).</p>
+<h3 id="lookuptablehas-ioc-sweep">LookupTableHas() — IOC Sweep</h3>
+<pre><code class="language-sql">-- Find events where the source IP is in your IOC lookup table
+SELECT
+  srcIpAddrV4                     AS &quot;IOC IP&quot;,
+  eventType                       AS &quot;Event Type&quot;,
+  reptDevName                     AS &quot;Reporting Device&quot;,
+  COUNT(*)                        AS &quot;Hit Count&quot;,
+  MAX(phRecvTime)                 AS &quot;Last Seen&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND eventParsedOk = 1
+  AND LookupTableHas('Threat_IOC_IPs', srcIpAddrV4)
+GROUP BY srcIpAddrV4, eventType, reptDevName
+ORDER BY COUNT(*) DESC
+LIMIT 50
+</code></pre>
+<div class="callout callout-soc"><strong>SOC Tip</strong>Replace <code>'Threat_IOC_IPs'</code> with the actual name of your lookup table as configured in FortiSIEM (Admin &gt; General Settings &gt; Lookup Tables). Keep your IOC lookup tables updated via scheduled imports from your threat intel platform.</div>
+<h3 id="lookuptableget-enrich-with-context">LookupTableGet() — Enrich with Context</h3>
+<pre><code class="language-sql">SELECT
+  srcIpAddrV4,
+  LookupTableGet('Asset_Register', srcIpAddrV4, 'owner')  AS &quot;Owner&quot;,
+  LookupTableGet('Asset_Register', srcIpAddrV4, 'team')   AS &quot;Team&quot;,
+  COUNT(*) AS Events
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+  AND eventParsedOk = 1
+GROUP BY srcIpAddrV4
+ORDER BY Events DESC
+LIMIT 20
+</code></pre>
+<h2 id="performance-optimization">Performance Optimization</h2>
+<div class="callout callout-warn"><strong>Warning</strong>Poorly written queries can impact FortiSIEM performance. Follow these rules before running queries on production.</div>
+<h3 id="rule-1-always-time-bound-queries">Rule 1: Always Time-Bound Queries</h3>
+<pre><code class="language-sql">-- BAD: Scans entire event history
+SELECT COUNT(*) FROM fsiem.events WHERE eventType = 'PH_NET_FIREWALL_DENY'
+
+-- GOOD: Scans only last 24 hours
+SELECT COUNT(*) FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 86400)
+  AND eventType = 'PH_NET_FIREWALL_DENY'
+</code></pre>
+<h3 id="rule-2-use-limit-while-testing">Rule 2: Use LIMIT While Testing</h3>
+<p>Start with <code>LIMIT 10</code>. Once the logic is validated, remove or increase the limit for production.</p>
+<h3 id="rule-3-filter-early-use-primary-index">Rule 3: Filter Early — Use Primary Index</h3>
+<p>ClickHouse's primary index is on <code>phRecvTime</code>. Always include a <code>phRecvTime</code> filter to leverage index scans. Secondary conditions (like <code>srcIpAddrV4</code>) filter the result of the index scan.</p>
+<h3 id="rule-4-avoid-select">Rule 4: Avoid SELECT *</h3>
+<pre><code class="language-sql">-- BAD
+SELECT * FROM fsiem.events WHERE phRecvTime &gt; (now() - 3600) LIMIT 10
+
+-- GOOD
+SELECT reptDevName, eventType, srcIpAddrV4, phRecvTime
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+LIMIT 10
+</code></pre>
+<h3 id="rule-5-validate-with-count-before-full-select">Rule 5: Validate with COUNT Before Full SELECT</h3>
+<pre><code class="language-sql">-- First: check how many rows match
+SELECT COUNT(*)
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 3600)
+  AND eventParsedOk = 1
+  AND reptDevName LIKE 'db-%'
+
+-- If count is reasonable, then run the full query
+</code></pre>
+<h2 id="soc-workflow-threat-hunting">SOC Workflow: Threat Hunting</h2>
+<p>Threat hunting is proactive — you form a hypothesis about attacker behavior and use SQL to test it. Here are three hunting patterns.</p>
+<h3 id="hunt-1-rare-process-names-lolbins">Hunt 1: Rare Process Names (LOLBins)</h3>
+<pre><code class="language-sql">-- Processes seen fewer than 5 times in the last 7 days
+WITH process_counts AS (
+    SELECT
+        appName,
+        COUNT(*)    AS ExecCount,
+        COUNT(DISTINCT reptDevName) AS DeviceCount
+    FROM fsiem.events
+    WHERE phRecvTime &gt; (now() - 604800)
+      AND eventParsedOk = 1
+      AND appName != ''
+    GROUP BY appName
+)
+SELECT appName, ExecCount, DeviceCount
+FROM process_counts
+WHERE ExecCount &lt; 5
+ORDER BY ExecCount ASC
+LIMIT 50
+</code></pre>
+<h3 id="hunt-2-beaconing-detection-regular-intervals">Hunt 2: Beaconing Detection (Regular Intervals)</h3>
+<pre><code class="language-sql">-- Find source IPs with very consistent connection counts per hour
+SELECT
+  srcIpAddrV4                     AS &quot;Source IP&quot;,
+  destIpAddrV4                    AS &quot;Destination IP&quot;,
+  destIpPort                      AS &quot;Port&quot;,
+  COUNT(*)                        AS &quot;Total Connections&quot;,
+  COUNT(DISTINCT HourOfDay(phRecvTime)) AS &quot;Active Hours&quot;,
+  STDDEV(HourOfDay(phRecvTime))   AS &quot;Hour Stddev&quot;
+FROM fsiem.events
+WHERE phRecvTime &gt; (now() - 604800)
+  AND eventParsedOk = 1
+  AND srcIpAddrV4 != ''
+  AND destIpAddrV4 != ''
+GROUP BY srcIpAddrV4, destIpAddrV4, destIpPort
+HAVING COUNT(*) &gt; 100
+   AND STDDEV(HourOfDay(phRecvTime)) &lt; 2.0
+ORDER BY &quot;Hour Stddev&quot; ASC
+LIMIT 30
+</code></pre>
+<div class="callout callout-soc"><strong>SOC Tip</strong>Low <code>STDDEV</code> on hour-of-day means the connection happens at very consistent times — a hallmark of automated beaconing. Tune the thresholds (<code>&gt; 100</code>, <code>&lt; 2.0</code>) to your environment's baseline.</div>
+<h3 id="hunt-3-baseline-deviation">Hunt 3: Baseline Deviation</h3>
+<pre><code class="language-sql">-- Devices whose event count today deviates significantly from their 7-day average
+WITH daily_avg AS (
+    SELECT
+        reptDevName,
+        AVG(daily_count)    AS avg_events,
+        STDDEV(daily_count) AS stddev_events
+    FROM (
+        SELECT reptDevName, COUNT(*) AS daily_count
+        FROM fsiem.events
+        WHERE phRecvTime BETWEEN (now() - 604800) AND (now() - 86400)
+          AND eventParsedOk = 1
+        GROUP BY reptDevName, toDate(phRecvTime)
+    ) daily
+    GROUP BY reptDevName
+),
+today AS (
+    SELECT reptDevName, COUNT(*) AS today_count
+    FROM fsiem.events
+    WHERE phRecvTime &gt; (now() - 86400)
+      AND eventParsedOk = 1
+    GROUP BY reptDevName
+)
+SELECT
+    t.reptDevName                   AS &quot;Device&quot;,
+    t.today_count                   AS &quot;Today&quot;,
+    ROUND(d.avg_events, 0)          AS &quot;7-Day Avg&quot;,
+    ROUND(d.stddev_events, 0)       AS &quot;Stddev&quot;,
+    ROUND((t.today_count - d.avg_events) / d.stddev_events, 2) AS &quot;Z-Score&quot;
+FROM today t
+JOIN daily_avg d ON t.reptDevName = d.reptDevName
+WHERE d.stddev_events &gt; 0
+  AND ABS((t.today_count - d.avg_events) / d.stddev_events) &gt; 2
+ORDER BY ABS((t.today_count - d.avg_events) / d.stddev_events) DESC
+LIMIT 20
+</code></pre>
+<div class="callout callout-soc"><strong>SOC Tip</strong>A Z-score above +2 or below -2 indicates the device is behaving significantly outside its normal range. Positive = spike (possible attack traffic, noisy tool). Negative = drop (possible device failure, log source going silent).</div>
+<h2 id="lab-exercise-module-3">Lab Exercise — Module 3</h2>
+<div class="callout callout-lab"><strong>Lab Exercise</strong><strong>Build a 3-query threat hunting playbook</strong> for your environment. Use the templates above as a starting point. For each query: (1) run it, (2) note any findings, (3) document your hypothesis and result.</div>
+<p><strong>Playbook Query 1: New External Communicators</strong></p>
+<p>Adapt the "today but not yesterday" subquery to find source IPs that appeared in the last 24 hours but were absent in the prior 24 hours. What do you find?</p>
+<p><strong>Playbook Query 2: Top Anomalous Devices by Z-Score</strong></p>
+<p>Run the Baseline Deviation query. Identify the top 3 devices by absolute Z-score. For each, drill into their event types using a separate query.</p>
+<p><strong>Playbook Query 3: IOC Sweep</strong></p>
+<p>If your environment has a lookup table loaded with known-bad IPs or domains, run the <code>LookupTableHas()</code> IOC sweep. How many hits in the last 7 days?</p>
+<hr />
+<p><strong>Module 3 complete.</strong> Continue to <a href="soc-workflow.html">SOC Workflow</a> to see how these queries fit into end-to-end SOC operations.</p>
+</div>
+<footer>
+  FortiSIEM Advanced Search SQL Training &mdash; FortiSIEM 7.4.x &mdash;
+  Built with <a href="https://python-markdown.github.io/">Python-Markdown</a>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  document.querySelectorAll('pre code').forEach(el => {
+    hljs.highlightElement(el);
+  });
+</script>
+</body>
+</html>
