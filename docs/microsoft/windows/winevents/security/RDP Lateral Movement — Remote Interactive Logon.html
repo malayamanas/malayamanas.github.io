@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RDP Lateral Movement — Remote Interactive Logon</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">RDP Lateral Movement — Remote Interactive Logon</h1>
+  <div class="page-meta">
+    <span class="badge badge-medium">Medium</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Lateral Movement</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1021.001</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> RDP Lateral Movement — Remote Interactive Logon
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>RDP Lateral Movement — Remote Interactive Logon</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1021.001</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Lateral Movement</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Medium</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4624</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>lateral_movement, t1021.001</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+Attackers use Remote Desktop Protocol (RDP) to move laterally within a network by establishing interactive logon sessions (Logon Type 10) to remote systems. This is one of the most common lateral movement techniques after initial access, especially when attackers have valid credentials (dumped, guessed, or relayed) and RDP is enabled on target hosts (default on servers, often enabled on workstations by attackers).
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Lateral Movement  </li>
+</ul><br>
+  <strong>Technique</strong>       : Remote Services: Remote Desktop Protocol (T1021.001)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<p><ol>
+  <li>Attacker obtains valid credentials for a target account (via credential dumping, pass-the-hash, Kerberoasting, spraying, etc.).</li>
+  <li>Attacker enables RDP on the target if not already active:</li>
+</ol><br>
+<ul>
+  <li><code>reg add &quot;HKLM\System\CurrentControlSet\Control\Terminal Server&quot; /v fDenyTSConnections /t REG_DWORD /d 0 /f</code></li>
+  <li>Firewall rule: <code>netsh advfirewall firewall set rule group=&quot;remote desktop&quot; new enable=yes</code></li>
+</ul><br>
+<ol>
+  <li>Attacker initiates RDP connection (mstsc.exe, xfreerdp, rdesktop, custom clients) using stolen credentials.</li>
+  <li>Target system logs a successful <strong>Logon Type 10</strong> (RemoteInteractive) event.</li>
+  <li>Attacker uses the interactive desktop session to:</li>
+</ol><br>
+<ul>
+  <li>Run commands</li>
+  <li>Dump further credentials</li>
+  <li>Install persistence (scheduled tasks, services)</li>
+  <li>Pivot to additional systems</li>
+</ul></p>
+
+<strong>Most common tools &amp; vectors observed in 2024–2026:</strong>
+<ul>
+  <li>mstsc.exe (native Windows RDP client)</li>
+  <li>xfreerdp / rdesktop (Linux-based attackers)</li>
+  <li>Remmina, Royal TS, AnyDesk (living-off-the-land abuse)</li>
+  <li>Cobalt Strike / Brute Ratel / Sliver RDP modules</li>
+  <li>RDP Wrapper / hidden RDP backdoors (legacy persistence)</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4624">4. Key Windows Security Event Indicators (Event ID 4624)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4624</strong> (An account was successfully logged on)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>LogonType</strong></td><td>10 (RemoteInteractive)</td><td>Definitive indicator of RDP logon</td></tr>
+<tr><td><strong>LogonProcessName</strong></td><td>User32 (most common for RDP)</td><td>Standard for interactive RDP sessions</td></tr>
+<tr><td><strong>AuthenticationPackageName</strong></td><td>Negotiate (preferred) or NTLM (fallback)</td><td>RDP normally uses Negotiate/Kerberos; NTLM fallback is suspicious</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Internal jump host, compromised workstation, or external IP (if exposed)</td><td>Source of the RDP connection</td></tr>
+<tr><td><strong>WorkstationName</strong></td><td>Attacker-controlled machine name (often random, staging, or matches known tooling)</td><td>Helps identify origin</td></tr>
+<tr><td><strong>TargetUserName</strong></td><td>Privileged account (Administrator, service accounts) or accounts not normally using RDP</td><td>High-value targets for lateral movement</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (suspicious RDP lateral movement signature):</strong>
+<pre><code>Event ID = 4624
+LogonType = 10
+TargetUserName is privileged (Domain Admin, local admin, service account)
+IpAddress is internal but NOT a known admin/jump workstation
+AuthenticationPackageName = NTLM (fallback — rare in modern environments)
+→ especially when preceded by credential access (4656 LSASS, 4769 Kerberoasting) or unusual logons
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Medium-High Confidence)</strong>
+<ul>
+  <li>Event ID = 4624</li>
+  <li>LogonType = 10</li>
+  <li>TargetUserName is privileged or non-standard for RDP</li>
+  <li>IpAddress NOT in known admin/jump subnet</li>
+  <li>Exclude known jump servers / admin workstations via allow-list</li>
+</ul>
+
+<strong>Behavioral / Correlation-based Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>4624 LogonType=10 + privileged TargetUserName + IpAddress not matching baseline admin sources</li>
+  <li>RDP logon (4624 Type 10) + preceding credential dumping (4656/4663 LSASS, 4662 replication)</li>
+  <li>RDP logon + rapid follow-on activity (7045 service creation, 4698 scheduled tasks, 5140/5145 share access)</li>
+  <li>External RDP logons (IpAddress public) → critical alert if not via VPN</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate admin RDP usage (known jump boxes, helpdesk, sysadmins)</li>
+  <li>Remote support tools (TeamViewer, AnyDesk) sometimes mimic RDP</li>
+  <li>VDI / Citrix / RDS farm sessions (usually distinguishable by source IP pool)</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li><strong>Restrict RDP access</strong> via Network Level Authentication (NLA) + firewall rules</li>
+  <li><strong>Disable RDP</strong> on workstations unless required (GPO: Do not allow drive redirection, clipboard, etc.)</li>
+  <li>Require <strong>MFA</strong> for RDP (via RD Gateway, Azure AD Conditional Access, or third-party solutions)</li>
+  <li>Use <strong>just-in-time (JIT) / privileged access workstations</strong> for admin RDP</li>
+  <li>Enable <strong>Restricted Admin mode</strong> (<code>mstsc /restrictedadmin</code>) — prevents credential exposure</li>
+  <li>Monitor &amp; alert on LogonType 10 from non-baseline sources</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li><strong>Isolate both source and target hosts</strong> involved in the RDP session</li>
+  <li>Reset password of the abused account (TargetUserName)</li>
+  <li>Force sign-out / lock the session</li>
+  <li>Hunt for follow-on activity from the target machine: 7045/4697 service installs, 4698 scheduled tasks, 5140/5145 admin share access</li>
+  <li>Review 4624 (Type 10), 4656/4663 (LSASS), and 4688 (process creation — mstsc.exe, xfreerdp) events</li>
+  <li>Check for persistence left behind (Run keys, scheduled tasks, services)</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

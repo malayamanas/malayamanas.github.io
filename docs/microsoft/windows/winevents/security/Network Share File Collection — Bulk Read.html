@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network Share File Collection — Bulk Read</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Network Share File Collection — Bulk Read</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Collection</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">collection</span> <span class="tag-pill">t1039</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> Network Share File Collection — Bulk Read
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Network Share File Collection — Bulk Read</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1039</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Collection</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>5145</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>collection, t1039</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+An adversary gathers sensitive data from the target environment for exfiltration by exploiting Data from Network Shared Drive. Windows Security Event 5145 (A network share object was checked to see whether client can be granted desired access) provides the primary detection signal when properly audited and monitored in a SIEM.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Collection  </li>
+</ul><br>
+  <strong>Technique</strong>       : Data from Network Shared Drive (T1039)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker achieves initial access to the target environment through social engineering, exploitation, or use of stolen credentials.</li>
+  <li>Using the foothold, the attacker performs collection activity related to Network Share File Collection — Bulk Read, targeting the relevant Windows subsystem or service.</li>
+  <li>The attack leverages MITRE ATT&amp;CK technique T1039 to achieve the objective, using tools and techniques common to this attack category.</li>
+  <li>Windows Security Event(s) 5145, 4663 are generated, capturing critical details of the activity including the actor identity, target object, and operation performed.</li>
+  <li>Post-attack, the attacker may perform additional lateral movement, persistence, or data collection based on the access gained.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>CobaltStrike (commercial C2 framework)</li>
+  <li>Metasploit Framework (open-source exploitation)</li>
+  <li>Impacket (Python network protocol library)</li>
+  <li>CrackMapExec (post-exploitation framework)</li>
+  <li>PowerSploit / PowerView (PowerShell attack modules)</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-5145-a-network-share-object-was-checked-to-see-whether-client-can-be-granted-desired-access-and-event-id-4663-an-attempt-was-made-to-access-an-object">4. Key Windows Security Event Indicators (Event ID 5145 (A network share object was checked to see whether client can be granted desired access) and Event ID 4663 (An attempt was made to access an object))</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>5145</strong> (A network share object was checked to see whether client can be granted desired access)
+
+<strong>Critical fields to monitor / correlate (Required attributes):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>SubjectUserSid</strong></td><td>Non-SYSTEM SID from an interactive user or service account not normally performing this action</td><td>Uniquely identifies the security principal; unexpected SIDs performing sensitive operations are high-priority IOCs</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Unexpected user accounts, machine accounts in human context, or recently created/renamed accounts</td><td>Human-readable identity of the actor; enables cross-event correlation and user-behaviour analysis</td></tr>
+<tr><td><strong>SubjectDomainName</strong></td><td>Workgroup name, external/untrusted domain, or NT AUTHORITY when privileged account is expected</td><td>Confirms account origin; cross-domain or workgroup operations in AD environments indicate lateral movement</td></tr>
+<tr><td><strong>SubjectLogonId</strong></td><td>Correlate with Event 4624 to reveal logon type (3=network, 10=remote interactive), source IP, and workstation</td><td>Links this event to a specific authenticated session; essential for timeline and pivot-path reconstruction</td></tr>
+<tr><td><strong>ShareName</strong></td><td>ADMIN$, C$, IPC$ access from non-administrative accounts or external IP addresses</td><td>Administrative shares accessed remotely indicate lateral movement preparation or ransomware deployment</td></tr>
+<tr><td><strong>RelativeTargetName</strong></td><td>Sensitive file names (ntds.dit, SAM, SECURITY, *.kdbx, *.pfx, id_rsa) accessed via network shares</td><td>The specific file accessed within the share; sensitive file names confirm data theft intent</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Non-RFC1918 addresses, Tor exit nodes, cloud infrastructure IPs, or addresses not in the corporate IP inventory</td><td>Reveals the source of the connection; external or untrusted source IPs immediately elevate severity</td></tr>
+<tr><td><strong>AccessMask</strong></td><td>0x40 (READ_CONTROL), 0x80000 (GENERIC_READ), 0x1F01FF (full control); write/delete on sensitive objects is suspicious</td><td>Hex representation of requested permissions; high-privilege masks from unexpected processes are IOCs</td></tr>
+<tr><td><strong>ObjectName</strong></td><td>Registry Run keys, IFEO paths, sensitive files (ntds.dit, SAM, LSASS), or unusual AD object DNs</td><td>Specifies exactly what object was accessed or modified; the path alone is often the strongest IOC</td></tr>
+<tr><td><strong>AccessList</strong></td><td>Replication rights GUIDs (DCSync), write/delete permissions on sensitive objects, or broad access masks on sensitive files</td><td>Specifies exact permissions granted; specific right combinations like DCSync GUIDs are definitive IOCs</td></tr>
+<tr><td><strong>ProcessName</strong></td><td>System processes (lsass.exe, svchost.exe, winlogon.exe) performing unusual operations; user-space tools accessing protected resources</td><td>Identifies the executable performing the action; unexpected process names are a primary IOC</td></tr>
+</tbody></table>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Alert on Event ID 5145 matching the highest-fidelity field combination shown above</li>
+  <li>Apply thresholds appropriate to the environment: a single event may be sufficient for critical-level detections; volume thresholds apply for medium/low</li>
+  <li>Correlate with Event 4624 (successful logon) using SubjectLogonId to establish the session context and identify the source IP and workstation</li>
+</ul>
+
+<strong>Highest-Fidelity Correlation (SIEM Query Logic):</strong>
+<pre><code>EventID = 5145
+AND SubjectUserName NOT IN &lt;approved_admin_accounts&gt;
+AND IpAddress NOT IN &lt;trusted_ip_ranges&gt;
+</code></pre>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Correlate 5145 events where SubjectLogonId links to a Type 3 (network) or Type 10 (remote interactive) logon from an external IP address</li>
+  <li>Alert on 5145 events from accounts in privileged groups (Domain Admins, Enterprise Admins) outside approved maintenance windows</li>
+  <li>Hunt for 5145 events followed within 60 seconds by lateral movement indicators (5140, 4624 to other hosts) from the same SubjectLogonId</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>File servers serving high volumes of legitimate requests will generate many 5140/5145 events</li>
+  <li>Backup systems accessing administrative shares (ADMIN$, C$) for agent deployment</li>
+  <li>IT automation platforms using SMB for software distribution</li>
+  <li>Domain controller replication and SYSVOL access generates 5140 events from all domain-joined machines</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Disable SMBv1 across the entire environment (critical for preventing relay attacks and EternalBlue exploitation)</li>
+  <li>Enable SMB signing to prevent relay attacks that don&#x27;t require cracked credentials</li>
+  <li>Block direct SMB (445) at the network perimeter and between network segments where SMB is not required</li>
+  <li>Apply firewall rules restricting ADMIN$ and C$ access to management VLAN IP ranges only</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the affected host from the network immediately if active exploitation or lateral movement is confirmed.</li>
+  <li>Identify the initiating account (SubjectUserName/SubjectLogonId) and disable it pending investigation.</li>
+  <li>Preserve all relevant Windows Security Event logs from the affected host(s) before any remediation.</li>
+  <li>Correlate the triggering event with Event 4624 logon records to identify the source IP, workstation, and session that performed the action.</li>
+  <li>Review all events from the same SubjectLogonId session to identify what other actions the attacker performed.</li>
+  <li>Check for additional persistence mechanisms or privilege escalation attempts in the same time window.</li>
+  <li>Conduct a threat hunt across similar hosts in the same network segment for the same indicators.</li>
+  <li>Engage the incident response team to scope the full extent of the compromise before returning systems to production.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

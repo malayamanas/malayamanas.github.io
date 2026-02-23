@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Group Membership Tampered</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Sysmon Detection SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Security Group Membership Tampered</h1>
+  <div class="page-meta">
+    <span class="badge badge-medium">Medium</span>
+    <span class="meta-item"><strong>Sysmon Event IDs:</strong> 1</span>
+    <span class="meta-item"><strong>Tactics:</strong> Defense Evasion</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.006</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Sysmon Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> Security Group Membership Tampered
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Security Group Membership Tampered</td></tr>
+<tr><td><strong>Primary Sysmon Event ID(s)</strong></td><td>1 (Process Creation)</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1562.006</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Defense Evasion</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Medium</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Sysmon (System Monitor) Event Log</td></tr>
+<tr><td><strong>Logsource Category</strong></td><td>sysmon</td></tr>
+<tr><td><strong>Tags</strong></td><td>defense_evasion, t1562.006</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+An adversary bypasses, disables, or subverts security monitoring and controls through Security Group Membership Tampered. Sysmon Event(s) 1 (Process Creation) provide the primary Sysmon-layer detection signal for this technique.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>     : Defense Evasion  </li>
+</ul><br>
+  <strong>Technique</strong> : T1562.006 (T1562.006)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker achieves initial access to the target environment through social engineering, exploitation, or stolen credentials.</li>
+  <li>Using the established foothold, the attacker performs bypasses or disables security monitoring and controls related to Security Group Membership Tampered.</li>
+  <li>MITRE ATT&amp;CK technique T1562.006 is leveraged using tools and techniques observed consistently in 2024–2026 campaigns.</li>
+  <li>Sysmon Event(s) 1 are generated, capturing critical process, network, file, or registry activity depending on the specific technique.</li>
+  <li>Post-attack, the attacker may perform additional lateral movement, persistence, or data collection based on the access and capabilities gained.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>CobaltStrike (commercial C2 framework)</li>
+  <li>Metasploit Framework (open-source exploitation)</li>
+  <li>Impacket (Python network protocol library)</li>
+  <li>CrackMapExec (post-exploitation framework)</li>
+  <li>PowerSploit / PowerView (PowerShell attack modules)</li>
+</ul>
+
+<h3 id="4-key-sysmon-event-indicators">4. Key Sysmon Event Indicators</h3>
+
+<h4 id="sysmon-event-1-process-creation">Sysmon Event 1 — Process Creation</h4>
+
+<p>A new process was created. Captures image path, command line, parent, hashes, user, and integrity level.</p>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Suspicious Value / Pattern</th><th>Why It Matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Image</strong></td><td>Non-system path (%TEMP%, %AppData%, %ProgramData%), renamed system binaries, known tool names (mimikatz.exe, rubeus.exe, psexec.exe, cobalt*)</td><td>Full path of the spawned executable; non-standard paths and known attacker tools are primary IOCs</td></tr>
+<tr><td><strong>CommandLine</strong></td><td>Encoded commands (-EncodedCommand, -enc), LOLBin abuse flags (certutil -decode, mshta http://), credential access arguments (sekurlsa, lsadump, pth)</td><td>Full command line reveals exact attacker intent; encoded or obfuscated arguments are critical IOCs</td></tr>
+<tr><td><strong>ParentImage</strong></td><td>Office apps (winword.exe, excel.exe) spawning PowerShell/cmd; browsers spawning cmd; svchost.exe spawning unexpected children; w3wp.exe (IIS) spawning shells</td><td>Abnormal parent-child relationships reveal the initial execution vector (macro, exploit, injection)</td></tr>
+<tr><td><strong>ParentCommandLine</strong></td><td>Encoded PowerShell from Office; mshta.exe launching script; wscript.exe executing remote content</td><td>Parent&#x27;s full command clarifies the delivery mechanism and payload stage</td></tr>
+<tr><td><strong>OriginalFileName</strong></td><td>Mismatch between Image filename and OriginalFileName field (e.g., Image=svchost.exe but OriginalFileName=mimikatz.exe)</td><td>Catches renamed attacker tools that attempt to masquerade as legitimate Windows binaries</td></tr>
+<tr><td><strong>Hashes</strong></td><td>Known malware hashes (cross-reference threat intelligence feeds); unsigned binaries with high-entropy names</td><td>Hash-based detection is immune to filename changes; enables instant enrichment with threat intelligence</td></tr>
+<tr><td><strong>IntegrityLevel</strong></td><td>High or System from a process spawned by a low-privilege parent; elevation without UAC prompt context</td><td>Indicates whether the process ran with elevated privileges; unexpected elevation reveals bypass techniques</td></tr>
+<tr><td><strong>User</strong></td><td>SYSTEM-context processes from interactive user sessions; service accounts launching interactive processes</td><td>Process owner; unexpected user context for a given image path indicates impersonation or privilege escalation</td></tr>
+</tbody></table>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Medium Confidence)</strong>
+<ul>
+  <li>Alert on Sysmon event(s) 1 matching the field combinations shown in Section 4</li>
+  <li>Apply environment-specific thresholds: a single matching event may be sufficient for critical-level detections</li>
+</ul>
+
+<strong>Sigma Detection Rule (YAML skeleton):</strong>
+<pre><code class="language-yaml">title: Security Group Membership Tampered
+status: experimental
+logsource:
+    category: process_creation  # adjust per primary Sysmon event type
+    product: windows
+detection:
+    selection:
+    EventID: 1  # Sysmon Process Creation
+    ParentImage|endswith|any:  # Suspicious parent
+      - &#x27;\\winword.exe&#x27;
+      - &#x27;\\excel.exe&#x27;
+      - &#x27;\\powerpnt.exe&#x27;
+      - &#x27;\\w3wp.exe&#x27;
+    Image|endswith|any:
+      - &#x27;\\cmd.exe&#x27;
+      - &#x27;\\powershell.exe&#x27;
+      - &#x27;\\wscript.exe&#x27;
+    condition: selection
+level: medium
+tags:
+    - defense_evasion
+    - t1562.006
+</code></pre>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Hunt for <code>Sysmon 1</code> events where Image is NOT in the approved software baseline</li>
+  <li>Alert on Sysmon 1 from accounts in privileged groups outside approved maintenance windows</li>
+  <li>Correlate Sysmon 1 events with subsequent Windows Security 4624/4625 events to link process activity to authentication events</li>
+  <li>Stack-rank <code>Sysmon 1</code> events by Image path to identify rare/novel executables across the fleet</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate administrative operations by IT staff may generate similar Sysmon events</li>
+  <li>Authorized enterprise management platforms performing identical operations</li>
+  <li>Security scanning and vulnerability assessment tools in approved assessment windows</li>
+  <li>Development and testing environments running attack simulation frameworks</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Apply Principle of Least Privilege: restrict the ability to perform this attack to the minimum required accounts</li>
+  <li>Deploy comprehensive Sysmon configuration (SwiftOnSecurity or Florian Roth config) to capture all relevant events</li>
+  <li>Configure SIEM correlation rules to baseline normal Sysmon patterns and alert on deviations</li>
+  <li>Enable Microsoft Defender for Endpoint or equivalent EDR for behavioral detection in addition to Sysmon event-based detection</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the affected host from the network immediately if active exploitation or lateral movement is confirmed.</li>
+  <li>Identify the initiating account (from Sysmon Event 1 User field or Windows Security 4624 correlation) and disable it pending investigation.</li>
+  <li>Preserve Sysmon event logs from the affected host(s) before any remediation — export the Microsoft-Windows-Sysmon/Operational channel.</li>
+  <li>Correlate the Sysmon events with Windows Security logs using the LogonId field to link process activity to authenticated sessions.</li>
+  <li>Review all Sysmon events (1, 3, 11, 13) from the same LogonId session to identify the full scope of attacker actions.</li>
+  <li>Check for additional persistence mechanisms in the same time window using Sysmon Event 12/13/17/18 correlation.</li>
+  <li>Conduct a targeted threat hunt across similar hosts in the same network segment for matching Sysmon event patterns.</li>
+  <li>Engage the incident response team to scope the full extent of the compromise before returning any affected systems to production.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

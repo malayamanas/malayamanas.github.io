@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Golden Ticket Attack — TGS Without Preceding TGT</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Golden Ticket Attack — TGS Without Preceding TGT</h1>
+  <div class="page-meta">
+    <span class="badge badge-critical">Critical</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access | Lateral Movement</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1558.001</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> Golden Ticket Attack — TGS Without Preceding TGT
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Golden Ticket Attack — TGS Without Preceding TGT</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1558.001</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access, Lateral Movement</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Critical</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4769</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, lateral_movement, t1558.001</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+A Golden Ticket is a forged Kerberos Ticket-Granting Ticket (TGT) created using the KRBTGT account’s NT hash (stolen via DCSync or similar). With it, an attacker can request arbitrary service tickets (TGS) without ever authenticating to the KDC or obtaining a legitimate TGT first — enabling persistent, high-privilege access across the domain.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong>       : Steal or Forge Kerberos Tickets: Golden Ticket (T1558.001)</p>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Lateral Movement  </li>
+</ul><br>
+  <strong>Technique</strong>       : Use Alternate Authentication Material: Pass the Ticket (T1550.003) / Golden Ticket usage</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker gains highly privileged access (usually Domain Admin / Enterprise Admin) and performs <strong>DCSync</strong> (or equivalent) to extract the KRBTGT account’s NT hash (and optionally its history / previous keys).</li>
+  <li>Using tools like Mimikatz, the attacker forges a TGT with arbitrary privileges (e.g., impersonating any user, including Administrator, with PAC containing Domain Admins membership).</li>
+  <li>The forged TGT is injected into the attacker’s session (Mimikatz <code>kerberos::golden</code> + <code>kerberos::ptt</code> or Rubeus <code>golden</code>).</li>
+  <li>Attacker requests service tickets (TGS) for any SPN in the domain using the forged TGT — <strong>no preceding legitimate TGT request / 4768 event</strong> occurs for that session.</li>
+  <li>Attacker uses the TGS to access resources (CIFS, HTTP, LDAP, etc.) as any user, often persisting for months (default ticket lifetime can be extended).</li>
+</ol>
+
+<strong>Most common tools observed performing Golden Ticket attacks in 2024–2026:</strong>
+<ul>
+  <li>Mimikatz (<code>kerberos::golden /user:Administrator /domain:... /sid:... /krbtgt:... /ptt</code>)</li>
+  <li>Rubeus (<code>golden /aes256:... /user:... /ptt</code>)</li>
+  <li>Impacket (some forge-ticket modules)</li>
+  <li>Custom .NET / PowerShell golden ticket implementations</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4769">4. Key Windows Security Event Indicators (Event ID 4769)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4769</strong> (A Kerberos service ticket was requested)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>TicketOptions</strong></td><td>Contains FORWARDABLE (0x40000000) but <strong>no</strong> canonicalize / renewable_ok flags typical of normal requests</td><td>Forged tickets often have unusual / minimal option flags</td></tr>
+<tr><td><strong>TicketEncryptionType</strong></td><td>0x18 (AES256) or 0x17 (RC4) — but inconsistent with domain policy or client capabilities</td><td>Golden tickets frequently use AES even when client doesn’t support it</td></tr>
+<tr><td><strong>Status</strong></td><td>0x0 (success)</td><td>Ticket issued successfully despite no prior TGT</td></tr>
+<tr><td><strong>ServiceName</strong></td><td>High-value services (CIFS/, HOST/, LDAP/, HTTP/, etc.) or any arbitrary SPN</td><td>Attacker can request tickets for anything</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Attacker-controlled host / jump box / unusual internal IP</td><td>Source of forged TGS request</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Often SYSTEM, NETWORK SERVICE, or the forged user (Administrator, krbtgt$)</td><td>Session context after ticket injection</td></tr>
+<tr><td><strong>PreAuthType</strong></td><td>Missing or anomalous</td><td>No real pre-auth since ticket is forged</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (strong Golden Ticket indicator):</strong>
+<pre><code>Event ID = 4769
+Status = 0x0
+No preceding 4768 (TGT request) for the same Logon Session / SubjectLogonId in recent time
+TicketEncryptionType = 0x18 (AES256) from a client / IP that normally uses RC4 or older types
+→ especially when combined with privilege escalation indicators (4672 special logon)
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Critical Confidence)</strong>
+<ul>
+  <li>Event ID = 4769</li>
+  <li>No matching 4768 TGT request in the recent window (same SubjectLogonId / LogonGuid / IpAddress)</li>
+  <li>Unusual TicketOptions bitmask (missing common flags like 0x40810010)</li>
+  <li>Correlate with KRBTGT hash exposure indicators (4662 on krbtgt object replication rights)</li>
+</ul>
+
+<strong>Behavioral / Correlation-based Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>4769 events where SubjectLogonId has <strong>no associated 4768</strong> in the last 1–24 hours</li>
+  <li>Sudden appearance of TGS requests for high-privilege accounts (krbtgt$, Administrator) from non-KDC IPs</li>
+  <li>4769 + 4672 (special logon / SeTcbPrivilege) in same session — forged PAC often grants extra privileges</li>
+  <li>Spike in 4769 for CIFS/HOST services from single IpAddress after known DCSync (4662 on domain NC)</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Rare legitimate scenarios (delegation chains, cross-forest trusts with unusual ticket flows)</li>
+  <li>Some identity federation / SSO bridges</li>
+  <li>KDC proxy / RODC scenarios (usually distinguishable by IP)</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Rotate KRBTGT password <strong>twice</strong> (to invalidate both current &amp; history keys) after suspected compromise</li>
+  <li>Enforce strong KRBTGT password policies and monitor for replication rights abuse</li>
+  <li>Use Protected Users group or restrict delegation for high-value accounts</li>
+  <li>Shorten Kerberos ticket lifetimes (TGT max ~4–10 hours) via GPO</li>
+  <li>Enable strict Kerberos logging and monitor KRBTGT account activity</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li><strong>Immediate KRBTGT password reset (twice!)</strong> — breaks all existing golden tickets</li>
+  <li>Isolate source workstation / server (IpAddress)</li>
+  <li>Reset passwords of all accounts appearing in forged tickets (especially Administrator / service accounts)</li>
+  <li>Full domain credential hygiene sweep (especially tier-0 accounts)</li>
+  <li>Hunt for DCSync indicators prior to this activity (4662 on replication rights)</li>
+  <li>Review all 4769/4624 events from the suspected source for lateral movement</li>
+  <li>Consider domain functional level upgrade + AES-only enforcement if legacy allows</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMB Admin Share Access — ADMIN$ or C$</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">SMB Admin Share Access — ADMIN$ or C$</h1>
+  <div class="page-meta">
+    <span class="badge badge-medium">Medium</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Lateral Movement</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1021.002</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> SMB Admin Share Access — ADMIN$ / C$
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>SMB Admin Share Access — ADMIN$ / C$</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1021.002</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Lateral Movement</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Medium</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>5140</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>lateral_movement, t1021.002</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+Attackers use SMB administrative shares (ADMIN$, C$, IPC$) to move laterally after obtaining valid credentials. These hidden shares provide remote access to the root of drives (C$) or administrative resources (ADMIN$) — commonly used to copy tools, execute commands remotely, install persistence, or stage further attacks (e.g., PsExec-style execution, WMI, service creation).
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Lateral Movement  </li>
+</ul><br>
+  <strong>Technique</strong>       : Remote Services: SMB/Windows Admin Shares (T1021.002)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<p><ol>
+  <li>Attacker obtains valid credentials for a local administrator or domain account with admin rights on the target.</li>
+  <li>Attacker connects to hidden admin shares:</li>
+</ol><br>
+<ul>
+  <li><code>\\target\ADMIN$</code> (system32 folder — for tool staging)</li>
+  <li><code>\\target\C$</code> (full C: drive access)</li>
+  <li><code>\\target\IPC$</code> (named pipes — often for remote service control)</li>
+</ul><br>
+<ol>
+  <li>Common actions after connection:</li>
+</ol><br>
+<ul>
+  <li>Copy malicious binaries / scripts to target</li>
+  <li>Create services remotely (via SVCCTL pipe over IPC$)</li>
+  <li>Execute commands via WMI or scheduled tasks</li>
+  <li>Dump SAM/LSA secrets (secretsdump.py style)</li>
+</ul><br>
+<ol>
+  <li>Tools automate the process: PsExec, Impacket smbexec/wmiexec, CrackMapExec, Cobalt Strike lateral movement modules.</li>
+</ol></p>
+
+<strong>Most common tools &amp; vectors observed in 2024–2026:</strong>
+<ul>
+  <li>PsExec (native &amp; Impacket psexec.py)</li>
+  <li>Impacket (smbexec.py, wmiexec.py, atexec.py)</li>
+  <li>CrackMapExec (<code>cme smb target -u user -p pass --local-auth --exec-method atexec</code>)</li>
+  <li>Cobalt Strike / Brute Ratel / Sliver SMB lateral modules</li>
+  <li>Manual net use / copy commands in scripts</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-5140">4. Key Windows Security Event Indicators (Event ID 5140)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>5140</strong> (A network share object was accessed)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>ShareName</strong></td><td>\\*\ADMIN$ or \\*\C$ (or D$, E$, etc. for additional drives)</td><td>Classic admin share targets</td></tr>
+<tr><td><strong>ShareLocalPath</strong></td><td>C:\Windows or C:\ (root of drive)</td><td>Confirms administrative share access</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Internal compromised host / jump box (often not a known admin workstation)</td><td>Source of the SMB connection</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Local Administrator, Domain Admin, or service account with admin rights on target</td><td>Account used for access</td></tr>
+<tr><td><strong>AccessMask</strong></td><td>0x1 (READ_DATA), 0x2 (WRITE_DATA), 0x80 (FILE_READ_ATTRIBUTES), etc. — write access is more suspicious</td><td>Indicates intent (staging tools vs. simple enumeration)</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (suspicious admin share access signature):</strong>
+<pre><code>Event ID = 5140
+ShareName = \\*\ADMIN$ OR \\*\C$
+IpAddress is internal but NOT a known admin/jump workstation
+SubjectUserName is privileged
+AccessMask includes WRITE_DATA or DELETE (tool staging / execution)
+→ especially when combined with 4624 Type 3 network logon from same IpAddress
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Medium-High Confidence)</strong>
+<ul>
+  <li>Event ID = 5140</li>
+  <li>ShareName contains ADMIN$ or C$</li>
+  <li>IpAddress NOT in known admin/jump subnet</li>
+  <li>Exclude backup / monitoring agents and known admin workstations</li>
+</ul>
+
+<strong>Behavioral / Correlation-based Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>5140 ADMIN$/C$ access + privileged SubjectUserName + IpAddress not matching baseline admin sources</li>
+  <li>5140 admin share + preceding credential access (4656 LSASS, 4769 Kerberoasting)</li>
+  <li>5140 + follow-on 7045 (service creation), 4698 (scheduled task), 5145 (named pipe write over IPC$)</li>
+  <li>External ADMIN$/C$ access (public IpAddress) → critical alert</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate admin / backup tools accessing ADMIN$/C$ (distinguishable by known source IPs)</li>
+  <li>SCCM / MECM client push or patch management</li>
+  <li>Sysadmin troubleshooting (usually low volume, known accounts)</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li><strong>Disable ADMIN$ and C$ shares</strong> on workstations (not servers) via GPO or registry</li>
+  <li>Enforce <strong>SMB signing</strong> (prevents relay) and <strong>disable guest access</strong></li>
+  <li>Restrict local admin rights — use LAPS or just-in-time access</li>
+  <li>Block unnecessary outbound SMB (445) from workstations</li>
+  <li>Monitor &amp; alert on ADMIN$/C$ access from non-baseline sources</li>
+  <li>Use <strong>Windows Defender Application Control (WDAC)</strong> to limit execution after share access</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li><strong>Isolate source and target hosts</strong> involved in the ADMIN$/C$ access</li>
+  <li>Reset password of the abused account (SubjectUserName)</li>
+  <li>Check target for staging artifacts (files copied to ADMIN$/C$)</li>
+  <li>Hunt for follow-on activity: 7045/4697 service installs, 4698 scheduled tasks, 5145 named pipe writes</li>
+  <li>Review 5140, 4624 (Type 3 logon), 4656/4663 (credential access), and 4688 events</li>
+  <li>Audit local admin group membership on the target machine</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

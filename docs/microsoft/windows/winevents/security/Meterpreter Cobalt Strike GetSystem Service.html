@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meterpreter Cobalt Strike GetSystem Service</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Meterpreter Cobalt Strike GetSystem Service</h1>
+  <div class="page-meta">
+    <span class="badge badge-critical">Critical</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Execution | Privilege Escalation</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">execution</span> <span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1569.002</span> <span class="tag-pill">t1548</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> Meterpreter / Cobalt Strike GetSystem Service
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Meterpreter / Cobalt Strike GetSystem Service</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1569.002</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Execution, Privilege Escalation</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Critical</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>7045</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>execution, privilege_escalation, t1569.002, t1548</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+An adversary runs attacker-controlled code on the target system by exploiting System Services: Service Execution. Windows Security Event 7045 (A new service was installed in the system) provides the primary detection signal when properly audited and monitored in a SIEM.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Execution  </li>
+</ul><br>
+  <strong>Technique</strong>       : System Services: Service Execution (T1569.002)<br>
+<ul>
+  <li><strong>Tactic</strong>          : Privilege Escalation  </li>
+</ul><br>
+  <strong>Technique</strong>       : T1548 (T1548)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker achieves initial access to the target environment through social engineering, exploitation, or use of stolen credentials.</li>
+  <li>Using the foothold, the attacker performs execution, privilege escalation activity related to Meterpreter / Cobalt Strike GetSystem Service, targeting the relevant Windows subsystem or service.</li>
+  <li>The attack leverages MITRE ATT&amp;CK technique T1569.002 to achieve the objective, using tools and techniques common to this attack category.</li>
+  <li>Windows Security Event(s) 7045, 4697 are generated, capturing critical details of the activity including the actor identity, target object, and operation performed.</li>
+  <li>Post-attack, the attacker may perform additional lateral movement, persistence, or data collection based on the access gained.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>CobaltStrike (commercial C2 framework)</li>
+  <li>Metasploit Framework (open-source exploitation)</li>
+  <li>Impacket (Python network protocol library)</li>
+  <li>CrackMapExec (post-exploitation framework)</li>
+  <li>PowerSploit / PowerView (PowerShell attack modules)</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-7045-a-new-service-was-installed-in-the-system-and-event-id-4697-a-service-was-installed-in-the-system">4. Key Windows Security Event Indicators (Event ID 7045 (A new service was installed in the system) and Event ID 4697 (A service was installed in the system))</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>7045</strong> (A new service was installed in the system)
+
+<strong>Critical fields to monitor / correlate (Required attributes):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>SubjectUserSid</strong></td><td>Non-SYSTEM SID from an interactive user or service account not normally performing this action</td><td>Uniquely identifies the security principal; unexpected SIDs performing sensitive operations are high-priority IOCs</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Unexpected user accounts, machine accounts in human context, or recently created/renamed accounts</td><td>Human-readable identity of the actor; enables cross-event correlation and user-behaviour analysis</td></tr>
+<tr><td><strong>SubjectDomainName</strong></td><td>Workgroup name, external/untrusted domain, or NT AUTHORITY when privileged account is expected</td><td>Confirms account origin; cross-domain or workgroup operations in AD environments indicate lateral movement</td></tr>
+<tr><td><strong>SubjectLogonId</strong></td><td>Correlate with Event 4624 to reveal logon type (3=network, 10=remote interactive), source IP, and workstation</td><td>Links this event to a specific authenticated session; essential for timeline and pivot-path reconstruction</td></tr>
+<tr><td><strong>ServiceName</strong></td><td>Random or disguised service names (single characters, GUID-style, mimicking system services); newly installed services</td><td>Service name; unusual naming patterns or newly created services are common persistence/execution mechanisms</td></tr>
+<tr><td><strong>ServiceFileName</strong></td><td>Binaries in %TEMP%, %AppData%, or user-writable directories; LOLBin-based services (rundll32.exe, mshta.exe, powershell.exe)</td><td>The executable the service runs; non-standard paths or built-in tool abuse reveals persistence via services</td></tr>
+<tr><td><strong>ServiceType</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the ServiceType involved in this event</td></tr>
+<tr><td><strong>ServiceStartType</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the ServiceStartType involved in this event</td></tr>
+</tbody></table>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Critical Confidence)</strong>
+<ul>
+  <li>Alert on Event ID 7045 matching the highest-fidelity field combination shown above</li>
+  <li>Apply thresholds appropriate to the environment: a single event may be sufficient for critical-level detections; volume thresholds apply for medium/low</li>
+  <li>Correlate with Event 4624 (successful logon) using SubjectLogonId to establish the session context and identify the source IP and workstation</li>
+</ul>
+
+<strong>Highest-Fidelity Correlation (SIEM Query Logic):</strong>
+<pre><code>EventID = 7045
+AND SubjectUserName NOT IN &lt;approved_admin_accounts&gt;
+</code></pre>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Correlate 7045 events where SubjectLogonId links to a Type 3 (network) or Type 10 (remote interactive) logon from an external IP address</li>
+  <li>Alert on 7045 events from accounts in privileged groups (Domain Admins, Enterprise Admins) outside approved maintenance windows</li>
+  <li>Hunt for 7045 events followed within 60 seconds by lateral movement indicators (5140, 4624 to other hosts) from the same SubjectLogonId</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate administrative activity during change management windows may generate similar events</li>
+  <li>Automated enterprise management platforms (SCCM, Ansible, Puppet) perform similar operations as part of configuration management</li>
+  <li>Security scanning and vulnerability assessment tools may trigger events matching this pattern</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Apply the Principle of Least Privilege: restrict the ability to perform this action to explicitly approved accounts</li>
+  <li>Enable advanced auditing via Group Policy (Advanced Audit Policy Configuration) to ensure all relevant events are captured</li>
+  <li>Deploy a SIEM with behavioral analytics to baseline normal activity and alert on deviations</li>
+  <li>Implement privileged access management (PAM) to control and audit use of privileged credentials</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the affected host from the network immediately if active exploitation or lateral movement is confirmed.</li>
+  <li>Identify the initiating account (SubjectUserName/SubjectLogonId) and disable it pending investigation.</li>
+  <li>Preserve all relevant Windows Security Event logs from the affected host(s) before any remediation.</li>
+  <li>Correlate the triggering event with Event 4624 logon records to identify the source IP, workstation, and session that performed the action.</li>
+  <li>Identify and remove the persistence mechanism (registry key, scheduled task, service, or DLL) from all affected hosts.</li>
+  <li>Search for the same persistence IOC (file hash, registry key value, task content) across all endpoints in the environment.</li>
+  <li>Review the affected account&#x27;s full activity history for the past 30 days to understand the scope of the compromise.</li>
+  <li>Rebuild the affected host from a known-good image if deep persistence (bootkit, firmware, or multiple mechanisms) is suspected.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

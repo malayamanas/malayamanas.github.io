@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCSync Backdoor — ntSecurityDescriptor Replication Rights</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">DCSync Backdoor — ntSecurityDescriptor Replication Rights</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Persistence | Credential Access</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1098</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> DCSync Backdoor — ntSecurityDescriptor Replication Rights
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>DCSync Backdoor — ntSecurityDescriptor Replication Rights</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1098</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Persistence, Credential Access</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>5136</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>persistence, credential_access, t1098</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+An adversary establishes a persistent foothold that survives reboots and credential resets by exploiting Account Manipulation. Windows Security Event 5136 (A directory service object was modified) provides the primary detection signal when properly audited and monitored in a SIEM.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Persistence  </li>
+</ul><br>
+  <strong>Technique</strong>       : Account Manipulation (T1098)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker gains Domain Admin, Enterprise Admin, or accounts with explicit directory replication rights.</li>
+  <li>Attacker uses Mimikatz <code>lsadump::dcsync</code>, Impacket <code>secretsdump.py -just-dc</code>, or DSInternals to request domain replication.</li>
+  <li>Tool issues MS-DRSR GetNCChanges requests to a legitimate DC, presenting stolen credentials with replication rights.</li>
+  <li>DC responds with password attributes (unicodePwd, lmPwdHistory, ntPwdHistory, supplementalCredentials) for targeted accounts.</li>
+  <li>Extracted hashes enable pass-the-hash, pass-the-ticket, golden ticket creation, or offline cracking.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>Mimikatz lsadump::dcsync</li>
+  <li>Impacket secretsdump.py</li>
+  <li>DSInternals Get-ADReplAccount</li>
+  <li>Rubeus dcsync</li>
+  <li>SharpKatz</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-5136-a-directory-service-object-was-modified">4. Key Windows Security Event Indicators (Event ID 5136 (A directory service object was modified))</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>5136</strong> (A directory service object was modified)
+
+<strong>Critical fields to monitor / correlate (Required attributes):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>SubjectUserSid</strong></td><td>Non-SYSTEM SID from an interactive user or service account not normally performing this action</td><td>Uniquely identifies the security principal; unexpected SIDs performing sensitive operations are high-priority IOCs</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Unexpected user accounts, machine accounts in human context, or recently created/renamed accounts</td><td>Human-readable identity of the actor; enables cross-event correlation and user-behaviour analysis</td></tr>
+<tr><td><strong>SubjectDomainName</strong></td><td>Workgroup name, external/untrusted domain, or NT AUTHORITY when privileged account is expected</td><td>Confirms account origin; cross-domain or workgroup operations in AD environments indicate lateral movement</td></tr>
+<tr><td><strong>SubjectLogonId</strong></td><td>Correlate with Event 4624 to reveal logon type (3=network, 10=remote interactive), source IP, and workstation</td><td>Links this event to a specific authenticated session; essential for timeline and pivot-path reconstruction</td></tr>
+<tr><td><strong>DSName</strong></td><td>Unexpected domain or application partition names; cross-forest partition modifications from non-DC accounts</td><td>Identifies the directory service partition; cross-partition operations from unexpected sources indicate privilege abuse</td></tr>
+<tr><td><strong>DSType</strong></td><td>Active Directory Domain Services vs. Lightweight Directory Services; unexpected type changes may reveal attack surface expansion</td><td>Type of directory service involved; anomalies here help distinguish domain-level from application-level AD attacks</td></tr>
+<tr><td><strong>ObjectDN</strong></td><td>Domain root DN, Schema partition, sensitive user/computer DNs being modified; OU structure manipulation</td><td>Distinguished Name of the AD object; modifications to sensitive AD objects indicate domain-level compromise</td></tr>
+<tr><td><strong>ObjectGUID</strong></td><td>GUID correlating to known sensitive AD objects (Domain root, schema objects, privileged groups)</td><td>Globally unique identifier; use to cross-reference with AD schema and identify the exact object being targeted</td></tr>
+<tr><td><strong>ObjectClass</strong></td><td>groupPolicyContainer, trustedDomain, msDS-GroupManagedServiceAccount, user, computer objects being created or modified</td><td>AD object class; modifications to privileged classes indicate persistence, trust manipulation, or account creation</td></tr>
+<tr><td><strong>AttributeLDAPDisplayName</strong></td><td>member (group membership), unicodePwd (password), userAccountControl (account flags), msDS-KeyCredentialLink (Shadow Credentials), servicePrincipalName (Kerberoasting)</td><td>The LDAP attribute being changed; sensitive attributes are primary targets for persistence and privilege escalation</td></tr>
+<tr><td><strong>AttributeSyntaxOID</strong></td><td>Object identifiers for complex or rarely-used attribute types may indicate schema manipulation or unusual AD operations</td><td>Defines the data type of the attribute being modified; complex OIDs help identify the nature of the change</td></tr>
+<tr><td><strong>AttributeValue</strong></td><td>New group members in privileged groups; encoded or obfuscated password values; UAC flags enabling attack vectors (e.g., DONT_REQ_PREAUTH)</td><td>The actual value written to the AD attribute; new privileged group members or suspicious flag values are direct IOCs</td></tr>
+<tr><td><strong>OpCorrelationID</strong></td><td>Groups multiple directory service write operations; correlate with nearby 5136 events using the same ID</td><td>Correlates multiple AD operations in one atomic change; useful for reconstructing complex multi-step AD modifications</td></tr>
+<tr><td><strong>AppCorrelationID</strong></td><td>Application-level correlation ID; Mimikatz and Impacket generate distinctive patterns visible here</td><td>Application-level tracking identifier; tool-specific patterns can fingerprint the attacker&#x27;s toolkit</td></tr>
+</tbody></table>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Alert on Event ID 5136 matching the highest-fidelity field combination shown above</li>
+  <li>Apply thresholds appropriate to the environment: a single event may be sufficient for critical-level detections; volume thresholds apply for medium/low</li>
+  <li>Correlate with Event 4624 (successful logon) using SubjectLogonId to establish the session context and identify the source IP and workstation</li>
+</ul>
+
+<strong>Highest-Fidelity Correlation (SIEM Query Logic):</strong>
+<pre><code>EventID = 5136
+AND SubjectUserName NOT IN &lt;approved_admin_accounts&gt;
+</code></pre>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Correlate 5136 events where SubjectLogonId links to a Type 3 (network) or Type 10 (remote interactive) logon from an external IP address</li>
+  <li>Alert on 5136 events from accounts in privileged groups (Domain Admins, Enterprise Admins) outside approved maintenance windows</li>
+  <li>Hunt for 5136 events followed within 60 seconds by lateral movement indicators (5140, 4624 to other hosts) from the same SubjectLogonId</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Azure AD Connect / MSOL_ sync accounts legitimately perform directory replication</li>
+  <li>Read-Only Domain Controller (RODC) replication from full DCs generates similar events</li>
+  <li>ADMT (Active Directory Migration Tool) requires replication rights for domain migration tasks</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Audit and remove unnecessary Replicating Directory Changes permissions — only DCs and approved sync accounts should hold these</li>
+  <li>Enable LDAP signing and LDAP channel binding to prevent credential relay attacks that could lead to DCSync</li>
+  <li>Monitor for new grants of replication rights via Event 5136 (attribute change to ACL on domain object)</li>
+  <li>Use tiered administration model: no Domain Admins logging on to workstations</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the affected host from the network immediately if active exploitation or lateral movement is confirmed.</li>
+  <li>Identify the initiating account (SubjectUserName/SubjectLogonId) and disable it pending investigation.</li>
+  <li>Preserve all relevant Windows Security Event logs from the affected host(s) before any remediation.</li>
+  <li>Correlate the triggering event with Event 4624 logon records to identify the source IP, workstation, and session that performed the action.</li>
+  <li>Reset passwords for all accounts confirmed or suspected to be compromised; prioritise privileged accounts.</li>
+  <li>If KRBTGT hash was exposed (DCSync), perform two sequential KRBTGT password resets to invalidate existing golden tickets.</li>
+  <li>Audit and revoke any Kerberos service tickets (TGTs/TGS) that may have been captured; force re-authentication.</li>
+  <li>Review and revoke any certificates issued around the time of the attack (check AD CS audit logs).</li>
+  <li>Hunt for pass-the-hash or pass-the-ticket usage across the environment using Event 4624 NTLM logon correlation.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

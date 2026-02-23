@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LSASS Memory Dump — Sensitive Process Access</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">LSASS Memory Dump — Sensitive Process Access</h1>
+  <div class="page-meta">
+    <span class="badge badge-critical">Critical</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.001</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> LSASS Memory Dump — Sensitive Process Access
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>LSASS Memory Dump — Sensitive Process Access</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1003.001</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Critical</td></tr>
+<tr><td><strong>Primary Event ID(s)</strong></td><td>4656, 4663</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, t1003.001</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+LSASS (Local Security Authority Subsystem Service) process memory dumping is one of the most common credential access techniques. Attackers open a handle to lsass.exe with read/memory access rights, then extract plaintext credentials, NTLM hashes, Kerberos tickets, DPAPI master keys, and other sensitive material directly from memory — enabling pass-the-hash, pass-the-ticket, and further lateral movement.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong>       : OS Credential Dumping: LSASS Memory (T1003.001)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<p><ol>
+  <li>Attacker gains administrative privileges on the target system (local admin, SeDebugPrivilege via UAC bypass, etc.).</li>
+  <li>Attacker uses a tool to:</li>
+</ol><br>
+<ul>
+  <li>OpenProcess() on lsass.exe with PROCESS_VM_READ | PROCESS_QUERY_INFORMATION rights</li>
+  <li>ReadProcessMemory() to extract credential structures</li>
+  <li>Parse secrets (mimikatz sekurlsa::logonpasswords, procdump-style minidump, etc.)</li>
+</ul><br>
+<ol>
+  <li>Common methods:</li>
+</ol><br>
+<ul>
+  <li>Direct memory read → Mimikatz, SharpKatz, custom tools</li>
+  <li>Process dump → procdump.exe -ma lsass.exe, comsvcs.dll MiniDump</li>
+  <li>Driver-based / kernel techniques → bypassing user-mode hooks (older but still seen)</li>
+</ul><br>
+<ol>
+  <li>Extracted material includes:</li>
+</ol><br>
+<ul>
+  <li>NTLM hashes</li>
+  <li>Kerberos tickets (TGT/TGS)</li>
+  <li>Clear-text passwords (WDigest, older systems)</li>
+  <li>DPAPI master keys</li>
+</ul></p>
+
+<strong>Most common tools observed performing LSASS dumping in 2024–2026:</strong>
+<ul>
+  <li>Mimikatz (<code>sekurlsa::logonpasswords</code>, <code>sekurlsa::minidump</code>)</li>
+  <li>ProcDump (<code>procdump.exe -ma lsass.exe</code>)</li>
+  <li>comsvcs.dll method (<code>rundll32.exe comsvcs.dll, MiniDump ...</code>)</li>
+  <li>SharpDump / custom .NET reflective loaders</li>
+  <li>EDR evasion variants (living-off-the-land + obfuscated calls)</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-ids-4656-4663">4. Key Windows Security Event Indicators (Event IDs 4656, 4663)</h3>
+
+<strong>Primary Detection Events:</strong>
+<ul>
+  <li><strong>4656</strong> — A handle to an object was requested</li>
+  <li><strong>4663</strong> — An attempt was made to access an object</li>
+</ul>
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>ObjectName</strong></td><td>Contains <code>\lsass.exe</code> or full path <code>C:\Windows\System32\lsass.exe</code></td><td>Target is LSASS process</td></tr>
+<tr><td><strong>ObjectType</strong></td><td>Process</td><td>Memory access to process object</td></tr>
+<tr><td><strong>AccessList / AccessMask</strong></td><td>0x1410 / PROCESS_VM_READ (0x0010) + PROCESS_QUERY_INFORMATION (0x0400) + others</td><td>Rights needed to read memory / create dump</td></tr>
+<tr><td><strong>ProcessName</strong></td><td>Suspicious parent: cmd.exe, powershell.exe, rundll32.exe, regsvr32.exe, procdump.exe, mimikatz.exe, etc.</td><td>Tool / launcher spawning the access</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Local Administrator, SYSTEM (via elevation), or unusual service account</td><td>Who requested the handle</td></tr>
+<tr><td><strong>HandleId</strong></td><td>Followed by 4663 read operations on same handle</td><td>Indicates successful memory read / dump creation</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (classic LSASS dump signature):</strong>
+<pre><code>(4656 OR 4663)
+ObjectName contains lsass.exe
+AccessMask includes 0x0010 (VM_READ) and/or 0x0400 (QUERY_INFORMATION)
+ProcessName / ParentProcessName is non-system process (not svchost.exe, winlogon.exe, etc.)
+→ especially when SubjectUserName is not NT AUTHORITY\SYSTEM from legitimate process
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Critical Confidence)</strong>
+<ul>
+  <li>Event ID 4656 + ObjectName = lsass.exe + AccessMask contains PROCESS_VM_READ</li>
+  <li>Event ID 4663 + ObjectName = lsass.exe + AccessMask includes read rights + non-legitimate ProcessName</li>
+</ul>
+
+<strong>Behavioral / Correlation-based Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>lsass.exe handle request (4656) + read access (4663) from unusual parent (powershell, cmd, rundll32, procdump)</li>
+  <li>4656/4663 on lsass.exe + preceding privilege escalation (4672 SeDebugPrivilege, 4624 high-privilege logon)</li>
+  <li>File creation events (5145 or Sysmon 11) for .dmp / .mdmp files shortly after lsass access</li>
+  <li>LSASS child processes spawned by non-system parents (4688)</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate debugging / monitoring tools (ProcDump by Sysinternals admins, EDR memory forensics modules)</li>
+  <li>Windows Error Reporting / WER minidumps (usually short-lived, different context)</li>
+  <li>Backup / AV software with memory scanning (distinguishable by process name)</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Enable <strong>Credential Guard</strong> (Virtualization-based security) — prevents direct memory access to LSASS secrets</li>
+  <li>Enable <strong>LSA Protection</strong> (RunAsPPL) — lsass.exe runs as Protected Process Light</li>
+  <li>Restrict SeDebugPrivilege to minimal accounts (remove from Administrators group where possible)</li>
+  <li>Block common LOLBins (procdump.exe, rundll32.exe comsvcs.dll) via AppLocker / WDAC</li>
+  <li>Monitor and alert on lsass.exe process access outside of known legitimate patterns</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li><strong>Isolate the compromised host immediately</strong> (source of lsass access)</li>
+  <li>Kill suspicious processes and delete any dumped files (.dmp, .mdmp)</li>
+  <li>Reset passwords of all accounts whose credentials were potentially exposed (especially privileged / domain accounts)</li>
+  <li>Force Kerberos ticket invalidation for affected accounts</li>
+  <li>Hunt for usage of dumped credentials (4624 NTLM/Kerberos logons from unusual IPs, 4769 TGS requests)</li>
+  <li>Review 4656/4663, 4688, and 5145 events around the time of access</li>
+  <li>Check for follow-on activity: pass-the-hash (4624 Type 3), ticket forging (4769), DCSync (4662)</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

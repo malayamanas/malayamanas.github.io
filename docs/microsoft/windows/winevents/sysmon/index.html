@@ -1,0 +1,2195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sysmon Detection SOP — Use Cases</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <span class="nav-title">Sysmon Detection SOP Documentation</span>
+</nav>
+<div class="index-header">
+  <h1>Sysmon Detection SOP — Use Cases</h1>
+  <p class="index-subtitle">273 detection use cases with SOPs</p>
+</div>
+<div class="controls">
+  <input type="text" id="search" placeholder="Search use cases, event IDs, tactics..." class="search-box">
+  <div class="filter-buttons">
+    <button class="filter-btn active" data-level="all">All <span class="btn-count">273</span></button>
+    <button class="filter-btn badge-critical" data-level="critical">Critical <span class="btn-count">56</span></button>
+    <button class="filter-btn badge-high" data-level="high">High <span class="btn-count">135</span></button>
+    <button class="filter-btn badge-medium" data-level="medium">Medium <span class="btn-count">69</span></button>
+    <button class="filter-btn badge-low" data-level="low">Low <span class="btn-count">13</span></button>
+  </div>
+  <div class="filter-row tag-filters">
+    <button class="tag-filter-btn" data-tag="collection">collection</button>
+    <button class="tag-filter-btn" data-tag="command_and_control">command_and_control</button>
+    <button class="tag-filter-btn" data-tag="credential_access">credential_access</button>
+    <button class="tag-filter-btn" data-tag="defense_evasion">defense_evasion</button>
+    <button class="tag-filter-btn" data-tag="discovery">discovery</button>
+    <button class="tag-filter-btn" data-tag="execution">execution</button>
+    <button class="tag-filter-btn" data-tag="exfiltration">exfiltration</button>
+    <button class="tag-filter-btn" data-tag="impact">impact</button>
+    <button class="tag-filter-btn" data-tag="initial_access">initial_access</button>
+    <button class="tag-filter-btn" data-tag="lateral_movement">lateral_movement</button>
+    <button class="tag-filter-btn" data-tag="persistence">persistence</button>
+    <button class="tag-filter-btn" data-tag="privilege_escalation">privilege_escalation</button>
+    <button class="tag-filter-btn" data-tag="t1003">t1003</button>
+    <button class="tag-filter-btn" data-tag="t1003.001">t1003.001</button>
+    <button class="tag-filter-btn" data-tag="t1003.002">t1003.002</button>
+    <button class="tag-filter-btn" data-tag="t1003.003">t1003.003</button>
+    <button class="tag-filter-btn" data-tag="t1003.004">t1003.004</button>
+    <button class="tag-filter-btn" data-tag="t1003.006">t1003.006</button>
+    <button class="tag-filter-btn" data-tag="t1005">t1005</button>
+    <button class="tag-filter-btn" data-tag="t1007">t1007</button>
+    <button class="tag-filter-btn" data-tag="t1014">t1014</button>
+    <button class="tag-filter-btn" data-tag="t1018">t1018</button>
+    <button class="tag-filter-btn" data-tag="t1021.001">t1021.001</button>
+    <button class="tag-filter-btn" data-tag="t1021.002">t1021.002</button>
+    <button class="tag-filter-btn" data-tag="t1021.003">t1021.003</button>
+    <button class="tag-filter-btn" data-tag="t1021.006">t1021.006</button>
+    <button class="tag-filter-btn" data-tag="t1027">t1027</button>
+    <button class="tag-filter-btn" data-tag="t1033">t1033</button>
+    <button class="tag-filter-btn" data-tag="t1036">t1036</button>
+    <button class="tag-filter-btn" data-tag="t1039">t1039</button>
+    <button class="tag-filter-btn" data-tag="t1040">t1040</button>
+    <button class="tag-filter-btn" data-tag="t1041">t1041</button>
+    <button class="tag-filter-btn" data-tag="t1047">t1047</button>
+    <button class="tag-filter-btn" data-tag="t1048">t1048</button>
+    <button class="tag-filter-btn" data-tag="t1052.001">t1052.001</button>
+    <button class="tag-filter-btn" data-tag="t1053.002">t1053.002</button>
+    <button class="tag-filter-btn" data-tag="t1053.005">t1053.005</button>
+    <button class="tag-filter-btn" data-tag="t1055">t1055</button>
+    <button class="tag-filter-btn" data-tag="t1055.012">t1055.012</button>
+    <button class="tag-filter-btn" data-tag="t1059.001">t1059.001</button>
+    <button class="tag-filter-btn" data-tag="t1059.005">t1059.005</button>
+    <button class="tag-filter-btn" data-tag="t1059.007">t1059.007</button>
+    <button class="tag-filter-btn" data-tag="t1069.001">t1069.001</button>
+    <button class="tag-filter-btn" data-tag="t1069.002">t1069.002</button>
+    <button class="tag-filter-btn" data-tag="t1070">t1070</button>
+    <button class="tag-filter-btn" data-tag="t1070.001">t1070.001</button>
+    <button class="tag-filter-btn" data-tag="t1070.004">t1070.004</button>
+    <button class="tag-filter-btn" data-tag="t1070.006">t1070.006</button>
+    <button class="tag-filter-btn" data-tag="t1071">t1071</button>
+    <button class="tag-filter-btn" data-tag="t1078">t1078</button>
+    <button class="tag-filter-btn" data-tag="t1078.002">t1078.002</button>
+    <button class="tag-filter-btn" data-tag="t1078.003">t1078.003</button>
+    <button class="tag-filter-btn" data-tag="t1083">t1083</button>
+    <button class="tag-filter-btn" data-tag="t1087.001">t1087.001</button>
+    <button class="tag-filter-btn" data-tag="t1087.002">t1087.002</button>
+    <button class="tag-filter-btn" data-tag="t1090.001">t1090.001</button>
+    <button class="tag-filter-btn" data-tag="t1091">t1091</button>
+    <button class="tag-filter-btn" data-tag="t1098">t1098</button>
+    <button class="tag-filter-btn" data-tag="t1105">t1105</button>
+    <button class="tag-filter-btn" data-tag="t1110">t1110</button>
+    <button class="tag-filter-btn" data-tag="t1110.001">t1110.001</button>
+    <button class="tag-filter-btn" data-tag="t1110.003">t1110.003</button>
+    <button class="tag-filter-btn" data-tag="t1110.004">t1110.004</button>
+    <button class="tag-filter-btn" data-tag="t1112">t1112</button>
+    <button class="tag-filter-btn" data-tag="t1123">t1123</button>
+    <button class="tag-filter-btn" data-tag="t1125">t1125</button>
+    <button class="tag-filter-btn" data-tag="t1133">t1133</button>
+    <button class="tag-filter-btn" data-tag="t1134">t1134</button>
+    <button class="tag-filter-btn" data-tag="t1134.001">t1134.001</button>
+    <button class="tag-filter-btn" data-tag="t1134.002">t1134.002</button>
+    <button class="tag-filter-btn" data-tag="t1134.003">t1134.003</button>
+    <button class="tag-filter-btn" data-tag="t1134.005">t1134.005</button>
+    <button class="tag-filter-btn" data-tag="t1135">t1135</button>
+    <button class="tag-filter-btn" data-tag="t1136.001">t1136.001</button>
+    <button class="tag-filter-btn" data-tag="t1136.002">t1136.002</button>
+    <button class="tag-filter-btn" data-tag="t1187">t1187</button>
+    <button class="tag-filter-btn" data-tag="t1190">t1190</button>
+    <button class="tag-filter-btn" data-tag="t1195">t1195</button>
+    <button class="tag-filter-btn" data-tag="t1195.002">t1195.002</button>
+    <button class="tag-filter-btn" data-tag="t1197">t1197</button>
+    <button class="tag-filter-btn" data-tag="t1200">t1200</button>
+    <button class="tag-filter-btn" data-tag="t1201">t1201</button>
+    <button class="tag-filter-btn" data-tag="t1207">t1207</button>
+    <button class="tag-filter-btn" data-tag="t1210">t1210</button>
+    <button class="tag-filter-btn" data-tag="t1212">t1212</button>
+    <button class="tag-filter-btn" data-tag="t1218">t1218</button>
+    <button class="tag-filter-btn" data-tag="t1218.005">t1218.005</button>
+    <button class="tag-filter-btn" data-tag="t1218.009">t1218.009</button>
+    <button class="tag-filter-btn" data-tag="t1218.010">t1218.010</button>
+    <button class="tag-filter-btn" data-tag="t1218.011">t1218.011</button>
+    <button class="tag-filter-btn" data-tag="t1222">t1222</button>
+    <button class="tag-filter-btn" data-tag="t1222.001">t1222.001</button>
+    <button class="tag-filter-btn" data-tag="t1482">t1482</button>
+    <button class="tag-filter-btn" data-tag="t1484.001">t1484.001</button>
+    <button class="tag-filter-btn" data-tag="t1486">t1486</button>
+    <button class="tag-filter-btn" data-tag="t1489">t1489</button>
+    <button class="tag-filter-btn" data-tag="t1490">t1490</button>
+    <button class="tag-filter-btn" data-tag="t1505.003">t1505.003</button>
+    <button class="tag-filter-btn" data-tag="t1529">t1529</button>
+    <button class="tag-filter-btn" data-tag="t1531">t1531</button>
+    <button class="tag-filter-btn" data-tag="t1543">t1543</button>
+    <button class="tag-filter-btn" data-tag="t1543.003">t1543.003</button>
+    <button class="tag-filter-btn" data-tag="t1546.003">t1546.003</button>
+    <button class="tag-filter-btn" data-tag="t1546.008">t1546.008</button>
+    <button class="tag-filter-btn" data-tag="t1546.010">t1546.010</button>
+    <button class="tag-filter-btn" data-tag="t1546.012">t1546.012</button>
+    <button class="tag-filter-btn" data-tag="t1547.001">t1547.001</button>
+    <button class="tag-filter-btn" data-tag="t1547.005">t1547.005</button>
+    <button class="tag-filter-btn" data-tag="t1547.006">t1547.006</button>
+    <button class="tag-filter-btn" data-tag="t1548">t1548</button>
+    <button class="tag-filter-btn" data-tag="t1548.002">t1548.002</button>
+    <button class="tag-filter-btn" data-tag="t1550.002">t1550.002</button>
+    <button class="tag-filter-btn" data-tag="t1552">t1552</button>
+    <button class="tag-filter-btn" data-tag="t1552.002">t1552.002</button>
+    <button class="tag-filter-btn" data-tag="t1552.004">t1552.004</button>
+    <button class="tag-filter-btn" data-tag="t1555">t1555</button>
+    <button class="tag-filter-btn" data-tag="t1555.001">t1555.001</button>
+    <button class="tag-filter-btn" data-tag="t1555.003">t1555.003</button>
+    <button class="tag-filter-btn" data-tag="t1555.004">t1555.004</button>
+    <button class="tag-filter-btn" data-tag="t1555.005">t1555.005</button>
+    <button class="tag-filter-btn" data-tag="t1556.002">t1556.002</button>
+    <button class="tag-filter-btn" data-tag="t1556.006">t1556.006</button>
+    <button class="tag-filter-btn" data-tag="t1557">t1557</button>
+    <button class="tag-filter-btn" data-tag="t1557.001">t1557.001</button>
+    <button class="tag-filter-btn" data-tag="t1558">t1558</button>
+    <button class="tag-filter-btn" data-tag="t1558.001">t1558.001</button>
+    <button class="tag-filter-btn" data-tag="t1558.002">t1558.002</button>
+    <button class="tag-filter-btn" data-tag="t1558.003">t1558.003</button>
+    <button class="tag-filter-btn" data-tag="t1558.004">t1558.004</button>
+    <button class="tag-filter-btn" data-tag="t1562">t1562</button>
+    <button class="tag-filter-btn" data-tag="t1562.001">t1562.001</button>
+    <button class="tag-filter-btn" data-tag="t1562.002">t1562.002</button>
+    <button class="tag-filter-btn" data-tag="t1562.004">t1562.004</button>
+    <button class="tag-filter-btn" data-tag="t1562.006">t1562.006</button>
+    <button class="tag-filter-btn" data-tag="t1563">t1563</button>
+    <button class="tag-filter-btn" data-tag="t1566">t1566</button>
+    <button class="tag-filter-btn" data-tag="t1566.001">t1566.001</button>
+    <button class="tag-filter-btn" data-tag="t1569">t1569</button>
+    <button class="tag-filter-btn" data-tag="t1569.002">t1569.002</button>
+    <button class="tag-filter-btn" data-tag="t1571">t1571</button>
+    <button class="tag-filter-btn" data-tag="t1572">t1572</button>
+    <button class="tag-filter-btn" data-tag="t1574.011">t1574.011</button>
+    <button class="tag-filter-btn" data-tag="t1649">t1649</button>
+  </div>
+  <span id="row-counter" class="row-counter">Showing 273 of 273</span>
+</div>
+<div class="table-wrapper">
+<table id="sop-table">
+  <thead>
+    <tr>
+      <th data-col="0">Usecase Name</th>
+      <th data-col="1" class="col-eids">Sysmon Event IDs</th>
+      <th data-col="2">Level</th>
+      <th data-col="3" class="col-tags">Tags</th>
+      <th data-col="4" class="col-tactics">MITRE Tactics</th>
+    </tr>
+  </thead>
+  <tbody>
+<tr data-level="high" data-tags="credential_access,lateral_movement,t1550.002" data-text="pass-the-hash (pth) — ntlm network logon 1,3,10 high credential_access,lateral_movement,t1550.002 credential access | lateral movement">
+  <td><a href="Pass-the-Hash (PTH) — NTLM Network Logon.html">Pass-the-Hash (PTH) — NTLM Network Logon</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1550.002</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1558.003" data-text="kerberoasting — service ticket rc4 encryption 1,3 high credential_access,t1558.003 credential access">
+  <td><a href="Kerberoasting — Service Ticket RC4 Encryption.html">Kerberoasting — Service Ticket RC4 Encryption</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1558.003</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1558.004" data-text="as-rep roasting — tgt without pre-authentication 1,3 high credential_access,t1558.004 credential access">
+  <td><a href="AS-REP Roasting — TGT Without Pre-Authentication.html">AS-REP Roasting — TGT Without Pre-Authentication</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1558.004</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,lateral_movement,t1558.001" data-text="golden ticket attack — tgs without preceding tgt 1,3,10 critical credential_access,lateral_movement,t1558.001 credential access | lateral movement">
+  <td><a href="Golden Ticket Attack — TGS Without Preceding TGT.html">Golden Ticket Attack — TGS Without Preceding TGT</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1558.001</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,lateral_movement,t1558.002" data-text="silver ticket attack — service ticket without kdc 1,3 critical credential_access,lateral_movement,t1558.002 credential access | lateral movement">
+  <td><a href="Silver Ticket Attack — Service Ticket Without KDC.html">Silver Ticket Attack — Service Ticket Without KDC</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1558.002</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,t1003.006" data-text="dcsync — ad replication rights abuse 1,3 critical credential_access,t1003.006 credential access">
+  <td><a href="DCSync — AD Replication Rights Abuse.html">DCSync — AD Replication Rights Abuse</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.006</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,defense_evasion,t1207" data-text="dcshadow — rogue dc attribute write 1,3,13 critical credential_access,defense_evasion,t1207 defense evasion | credential access">
+  <td><a href="DCShadow — Rogue DC Attribute Write.html">DCShadow — Rogue DC Attribute Write</a></td>
+  <td class="col-eids">1,3,13</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1207</span></td>
+  <td class="col-tactics">Defense Evasion | Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,lateral_movement,t1550.002" data-text="overpass-the-hash — kerberos from ntlm credential 1,3,10 high credential_access,lateral_movement,t1550.002 credential access | lateral movement">
+  <td><a href="Overpass-the-Hash — Kerberos from NTLM Credential.html">Overpass-the-Hash — Kerberos from NTLM Credential</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1550.002</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,t1003.001" data-text="lsass memory dump — sensitive process access 1,10 critical credential_access,t1003.001 credential access">
+  <td><a href="LSASS Memory Dump — Sensitive Process Access.html">LSASS Memory Dump — Sensitive Process Access</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.001</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,t1003.002" data-text="sam database dump — local credential extraction 1,9,10 critical credential_access,t1003.002 credential access">
+  <td><a href="SAM Database Dump — Local Credential Extraction.html">SAM Database Dump — Local Credential Extraction</a></td>
+  <td class="col-eids">1,9,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.002</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,t1555" data-text="dpapi domain backup key extraction 1,10,17 critical credential_access,t1555 credential access">
+  <td><a href="DPAPI Domain Backup Key Extraction.html">DPAPI Domain Backup Key Extraction</a></td>
+  <td class="col-eids">1,10,17</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1555</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1557.001" data-text="ntlm relay or downgrade attack detection 1,3 high credential_access,t1557.001 credential access">
+  <td><a href="NTLM Relay or Downgrade Attack Detection.html">NTLM Relay or Downgrade Attack Detection</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1557.001</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1110.001" data-text="brute force — repeated failed logons same account 1,3 high credential_access,t1110.001 credential access">
+  <td><a href="Brute Force — Repeated Failed Logons Same Account.html">Brute Force — Repeated Failed Logons Same Account</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1110.001</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1110.003" data-text="password spraying — failures across many accounts 1,3 high credential_access,t1110.003 credential access">
+  <td><a href="Password Spraying — Failures Across Many Accounts.html">Password Spraying — Failures Across Many Accounts</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1110.003</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="credential_access,t1110.004" data-text="credential stuffing — valid creds after failures 1,3 medium credential_access,t1110.004 credential access">
+  <td><a href="Credential Stuffing — Valid Creds After Failures.html">Credential Stuffing — Valid Creds After Failures</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1110.004</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,t1556.006" data-text="shadow credentials — msds-keycredentiallink modified 1,3 critical credential_access,t1556.006 credential access">
+  <td><a href="Shadow Credentials — msDS-KeyCredentialLink Modified.html">Shadow Credentials — msDS-KeyCredentialLink Modified</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1556.006</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1003" data-text="protected storage service access — credential theft 1,10,17 high credential_access,t1003 credential access">
+  <td><a href="Protected Storage Service Access — Credential Theft.html">Protected Storage Service Access — Credential Theft</a></td>
+  <td class="col-eids">1,10,17</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="low" data-tags="discovery,credential_access,t1201" data-text="password policy enumeration via sam 1,10 low discovery,credential_access,t1201 credential access | discovery">
+  <td><a href="Password Policy Enumeration via SAM.html">Password Policy Enumeration via SAM</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1201</span></td>
+  <td class="col-tactics">Credential Access | Discovery</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1558" data-text="kerberos ticket replay attack 1,3,10 high credential_access,t1558 credential access">
+  <td><a href="Kerberos Ticket Replay Attack.html">Kerberos Ticket Replay Attack</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1558</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1003" data-text="wce — windows credential editor logon indicator 1,7,10 high credential_access,t1003 credential access">
+  <td><a href="WCE — Windows Credential Editor Logon Indicator.html">WCE — Windows Credential Editor Logon Indicator</a></td>
+  <td class="col-eids">1,7,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="lateral_movement,t1021.001" data-text="rdp lateral movement — remote interactive logon 1,3 medium lateral_movement,t1021.001 lateral movement">
+  <td><a href="RDP Lateral Movement — Remote Interactive Logon.html">RDP Lateral Movement — Remote Interactive Logon</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1021.001</span></td>
+  <td class="col-tactics">Lateral Movement</td>
+</tr>
+<tr data-level="medium" data-tags="lateral_movement,t1021.002" data-text="smb admin share access — admin$ or c$ 1,3 medium lateral_movement,t1021.002 lateral movement">
+  <td><a href="SMB Admin Share Access — ADMIN$ or C$.html">SMB Admin Share Access — ADMIN$ or C$</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1021.002</span></td>
+  <td class="col-tactics">Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,t1021.002" data-text="suspicious remote named pipe via ipc$ 3,17,18 high lateral_movement,t1021.002 lateral movement">
+  <td><a href="Suspicious Remote Named Pipe via IPC$.html">Suspicious Remote Named Pipe via IPC$</a></td>
+  <td class="col-eids">3,17,18</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1021.002</span></td>
+  <td class="col-tactics">Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,execution,t1569.002" data-text="psexec — remote service installation 1,3,17,18 high lateral_movement,execution,t1569.002 execution | lateral movement">
+  <td><a href="PsExec — Remote Service Installation.html">PsExec — Remote Service Installation</a></td>
+  <td class="col-eids">1,3,17,18</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1569.002</span></td>
+  <td class="col-tactics">Execution | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,execution,t1021.006" data-text="wmi remote code execution — network logon 1,3 high lateral_movement,execution,t1021.006 execution | lateral movement">
+  <td><a href="WMI Remote Code Execution — Network Logon.html">WMI Remote Code Execution — Network Logon</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1021.006</span></td>
+  <td class="col-tactics">Execution | Lateral Movement</td>
+</tr>
+<tr data-level="medium" data-tags="lateral_movement,execution,t1021.006" data-text="winrm powershell remoting — remote logon 1,3 medium lateral_movement,execution,t1021.006 execution | lateral movement">
+  <td><a href="WinRM PowerShell Remoting — Remote Logon.html">WinRM PowerShell Remoting — Remote Logon</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1021.006</span></td>
+  <td class="col-tactics">Execution | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,t1021.003" data-text="dcom lateral movement — com object activation 1,3 high lateral_movement,t1021.003 lateral movement">
+  <td><a href="DCOM Lateral Movement — COM Object Activation.html">DCOM Lateral Movement — COM Object Activation</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1021.003</span></td>
+  <td class="col-tactics">Lateral Movement</td>
+</tr>
+<tr data-level="critical" data-tags="lateral_movement,credential_access,t1550.002,t1021.002" data-text="pass-the-hash + smb lateral — network share logon 1,3 critical lateral_movement,credential_access,t1550.002,t1021.002 credential access | lateral movement">
+  <td><a href="Pass-the-Hash + SMB Lateral — Network Share Logon.html">Pass-the-Hash + SMB Lateral — Network Share Logon</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1550.002</span> <span class="tag-pill">t1021.002</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,credential_access,t1569.002,t1003" data-text="impacket smbexec or secretsdump service 1,3,17 high lateral_movement,credential_access,t1569.002,t1003 credential access | lateral movement">
+  <td><a href="Impacket SMBExec or SecretsDump Service.html">Impacket SMBExec or SecretsDump Service</a></td>
+  <td class="col-eids">1,3,17</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1569.002</span> <span class="tag-pill">t1003</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,execution,t1053.005" data-text="remote scheduled task execution via atsvc 1,3,17,18 high lateral_movement,execution,t1053.005 execution | lateral movement">
+  <td><a href="Remote Scheduled Task Execution via ATSVC.html">Remote Scheduled Task Execution via ATSVC</a></td>
+  <td class="col-eids">1,3,17,18</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1053.005</span></td>
+  <td class="col-tactics">Execution | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,command_and_control,t1021.001,t1572" data-text="rdp reverse tunnel — unusual loopback rdp 1,3 high lateral_movement,command_and_control,t1021.001,t1572 lateral movement | command and control">
+  <td><a href="RDP Reverse Tunnel — Unusual Loopback RDP.html">RDP Reverse Tunnel — Unusual Loopback RDP</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">command_and_control</span> <span class="tag-pill">t1021.001</span> <span class="tag-pill">t1572</span></td>
+  <td class="col-tactics">Lateral Movement | Command and Control</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,initial_access,t1021.002,t1078" data-text="external smb login from internet ip 1,3 high lateral_movement,initial_access,t1021.002,t1078 initial access | lateral movement">
+  <td><a href="External SMB Login from Internet IP.html">External SMB Login from Internet IP</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">initial_access</span> <span class="tag-pill">t1021.002</span> <span class="tag-pill">t1078</span></td>
+  <td class="col-tactics">Initial Access | Lateral Movement</td>
+</tr>
+<tr data-level="medium" data-tags="privilege_escalation,t1134.003" data-text="token impersonation — explicit credential logon 1,10 medium privilege_escalation,t1134.003 privilege escalation">
+  <td><a href="Token Impersonation — Explicit Credential Logon.html">Token Impersonation — Explicit Credential Logon</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1134.003</span></td>
+  <td class="col-tactics">Privilege Escalation</td>
+</tr>
+<tr data-level="high" data-tags="privilege_escalation,t1134.001" data-text="sensitive privilege assignment — sedebugprivilege 1,10 high privilege_escalation,t1134.001 privilege escalation">
+  <td><a href="Sensitive Privilege Assignment — SeDebugPrivilege.html">Sensitive Privilege Assignment — SeDebugPrivilege</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1134.001</span></td>
+  <td class="col-tactics">Privilege Escalation</td>
+</tr>
+<tr data-level="medium" data-tags="privilege_escalation,t1134" data-text="special logon — high privilege account 1,3 medium privilege_escalation,t1134 privilege escalation">
+  <td><a href="Special Logon — High Privilege Account.html">Special Logon — High Privilege Account</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1134</span></td>
+  <td class="col-tactics">Privilege Escalation</td>
+</tr>
+<tr data-level="high" data-tags="privilege_escalation,t1548" data-text="take object ownership — setakeownershipprivilege 1 high privilege_escalation,t1548 privilege escalation">
+  <td><a href="Take Object Ownership — SeTakeOwnershipPrivilege.html">Take Object Ownership — SeTakeOwnershipPrivilege</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1548</span></td>
+  <td class="col-tactics">Privilege Escalation</td>
+</tr>
+<tr data-level="high" data-tags="privilege_escalation,t1134.001" data-text="resource-based constrained delegation (rbcd) 1,3 high privilege_escalation,t1134.001 privilege escalation">
+  <td><a href="Resource-Based Constrained Delegation (RBCD).html">Resource-Based Constrained Delegation (RBCD)</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1134.001</span></td>
+  <td class="col-tactics">Privilege Escalation</td>
+</tr>
+<tr data-level="high" data-tags="privilege_escalation,credential_access,t1558" data-text="kerberos unconstrained delegation abuse 1,3,10 high privilege_escalation,credential_access,t1558 privilege escalation | credential access">
+  <td><a href="Kerberos Unconstrained Delegation Abuse.html">Kerberos Unconstrained Delegation Abuse</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1558</span></td>
+  <td class="col-tactics">Privilege Escalation | Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="privilege_escalation,t1134.001,t1134.002" data-text="rottenpotato or printspoofer token impersonation 1,17,18 critical privilege_escalation,t1134.001,t1134.002 privilege escalation">
+  <td><a href="RottenPotato or PrintSpoofer Token Impersonation.html">RottenPotato or PrintSpoofer Token Impersonation</a></td>
+  <td class="col-eids">1,17,18</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1134.001</span> <span class="tag-pill">t1134.002</span></td>
+  <td class="col-tactics">Privilege Escalation</td>
+</tr>
+<tr data-level="critical" data-tags="privilege_escalation,defense_evasion,t1134.005" data-text="sid history injection — historical sid abuse 1,3 critical privilege_escalation,defense_evasion,t1134.005 privilege escalation | defense evasion">
+  <td><a href="SID History Injection — Historical SID Abuse.html">SID History Injection — Historical SID Abuse</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1134.005</span></td>
+  <td class="col-tactics">Privilege Escalation | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="privilege_escalation,defense_evasion,t1548.002" data-text="uac bypass via service control manager 1,13 high privilege_escalation,defense_evasion,t1548.002 privilege escalation | defense evasion">
+  <td><a href="UAC Bypass via Service Control Manager.html">UAC Bypass via Service Control Manager</a></td>
+  <td class="col-eids">1,13</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1548.002</span></td>
+  <td class="col-tactics">Privilege Escalation | Defense Evasion</td>
+</tr>
+<tr data-level="critical" data-tags="privilege_escalation,persistence,t1484.001" data-text="adminsdholder backdoor — acl on protected objects 1,3 critical privilege_escalation,persistence,t1484.001 persistence | privilege escalation">
+  <td><a href="AdminSDHolder Backdoor — ACL on Protected Objects.html">AdminSDHolder Backdoor — ACL on Protected Objects</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1484.001</span></td>
+  <td class="col-tactics">Persistence | Privilege Escalation</td>
+</tr>
+<tr data-level="critical" data-tags="privilege_escalation,t1134.001,t1558" data-text="kerberos relay via ldap — rbcd privilege escalation 1,3,17 critical privilege_escalation,t1134.001,t1558 privilege escalation">
+  <td><a href="Kerberos Relay via LDAP — RBCD Privilege Escalation.html">Kerberos Relay via LDAP — RBCD Privilege Escalation</a></td>
+  <td class="col-eids">1,3,17</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1134.001</span> <span class="tag-pill">t1558</span></td>
+  <td class="col-tactics">Privilege Escalation</td>
+</tr>
+<tr data-level="medium" data-tags="persistence,t1136.001" data-text="new local user account created 1 medium persistence,t1136.001 persistence">
+  <td><a href="New Local User Account Created.html">New Local User Account Created</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">t1136.001</span></td>
+  <td class="col-tactics">Persistence</td>
+</tr>
+<tr data-level="high" data-tags="persistence,defense_evasion,t1136.001" data-text="hidden admin — user account with dollar sign 1 high persistence,defense_evasion,t1136.001 persistence | defense evasion">
+  <td><a href="Hidden Admin — User Account with Dollar Sign.html">Hidden Admin — User Account with Dollar Sign</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1136.001</span></td>
+  <td class="col-tactics">Persistence | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="persistence,privilege_escalation,t1098" data-text="user added to local or domain administrators group 1 high persistence,privilege_escalation,t1098 persistence | privilege escalation">
+  <td><a href="User Added to Local or Domain Administrators Group.html">User Added to Local or Domain Administrators Group</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1098</span></td>
+  <td class="col-tactics">Persistence | Privilege Escalation</td>
+</tr>
+<tr data-level="medium" data-tags="persistence,execution,t1053.005" data-text="scheduled task created for persistence 1,13 medium persistence,execution,t1053.005 execution | persistence">
+  <td><a href="Scheduled Task Created for Persistence.html">Scheduled Task Created for Persistence</a></td>
+  <td class="col-eids">1,13</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1053.005</span></td>
+  <td class="col-tactics">Execution | Persistence</td>
+</tr>
+<tr data-level="high" data-tags="persistence,execution,t1543.003" data-text="malicious service installation 1,7 high persistence,execution,t1543.003 execution | persistence">
+  <td><a href="Malicious Service Installation.html">Malicious Service Installation</a></td>
+  <td class="col-eids">1,7</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1543.003</span></td>
+  <td class="col-tactics">Execution | Persistence</td>
+</tr>
+<tr data-level="high" data-tags="persistence,execution,t1569.002" data-text="powershell script installed as service 1 high persistence,execution,t1569.002 execution | persistence">
+  <td><a href="PowerShell Script Installed as Service.html">PowerShell Script Installed as Service</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1569.002</span></td>
+  <td class="col-tactics">Execution | Persistence</td>
+</tr>
+<tr data-level="high" data-tags="persistence,privilege_escalation,t1484.001" data-text="default domain group policy modified 1,3 high persistence,privilege_escalation,t1484.001 persistence | privilege escalation">
+  <td><a href="Default Domain Group Policy Modified.html">Default Domain Group Policy Modified</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1484.001</span></td>
+  <td class="col-tactics">Persistence | Privilege Escalation</td>
+</tr>
+<tr data-level="medium" data-tags="persistence,t1053.005" data-text="scheduled task updated — suspicious modification 1,13 medium persistence,t1053.005 persistence">
+  <td><a href="Scheduled Task Updated — Suspicious Modification.html">Scheduled Task Updated — Suspicious Modification</a></td>
+  <td class="col-eids">1,13</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">t1053.005</span></td>
+  <td class="col-tactics">Persistence</td>
+</tr>
+<tr data-level="high" data-tags="persistence,credential_access,t1649" data-text="adcs certificate template vulnerability — esc1 or esc8 1,3 high persistence,credential_access,t1649 persistence | credential access">
+  <td><a href="ADCS Certificate Template Vulnerability — ESC1 or ESC8.html">ADCS Certificate Template Vulnerability — ESC1 or ESC8</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1649</span></td>
+  <td class="col-tactics">Persistence | Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="persistence,t1482" data-text="domain trust added — new external trust 1,3 high persistence,t1482 persistence">
+  <td><a href="Domain Trust Added — New External Trust.html">Domain Trust Added — New External Trust</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">t1482</span></td>
+  <td class="col-tactics">Persistence</td>
+</tr>
+<tr data-level="medium" data-tags="persistence,t1136.002" data-text="computer account added to domain (potential dcshadow prep) 1,3 medium persistence,t1136.002 persistence">
+  <td><a href="Computer Account Added to Domain (Potential DCShadow Prep).html">Computer Account Added to Domain (Potential DCShadow Prep)</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">t1136.002</span></td>
+  <td class="col-tactics">Persistence</td>
+</tr>
+<tr data-level="critical" data-tags="persistence,execution,t1543.003,t1569.002" data-text="cobalt strike service installation pattern 1,17,18 critical persistence,execution,t1543.003,t1569.002 execution | persistence">
+  <td><a href="Cobalt Strike Service Installation Pattern.html">Cobalt Strike Service Installation Pattern</a></td>
+  <td class="col-eids">1,17,18</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1543.003</span> <span class="tag-pill">t1569.002</span></td>
+  <td class="col-tactics">Execution | Persistence</td>
+</tr>
+<tr data-level="high" data-tags="persistence,execution,t1546.003" data-text="wmi event subscription for persistence 1,19,20,21 high persistence,execution,t1546.003 execution | persistence">
+  <td><a href="WMI Event Subscription for Persistence.html">WMI Event Subscription for Persistence</a></td>
+  <td class="col-eids">1,19,20,21</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1546.003</span></td>
+  <td class="col-tactics">Execution | Persistence</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1070.001" data-text="security audit log cleared 1 high defense_evasion,t1070.001 defense evasion">
+  <td><a href="Security Audit Log Cleared.html">Security Audit Log Cleared</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1070.001</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1562.002" data-text="audit policy disabled or modified 1,13 high defense_evasion,t1562.002 defense evasion">
+  <td><a href="Audit Policy Disabled or Modified.html">Audit Policy Disabled or Modified</a></td>
+  <td class="col-eids">1,13</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.002</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="medium" data-tags="defense_evasion,t1562.004" data-text="windows firewall policy changed 1,13 medium defense_evasion,t1562.004 defense evasion">
+  <td><a href="Windows Firewall Policy Changed.html">Windows Firewall Policy Changed</a></td>
+  <td class="col-eids">1,13</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.004</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="medium" data-tags="defense_evasion,t1562.006" data-text="security group membership tampered 1 medium defense_evasion,t1562.006 defense evasion">
+  <td><a href="Security Group Membership Tampered.html">Security Group Membership Tampered</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.006</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="medium" data-tags="defense_evasion,persistence,t1098" data-text="user account enabled after dormancy 1 medium defense_evasion,persistence,t1098 persistence | defense evasion">
+  <td><a href="User Account Enabled After Dormancy.html">User Account Enabled After Dormancy</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1098</span></td>
+  <td class="col-tactics">Persistence | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1562.002" data-text="event log service stopped 1 high defense_evasion,t1562.002 defense evasion">
+  <td><a href="Event Log Service Stopped.html">Event Log Service Stopped</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.002</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="medium" data-tags="defense_evasion,t1222" data-text="object dacl modified — permission weakening 1,3 medium defense_evasion,t1222 defense evasion">
+  <td><a href="Object DACL Modified — Permission Weakening.html">Object DACL Modified — Permission Weakening</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1222</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1222.001" data-text="ad object dacl weakened — writedac abuse 1,3 high defense_evasion,t1222.001 defense evasion">
+  <td><a href="AD Object DACL Weakened — WriteDAC Abuse.html">AD Object DACL Weakened — WriteDAC Abuse</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1222.001</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="critical" data-tags="defense_evasion,credential_access,t1003.001" data-text="mimikatz indicator — debug privilege + lsass 1,10 critical defense_evasion,credential_access,t1003.001 defense evasion | credential access">
+  <td><a href="Mimikatz Indicator — Debug Privilege + LSASS.html">Mimikatz Indicator — Debug Privilege + LSASS</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.001</span></td>
+  <td class="col-tactics">Defense Evasion | Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1562.006" data-text=".net etw tampering — audit subcategory disabled 1,13 high defense_evasion,t1562.006 defense evasion">
+  <td><a href=".NET ETW Tampering — Audit Subcategory Disabled.html">.NET ETW Tampering — Audit Subcategory Disabled</a></td>
+  <td class="col-eids">1,13</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.006</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1014" data-text="code integrity check failure — tampered driver 6 high defense_evasion,t1014 defense evasion">
+  <td><a href="Code Integrity Check Failure — Tampered Driver.html">Code Integrity Check Failure — Tampered Driver</a></td>
+  <td class="col-eids">6</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1014</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="medium" data-tags="defense_evasion,impact,t1531" data-text="security-enabled global group deleted 1 medium defense_evasion,impact,t1531 defense evasion | impact">
+  <td><a href="Security-Enabled Global Group Deleted.html">Security-Enabled Global Group Deleted</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">impact</span> <span class="tag-pill">t1531</span></td>
+  <td class="col-tactics">Defense Evasion | Impact</td>
+</tr>
+<tr data-level="medium" data-tags="discovery,t1087.002" data-text="ad user enumeration via ldap queries 1,3 medium discovery,t1087.002 discovery">
+  <td><a href="AD User Enumeration via LDAP Queries.html">AD User Enumeration via LDAP Queries</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1087.002</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="low" data-tags="discovery,t1087.001" data-text="local account enumeration — net user 1 low discovery,t1087.001 discovery">
+  <td><a href="Local Account Enumeration — Net User.html">Local Account Enumeration — Net User</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1087.001</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="low" data-tags="discovery,t1069.001" data-text="permission group discovery — local groups 1 low discovery,t1069.001 discovery">
+  <td><a href="Permission Group Discovery — Local Groups.html">Permission Group Discovery — Local Groups</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1069.001</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="low" data-tags="discovery,t1069.002" data-text="domain group membership discovery 1,3 low discovery,t1069.002 discovery">
+  <td><a href="Domain Group Membership Discovery.html">Domain Group Membership Discovery</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1069.002</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="low" data-tags="discovery,t1135" data-text="network share discovery — enumeration 1,3 low discovery,t1135 discovery">
+  <td><a href="Network Share Discovery — Enumeration.html">Network Share Discovery — Enumeration</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1135</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="medium" data-tags="discovery,t1482" data-text="domain trust discovery — nltest or dsquery 1,3 medium discovery,t1482 discovery">
+  <td><a href="Domain Trust Discovery — Nltest or DSQuery.html">Domain Trust Discovery — Nltest or DSQuery</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1482</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="low" data-tags="discovery,t1018" data-text="remote system discovery via admin shares 1,3 low discovery,t1018 discovery">
+  <td><a href="Remote System Discovery via Admin Shares.html">Remote System Discovery via Admin Shares</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1018</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="low" data-tags="discovery,t1201" data-text="password policy enumeration 1,3 low discovery,t1201 discovery">
+  <td><a href="Password Policy Enumeration.html">Password Policy Enumeration</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1201</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="medium" data-tags="discovery,t1087.002,t1069.002" data-text="bloodhound or sharphound ad reconnaissance 1,3,22 medium discovery,t1087.002,t1069.002 discovery">
+  <td><a href="BloodHound or SharpHound AD Reconnaissance.html">BloodHound or SharpHound AD Reconnaissance</a></td>
+  <td class="col-eids">1,3,22</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1087.002</span> <span class="tag-pill">t1069.002</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="low" data-tags="discovery,t1007" data-text="service discovery via scm database 1 low discovery,t1007 discovery">
+  <td><a href="Service Discovery via SCM Database.html">Service Discovery via SCM Database</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1007</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="medium" data-tags="discovery,collection,t1125,t1123" data-text="camera or microphone device access 12,13 medium discovery,collection,t1125,t1123 discovery | collection">
+  <td><a href="Camera or Microphone Device Access.html">Camera or Microphone Device Access</a></td>
+  <td class="col-eids">12,13</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">collection</span> <span class="tag-pill">t1125</span> <span class="tag-pill">t1123</span></td>
+  <td class="col-tactics">Discovery | Collection</td>
+</tr>
+<tr data-level="medium" data-tags="initial_access,t1078,t1021.001" data-text="external rdp login from internet ip 1,3 medium initial_access,t1078,t1021.001 initial access">
+  <td><a href="External RDP Login from Internet IP.html">External RDP Login from Internet IP</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">t1078</span> <span class="tag-pill">t1021.001</span></td>
+  <td class="col-tactics">Initial Access</td>
+</tr>
+<tr data-level="medium" data-tags="initial_access,t1078.002" data-text="valid account — first logon from new geolocation 1,3 medium initial_access,t1078.002 initial access">
+  <td><a href="Valid Account — First Logon from New Geolocation.html">Valid Account — First Logon from New Geolocation</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">t1078.002</span></td>
+  <td class="col-tactics">Initial Access</td>
+</tr>
+<tr data-level="high" data-tags="initial_access,privilege_escalation,t1078" data-text="vpn logon followed immediately by admin activity 1,3 high initial_access,privilege_escalation,t1078 initial access | privilege escalation">
+  <td><a href="VPN Logon Followed Immediately by Admin Activity.html">VPN Logon Followed Immediately by Admin Activity</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1078</span></td>
+  <td class="col-tactics">Initial Access | Privilege Escalation</td>
+</tr>
+<tr data-level="high" data-tags="initial_access,execution,t1566,t1569" data-text="phishing payload — service installation after logon 1,7 high initial_access,execution,t1566,t1569 initial access | execution">
+  <td><a href="Phishing Payload — Service Installation After Logon.html">Phishing Payload — Service Installation After Logon</a></td>
+  <td class="col-eids">1,7</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1566</span> <span class="tag-pill">t1569</span></td>
+  <td class="col-tactics">Initial Access | Execution</td>
+</tr>
+<tr data-level="medium" data-tags="initial_access,execution,t1566.001" data-text="iso or vhd mount — potential phishing delivery 1,11 medium initial_access,execution,t1566.001 initial access | execution">
+  <td><a href="ISO or VHD Mount — Potential Phishing Delivery.html">ISO or VHD Mount — Potential Phishing Delivery</a></td>
+  <td class="col-eids">1,11</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1566.001</span></td>
+  <td class="col-tactics">Initial Access | Execution</td>
+</tr>
+<tr data-level="medium" data-tags="initial_access,t1091" data-text="external device — removable media connected 6,11 medium initial_access,t1091 initial access">
+  <td><a href="External Device — Removable Media Connected.html">External Device — Removable Media Connected</a></td>
+  <td class="col-eids">6,11</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">t1091</span></td>
+  <td class="col-tactics">Initial Access</td>
+</tr>
+<tr data-level="critical" data-tags="initial_access,privilege_escalation,t1190" data-text="exploit public-facing service — zerologon (cve-2020-1472) 1,3 critical initial_access,privilege_escalation,t1190 initial access | privilege escalation">
+  <td><a href="Exploit Public-Facing Service — Zerologon (CVE-2020-1472).html">Exploit Public-Facing Service — Zerologon (CVE-2020-1472)</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1190</span></td>
+  <td class="col-tactics">Initial Access | Privilege Escalation</td>
+</tr>
+<tr data-level="critical" data-tags="initial_access,privilege_escalation,t1190,t1569" data-text="printnightmare — spooler service exploitation 1,3,7 critical initial_access,privilege_escalation,t1190,t1569 initial access | privilege escalation">
+  <td><a href="PrintNightmare — Spooler Service Exploitation.html">PrintNightmare — Spooler Service Exploitation</a></td>
+  <td class="col-eids">1,3,7</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1190</span> <span class="tag-pill">t1569</span></td>
+  <td class="col-tactics">Initial Access | Privilege Escalation</td>
+</tr>
+<tr data-level="high" data-tags="execution,t1053.005" data-text="scheduled task execution — suspicious binary 1 high execution,t1053.005 execution">
+  <td><a href="Scheduled Task Execution — Suspicious Binary.html">Scheduled Task Execution — Suspicious Binary</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">t1053.005</span></td>
+  <td class="col-tactics">Execution</td>
+</tr>
+<tr data-level="high" data-tags="execution,t1569.002" data-text="remote service execution via svcctl 1,3,17 high execution,t1569.002 execution">
+  <td><a href="Remote Service Execution via SVCCTL.html">Remote Service Execution via SVCCTL</a></td>
+  <td class="col-eids">1,3,17</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">t1569.002</span></td>
+  <td class="col-tactics">Execution</td>
+</tr>
+<tr data-level="critical" data-tags="execution,privilege_escalation,t1569.002,t1548" data-text="meterpreter cobalt strike getsystem service 1,17,18 critical execution,privilege_escalation,t1569.002,t1548 execution | privilege escalation">
+  <td><a href="Meterpreter Cobalt Strike GetSystem Service.html">Meterpreter Cobalt Strike GetSystem Service</a></td>
+  <td class="col-eids">1,17,18</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1569.002</span> <span class="tag-pill">t1548</span></td>
+  <td class="col-tactics">Execution | Privilege Escalation</td>
+</tr>
+<tr data-level="high" data-tags="execution,defense_evasion,t1059.001,t1027" data-text="invoke-obfuscation via clipboard service 1,24 high execution,defense_evasion,t1059.001,t1027 execution | defense evasion">
+  <td><a href="Invoke-Obfuscation via Clipboard Service.html">Invoke-Obfuscation via Clipboard Service</a></td>
+  <td class="col-eids">1,24</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1059.001</span> <span class="tag-pill">t1027</span></td>
+  <td class="col-tactics">Execution | Defense Evasion</td>
+</tr>
+<tr data-level="medium" data-tags="execution,command_and_control,t1569.002" data-text="hybrid connection manager malicious service 1,3 medium execution,command_and_control,t1569.002 execution | command and control">
+  <td><a href="Hybrid Connection Manager Malicious Service.html">Hybrid Connection Manager Malicious Service</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">command_and_control</span> <span class="tag-pill">t1569.002</span></td>
+  <td class="col-tactics">Execution | Command and Control</td>
+</tr>
+<tr data-level="high" data-tags="execution,lateral_movement,t1053.002" data-text="at.exe scheduled job remote execution 1,3 high execution,lateral_movement,t1053.002 execution | lateral movement">
+  <td><a href="At.exe Scheduled Job Remote Execution.html">At.exe Scheduled Job Remote Execution</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1053.002</span></td>
+  <td class="col-tactics">Execution | Lateral Movement</td>
+</tr>
+<tr data-level="medium" data-tags="execution,collection,t1040" data-text="pcap driver loaded — network capture tool 1,6 medium execution,collection,t1040 execution | collection">
+  <td><a href="PCAP Driver Loaded — Network Capture Tool.html">PCAP Driver Loaded — Network Capture Tool</a></td>
+  <td class="col-eids">1,6</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">collection</span> <span class="tag-pill">t1040</span></td>
+  <td class="col-tactics">Execution | Collection</td>
+</tr>
+<tr data-level="high" data-tags="collection,t1005" data-text="sensitive file access — hr or finance data 1,11 high collection,t1005 collection">
+  <td><a href="Sensitive File Access — HR or Finance Data.html">Sensitive File Access — HR or Finance Data</a></td>
+  <td class="col-eids">1,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">collection</span> <span class="tag-pill">t1005</span></td>
+  <td class="col-tactics">Collection</td>
+</tr>
+<tr data-level="critical" data-tags="collection,credential_access,t1003.003" data-text="shadow copy access — offline credential extraction 1,9 critical collection,credential_access,t1003.003 credential access | collection">
+  <td><a href="Shadow Copy Access — Offline Credential Extraction.html">Shadow Copy Access — Offline Credential Extraction</a></td>
+  <td class="col-eids">1,9</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">collection</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.003</span></td>
+  <td class="col-tactics">Credential Access | Collection</td>
+</tr>
+<tr data-level="critical" data-tags="collection,credential_access,t1003.003" data-text="ntds.dit access — domain credential dump 1,9 critical collection,credential_access,t1003.003 credential access | collection">
+  <td><a href="NTDS.dit Access — Domain Credential Dump.html">NTDS.dit Access — Domain Credential Dump</a></td>
+  <td class="col-eids">1,9</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">collection</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.003</span></td>
+  <td class="col-tactics">Credential Access | Collection</td>
+</tr>
+<tr data-level="critical" data-tags="collection,credential_access,t1003.002" data-text="sam registry hive handle requested 1,10 critical collection,credential_access,t1003.002 credential access | collection">
+  <td><a href="SAM Registry Hive Handle Requested.html">SAM Registry Hive Handle Requested</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">collection</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.002</span></td>
+  <td class="col-tactics">Credential Access | Collection</td>
+</tr>
+<tr data-level="high" data-tags="collection,credential_access,t1552.002" data-text="aad health agent registry key access 12,13 high collection,credential_access,t1552.002 credential access | collection">
+  <td><a href="AAD Health Agent Registry Key Access.html">AAD Health Agent Registry Key Access</a></td>
+  <td class="col-eids">12,13</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">collection</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1552.002</span></td>
+  <td class="col-tactics">Credential Access | Collection</td>
+</tr>
+<tr data-level="high" data-tags="collection,t1039" data-text="network share file collection — bulk read 1,3 high collection,t1039 collection">
+  <td><a href="Network Share File Collection — Bulk Read.html">Network Share File Collection — Bulk Read</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">collection</span> <span class="tag-pill">t1039</span></td>
+  <td class="col-tactics">Collection</td>
+</tr>
+<tr data-level="high" data-tags="collection,credential_access,t1555" data-text="dpapi master key backup extraction 1,10 high collection,credential_access,t1555 credential access | collection">
+  <td><a href="DPAPI Master Key Backup Extraction.html">DPAPI Master Key Backup Extraction</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">collection</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1555</span></td>
+  <td class="col-tactics">Credential Access | Collection</td>
+</tr>
+<tr data-level="high" data-tags="exfiltration,t1048,t1041" data-text="data exfiltration via network share — external ip 1,3 high exfiltration,t1048,t1041 exfiltration">
+  <td><a href="Data Exfiltration via Network Share — External IP.html">Data Exfiltration via Network Share — External IP</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">exfiltration</span> <span class="tag-pill">t1048</span> <span class="tag-pill">t1041</span></td>
+  <td class="col-tactics">Exfiltration</td>
+</tr>
+<tr data-level="high" data-tags="exfiltration,t1052.001" data-text="usb data exfiltration — removable media write 1,6,11 high exfiltration,t1052.001 exfiltration">
+  <td><a href="USB Data Exfiltration — Removable Media Write.html">USB Data Exfiltration — Removable Media Write</a></td>
+  <td class="col-eids">1,6,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">exfiltration</span> <span class="tag-pill">t1052.001</span></td>
+  <td class="col-tactics">Exfiltration</td>
+</tr>
+<tr data-level="medium" data-tags="exfiltration,t1048" data-text="suspicious large file transfer via smb 1,3 medium exfiltration,t1048 exfiltration">
+  <td><a href="Suspicious Large File Transfer via SMB.html">Suspicious Large File Transfer via SMB</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">exfiltration</span> <span class="tag-pill">t1048</span></td>
+  <td class="col-tactics">Exfiltration</td>
+</tr>
+<tr data-level="medium" data-tags="exfiltration,defense_evasion,t1070.004" data-text="sdelete — secure file deletion (evidence removal) 1,23 medium exfiltration,defense_evasion,t1070.004 defense evasion | exfiltration">
+  <td><a href="sDelete — Secure File Deletion (Evidence Removal).html">sDelete — Secure File Deletion (Evidence Removal)</a></td>
+  <td class="col-eids">1,23</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">exfiltration</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1070.004</span></td>
+  <td class="col-tactics">Defense Evasion | Exfiltration</td>
+</tr>
+<tr data-level="medium" data-tags="exfiltration,collection,t1039,t1083" data-text="suspected net share object access — desktop.ini 1,3 medium exfiltration,collection,t1039,t1083 collection | exfiltration">
+  <td><a href="Suspected Net Share Object Access — desktop.ini.html">Suspected Net Share Object Access — desktop.ini</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">exfiltration</span> <span class="tag-pill">collection</span> <span class="tag-pill">t1039</span> <span class="tag-pill">t1083</span></td>
+  <td class="col-tactics">Collection | Exfiltration</td>
+</tr>
+<tr data-level="high" data-tags="impact,t1531" data-text="account lockout storm — potential ransomware 1,3 high impact,t1531 impact">
+  <td><a href="Account Lockout Storm — Potential Ransomware.html">Account Lockout Storm — Potential Ransomware</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">t1531</span></td>
+  <td class="col-tactics">Impact</td>
+</tr>
+<tr data-level="critical" data-tags="impact,t1486" data-text="ransomware — bulk file encryption pattern 1,11,23 critical impact,t1486 impact">
+  <td><a href="Ransomware — Bulk File Encryption Pattern.html">Ransomware — Bulk File Encryption Pattern</a></td>
+  <td class="col-eids">1,11,23</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">t1486</span></td>
+  <td class="col-tactics">Impact</td>
+</tr>
+<tr data-level="high" data-tags="impact,t1489" data-text="critical service stopped — backup or av killed 1 high impact,t1489 impact">
+  <td><a href="Critical Service Stopped — Backup or AV Killed.html">Critical Service Stopped — Backup or AV Killed</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">t1489</span></td>
+  <td class="col-tactics">Impact</td>
+</tr>
+<tr data-level="critical" data-tags="impact,t1490" data-text="volume shadow copy deletion 1 critical impact,t1490 impact">
+  <td><a href="Volume Shadow Copy Deletion.html">Volume Shadow Copy Deletion</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">t1490</span></td>
+  <td class="col-tactics">Impact</td>
+</tr>
+<tr data-level="critical" data-tags="impact,defense_evasion,t1070.001,t1562.002" data-text="security and event logs mass cleared 1 critical impact,defense_evasion,t1070.001,t1562.002 defense evasion | impact">
+  <td><a href="Security and Event Logs Mass Cleared.html">Security and Event Logs Mass Cleared</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1070.001</span> <span class="tag-pill">t1562.002</span></td>
+  <td class="col-tactics">Defense Evasion | Impact</td>
+</tr>
+<tr data-level="critical" data-tags="impact,t1529" data-text="domain controller shutdown or restart 1 critical impact,t1529 impact">
+  <td><a href="Domain Controller Shutdown or Restart.html">Domain Controller Shutdown or Restart</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">t1529</span></td>
+  <td class="col-tactics">Impact</td>
+</tr>
+<tr data-level="high" data-tags="impact,defense_evasion,t1484.001" data-text="group policy object deletion 1,3 high impact,defense_evasion,t1484.001 defense evasion | impact">
+  <td><a href="Group Policy Object Deletion.html">Group Policy Object Deletion</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1484.001</span></td>
+  <td class="col-tactics">Defense Evasion | Impact</td>
+</tr>
+<tr data-level="high" data-tags="impact,defense_evasion,t1201" data-text="password policy weakened — lockout threshold raised 1,3 high impact,defense_evasion,t1201 defense evasion | impact">
+  <td><a href="Password Policy Weakened — Lockout Threshold Raised.html">Password Policy Weakened — Lockout Threshold Raised</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1201</span></td>
+  <td class="col-tactics">Defense Evasion | Impact</td>
+</tr>
+<tr data-level="medium" data-tags="command_and_control,execution,t1059.001,t1021.006" data-text="remote powershell session — outbound winrm 1,3 medium command_and_control,execution,t1059.001,t1021.006 execution | command and control">
+  <td><a href="Remote PowerShell Session — Outbound WinRM.html">Remote PowerShell Session — Outbound WinRM</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">command_and_control</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1059.001</span> <span class="tag-pill">t1021.006</span></td>
+  <td class="col-tactics">Execution | Command and Control</td>
+</tr>
+<tr data-level="high" data-tags="command_and_control,t1190" data-text="metasploit authentication pattern 1,3 high command_and_control,t1190 command and control">
+  <td><a href="Metasploit Authentication Pattern.html">Metasploit Authentication Pattern</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">command_and_control</span> <span class="tag-pill">t1190</span></td>
+  <td class="col-tactics">Command and Control</td>
+</tr>
+<tr data-level="high" data-tags="command_and_control,execution,t1021.003" data-text="dcom execution — potential c2 persistence 1,3,19,20,21 high command_and_control,execution,t1021.003 execution | command and control">
+  <td><a href="DCOM Execution — Potential C2 Persistence.html">DCOM Execution — Potential C2 Persistence</a></td>
+  <td class="col-eids">1,3,19,20,21</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">command_and_control</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1021.003</span></td>
+  <td class="col-tactics">Execution | Command and Control</td>
+</tr>
+<tr data-level="critical" data-tags="command_and_control,persistence,t1552" data-text="azure ad health monitoring agent backdoor 1,12,13 critical command_and_control,persistence,t1552 persistence | command and control">
+  <td><a href="Azure AD Health Monitoring Agent Backdoor.html">Azure AD Health Monitoring Agent Backdoor</a></td>
+  <td class="col-eids">1,12,13</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">command_and_control</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1552</span></td>
+  <td class="col-tactics">Persistence | Command and Control</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,lateral_movement,t1078,t1087.002,t1558.003,t1003.006" data-text="full compromise chain — recon to dcsync 1,3,10 critical credential_access,lateral_movement,t1078,t1087.002,t1558.003,t1003.006 credential access | lateral movement">
+  <td><a href="Full Compromise Chain — Recon to DCSync.html">Full Compromise Chain — Recon to DCSync</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1078</span> <span class="tag-pill">t1087.002</span> <span class="tag-pill">t1558.003</span> <span class="tag-pill">t1003.006</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,lateral_movement,t1110.003,t1558.001,t1003.006" data-text="apt kill chain — password spray to golden ticket 1,3,10 critical credential_access,lateral_movement,t1110.003,t1558.001,t1003.006 credential access | lateral movement">
+  <td><a href="APT Kill Chain — Password Spray to Golden Ticket.html">APT Kill Chain — Password Spray to Golden Ticket</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1110.003</span> <span class="tag-pill">t1558.001</span> <span class="tag-pill">t1003.006</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="critical" data-tags="impact,credential_access,t1486,t1490,t1531" data-text="ransomware pattern — logon to vss deletion to encryption 1,3,11,23 critical impact,credential_access,t1486,t1490,t1531 credential access | impact">
+  <td><a href="Ransomware Pattern — Logon to VSS Deletion to Encryption.html">Ransomware Pattern — Logon to VSS Deletion to Encryption</a></td>
+  <td class="col-eids">1,3,11,23</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1486</span> <span class="tag-pill">t1490</span> <span class="tag-pill">t1531</span></td>
+  <td class="col-tactics">Credential Access | Impact</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,lateral_movement,t1557.001" data-text="petitpotam ntlm coercion — forced authentication 1,3 critical credential_access,lateral_movement,t1557.001 credential access | lateral movement">
+  <td><a href="PetitPotam NTLM Coercion — Forced Authentication.html">PetitPotam NTLM Coercion — Forced Authentication</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1557.001</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,credential_access,t1021.002,t1557" data-text="dce or rpc spoolss lateral movement — printerbug 1,3,17 high lateral_movement,credential_access,t1021.002,t1557 credential access | lateral movement">
+  <td><a href="DCE or RPC SpoolSS Lateral Movement — PrinterBug.html">DCE or RPC SpoolSS Lateral Movement — PrinterBug</a></td>
+  <td class="col-eids">1,3,17</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1021.002</span> <span class="tag-pill">t1557</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,t1003.003,t1003.006" data-text="impacket secretsdump — drsuapi + sam dump 1,3,10 critical credential_access,t1003.003,t1003.006 credential access">
+  <td><a href="Impacket SecretsDump — DRSUAPI + SAM Dump.html">Impacket SecretsDump — DRSUAPI + SAM Dump</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.003</span> <span class="tag-pill">t1003.006</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,collection,t1555.005" data-text="signal or app sensitive config access — credential theft 1,10,11 high credential_access,collection,t1555.005 credential access | collection">
+  <td><a href="Signal or App Sensitive Config Access — Credential Theft.html">Signal or App Sensitive Config Access — Credential Theft</a></td>
+  <td class="col-eids">1,10,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">collection</span> <span class="tag-pill">t1555.005</span></td>
+  <td class="col-tactics">Credential Access | Collection</td>
+</tr>
+<tr data-level="medium" data-tags="defense_evasion,t1562.004" data-text="wfp endpoint agent blocked — firewall tamper 1,3 medium defense_evasion,t1562.004 defense evasion">
+  <td><a href="WFP Endpoint Agent Blocked — Firewall Tamper.html">WFP Endpoint Agent Blocked — Firewall Tamper</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.004</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1557" data-text="kerberos dns object coercion — new dns record 1,3,22 high credential_access,t1557 credential access">
+  <td><a href="Kerberos DNS Object Coercion — New DNS Record.html">Kerberos DNS Object Coercion — New DNS Record</a></td>
+  <td class="col-eids">1,3,22</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1557</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="initial_access,t1021.001" data-text="not allowed rdp — blocked external login 1,3 medium initial_access,t1021.001 initial access">
+  <td><a href="Not Allowed RDP — Blocked External Login.html">Not Allowed RDP — Blocked External Login</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">t1021.001</span></td>
+  <td class="col-tactics">Initial Access</td>
+</tr>
+<tr data-level="low" data-tags="collection,t1563" data-text="workstation locked or session hijack attempt 1,3 low collection,t1563 collection">
+  <td><a href="Workstation Locked or Session Hijack Attempt.html">Workstation Locked or Session Hijack Attempt</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">collection</span> <span class="tag-pill">t1563</span></td>
+  <td class="col-tactics">Collection</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,lateral_movement,t1550.002,t1558" data-text="pass-the-hash via overpass — rc4 to kerberos upgrade 1,3,10 high credential_access,lateral_movement,t1550.002,t1558 credential access | lateral movement">
+  <td><a href="Pass-the-Hash via Overpass — RC4 to Kerberos Upgrade.html">Pass-the-Hash via Overpass — RC4 to Kerberos Upgrade</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1550.002</span> <span class="tag-pill">t1558</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="medium" data-tags="privilege_escalation,defense_evasion,t1548" data-text="scm database privileged operation by non-system 1,17 medium privilege_escalation,defense_evasion,t1548 privilege escalation | defense evasion">
+  <td><a href="SCM Database Privileged Operation by Non-System.html">SCM Database Privileged Operation by Non-System</a></td>
+  <td class="col-eids">1,17</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1548</span></td>
+  <td class="col-tactics">Privilege Escalation | Defense Evasion</td>
+</tr>
+<tr data-level="medium" data-tags="initial_access,t1078" data-text="logon or logoff anomaly — account used outside hours 1,3 medium initial_access,t1078 initial access">
+  <td><a href="Logon or Logoff Anomaly — Account Used Outside Hours.html">Logon or Logoff Anomaly — Account Used Outside Hours</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">t1078</span></td>
+  <td class="col-tactics">Initial Access</td>
+</tr>
+<tr data-level="medium" data-tags="credential_access,t1098" data-text="account password reset by non-admin 1 medium credential_access,t1098 credential access">
+  <td><a href="Account Password Reset by Non-Admin.html">Account Password Reset by Non-Admin</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1098</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="credential_access,t1558" data-text="suspicious kerberos failure — client out of sync 1,3 medium credential_access,t1558 credential access">
+  <td><a href="Suspicious Kerberos Failure — Client Out of Sync.html">Suspicious Kerberos Failure — Client Out of Sync</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1558</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="credential_access,t1078" data-text="ntlm auth from non-domain machine 1,3 medium credential_access,t1078 credential access">
+  <td><a href="NTLM Auth from Non-Domain Machine.html">NTLM Auth from Non-Domain Machine</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1078</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="collection,credential_access,t1003.003" data-text="sensitive privilege use — sebackupprivilege for data theft 1,9 high collection,credential_access,t1003.003 credential access | collection">
+  <td><a href="Sensitive Privilege Use — SeBackupPrivilege for Data Theft.html">Sensitive Privilege Use — SeBackupPrivilege for Data Theft</a></td>
+  <td class="col-eids">1,9</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">collection</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.003</span></td>
+  <td class="col-tactics">Credential Access | Collection</td>
+</tr>
+<tr data-level="high" data-tags="persistence,execution,t1484.001,t1053.005" data-text="group policy — scheduled task via gpo abuse 1,3,13 high persistence,execution,t1484.001,t1053.005 execution | persistence">
+  <td><a href="Group Policy — Scheduled Task via GPO Abuse.html">Group Policy — Scheduled Task via GPO Abuse</a></td>
+  <td class="col-eids">1,3,13</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1484.001</span> <span class="tag-pill">t1053.005</span></td>
+  <td class="col-tactics">Execution | Persistence</td>
+</tr>
+<tr data-level="high" data-tags="initial_access,defense_evasion,t1078" data-text="user logon from disabled account 1,3 high initial_access,defense_evasion,t1078 initial access | defense evasion">
+  <td><a href="User Logon from Disabled Account.html">User Logon from Disabled Account</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1078</span></td>
+  <td class="col-tactics">Initial Access | Defense Evasion</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,t1649,t1557.001" data-text="adcs esc8 — web enrollment request for dc certificate 1,3 critical credential_access,t1649,t1557.001 credential access">
+  <td><a href="ADCS ESC8 — Web Enrollment Request for DC Certificate.html">ADCS ESC8 — Web Enrollment Request for DC Certificate</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1649</span> <span class="tag-pill">t1557.001</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="discovery,credential_access,t1087.002" data-text="object access — sensitive ad attribute read 1,3 medium discovery,credential_access,t1087.002 credential access | discovery">
+  <td><a href="Object Access — Sensitive AD Attribute Read.html">Object Access — Sensitive AD Attribute Read</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1087.002</span></td>
+  <td class="col-tactics">Credential Access | Discovery</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,credential_access,t1558.001" data-text="cross-forest trust ticket (inter-realm kerberos) 1,3 high lateral_movement,credential_access,t1558.001 credential access | lateral movement">
+  <td><a href="Cross-Forest Trust Ticket (Inter-Realm Kerberos).html">Cross-Forest Trust Ticket (Inter-Realm Kerberos)</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1558.001</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="medium" data-tags="initial_access,t1078" data-text="suspicious logon after account lockout reset 1,3 medium initial_access,t1078 initial access">
+  <td><a href="Suspicious Logon after Account Lockout Reset.html">Suspicious Logon after Account Lockout Reset</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">t1078</span></td>
+  <td class="col-tactics">Initial Access</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1562.001" data-text="service crash — edr or av potential kill 1 high defense_evasion,t1562.001 defense evasion">
+  <td><a href="Service Crash — EDR or AV Potential Kill.html">Service Crash — EDR or AV Potential Kill</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.001</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="critical" data-tags="privilege_escalation,credential_access,t1134" data-text="forged pac — privilege attribute certificate manipulation 1,3,10 critical privilege_escalation,credential_access,t1134 privilege escalation | credential access">
+  <td><a href="Forged PAC — Privilege Attribute Certificate Manipulation.html">Forged PAC — Privilege Attribute Certificate Manipulation</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1134</span></td>
+  <td class="col-tactics">Privilege Escalation | Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="persistence,execution,t1546.003" data-text="wmi subscription — event consumer created 1,19,20,21 high persistence,execution,t1546.003 execution | persistence">
+  <td><a href="WMI Subscription — Event Consumer Created.html">WMI Subscription — Event Consumer Created</a></td>
+  <td class="col-eids">1,19,20,21</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1546.003</span></td>
+  <td class="col-tactics">Execution | Persistence</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1558" data-text="suspected rubeus logon process registration 1,10 high credential_access,t1558 credential access">
+  <td><a href="Suspected Rubeus Logon Process Registration.html">Suspected Rubeus Logon Process Registration</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1558</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="initial_access,persistence,t1195,t1543.003" data-text="supply chain — unusual software installation via service 1,7 high initial_access,persistence,t1195,t1543.003 initial access | persistence">
+  <td><a href="Supply Chain — Unusual Software Installation via Service.html">Supply Chain — Unusual Software Installation via Service</a></td>
+  <td class="col-eids">1,7</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1195</span> <span class="tag-pill">t1543.003</span></td>
+  <td class="col-tactics">Initial Access | Persistence</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1562.001" data-text="defender exclusion path — registry modified 13 high defense_evasion,t1562.001 defense evasion">
+  <td><a href="Defender Exclusion Path — Registry Modified.html">Defender Exclusion Path — Registry Modified</a></td>
+  <td class="col-eids">13</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.001</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="medium" data-tags="privilege_escalation,execution,t1134.003" data-text="suspicious explicit credential logon — runas 1,3 medium privilege_escalation,execution,t1134.003 execution | privilege escalation">
+  <td><a href="Suspicious Explicit Credential Logon — runas.html">Suspicious Explicit Credential Logon — runas</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1134.003</span></td>
+  <td class="col-tactics">Execution | Privilege Escalation</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,lateral_movement,defense_evasion,t1550.002" data-text="overpass-the-hash — mimikatz sekurlsa::pth indicator 1,10 high credential_access,lateral_movement,defense_evasion,t1550.002 defense evasion | credential access | lateral movement">
+  <td><a href="Overpass-the-Hash — Mimikatz sekurlsa--pth Indicator.html">Overpass-the-Hash — Mimikatz sekurlsa::pth Indicator</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1550.002</span></td>
+  <td class="col-tactics">Defense Evasion | Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="initial_access,lateral_movement,t1550.002" data-text="metasploit authentication fingerprint — random workstationname 1,3 high initial_access,lateral_movement,t1550.002 initial access | lateral movement">
+  <td><a href="Metasploit Authentication Fingerprint — Random WorkstationName.html">Metasploit Authentication Fingerprint — Random WorkstationName</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1550.002</span></td>
+  <td class="col-tactics">Initial Access | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,credential_access,t1550.002" data-text="pth variant — subjectusersid s-1-0-0 keylength zero 1,3,10 high lateral_movement,credential_access,t1550.002 credential access | lateral movement">
+  <td><a href="PtH Variant — SubjectUserSid S-1-0-0 KeyLength Zero.html">PtH Variant — SubjectUserSid S-1-0-0 KeyLength Zero</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1550.002</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1558" data-text="rubeus — user32logonprocesss typo registration 1,10 high credential_access,t1558 credential access">
+  <td><a href="Rubeus — User32LogonProcesss Typo Registration.html">Rubeus — User32LogonProcesss Typo Registration</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1558</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="privilege_escalation,t1134" data-text="diagtrack eop — hardcoded exploit username 1,10 critical privilege_escalation,t1134 privilege escalation">
+  <td><a href="DiagTrack EoP — Hardcoded Exploit Username.html">DiagTrack EoP — Hardcoded Exploit Username</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1134</span></td>
+  <td class="col-tactics">Privilege Escalation</td>
+</tr>
+<tr data-level="critical" data-tags="privilege_escalation,execution,t1134.001,t1134.002" data-text="meterpreter getsystem — named pipe echo pattern 1,17,18 critical privilege_escalation,execution,t1134.001,t1134.002 execution | privilege escalation">
+  <td><a href="Meterpreter GetSystem — Named Pipe Echo Pattern.html">Meterpreter GetSystem — Named Pipe Echo Pattern</a></td>
+  <td class="col-eids">1,17,18</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1134.001</span> <span class="tag-pill">t1134.002</span></td>
+  <td class="col-tactics">Execution | Privilege Escalation</td>
+</tr>
+<tr data-level="critical" data-tags="execution,lateral_movement,persistence,t1543.003,t1569.002,t1021.002" data-text="cobalt strike beacon — admin$ executable deploy 1,3,11,17 critical execution,lateral_movement,persistence,t1543.003,t1569.002,t1021.002 execution | persistence | lateral movement">
+  <td><a href="Cobalt Strike Beacon — ADMIN$ Executable Deploy.html">Cobalt Strike Beacon — ADMIN$ Executable Deploy</a></td>
+  <td class="col-eids">1,3,11,17</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1543.003</span> <span class="tag-pill">t1569.002</span> <span class="tag-pill">t1021.002</span></td>
+  <td class="col-tactics">Execution | Persistence | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1003.002,t1003.003" data-text="impacket secretsdump — admin$ .tmp file access 1,3,11 high credential_access,t1003.002,t1003.003 credential access">
+  <td><a href="Impacket SecretsDump — ADMIN$ .tmp File Access.html">Impacket SecretsDump — ADMIN$ .tmp File Access</a></td>
+  <td class="col-eids">1,3,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.002</span> <span class="tag-pill">t1003.003</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,execution,t1021.002,t1569.002" data-text="impacket psexec — remcom named pipe access 1,3,17,18 high lateral_movement,execution,t1021.002,t1569.002 execution | lateral movement">
+  <td><a href="Impacket PSExec — RemCom Named Pipe Access.html">Impacket PSExec — RemCom Named Pipe Access</a></td>
+  <td class="col-eids">1,3,17,18</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1021.002</span> <span class="tag-pill">t1569.002</span></td>
+  <td class="col-tactics">Execution | Lateral Movement</td>
+</tr>
+<tr data-level="medium" data-tags="discovery,t1087.002,t1069.002" data-text="bloodhound sharphound — burst ad attribute read 1,3,22 medium discovery,t1087.002,t1069.002 discovery">
+  <td><a href="BloodHound SharpHound — Burst AD Attribute Read.html">BloodHound SharpHound — Burst AD Attribute Read</a></td>
+  <td class="col-eids">1,3,22</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1087.002</span> <span class="tag-pill">t1069.002</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,t1003" data-text="wce tool — wceaux.dll access via object handle 1,7,10 critical credential_access,t1003 credential access">
+  <td><a href="WCE Tool — wceaux.dll Access via Object Handle.html">WCE Tool — wceaux.dll Access via Object Handle</a></td>
+  <td class="col-eids">1,7,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,execution,t1003,t1569.002" data-text="credential dumpers — service binary name matching 1,7 high credential_access,execution,t1003,t1569.002 execution | credential access">
+  <td><a href="Credential Dumpers — Service Binary Name Matching.html">Credential Dumpers — Service Binary Name Matching</a></td>
+  <td class="col-eids">1,7</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1003</span> <span class="tag-pill">t1569.002</span></td>
+  <td class="col-tactics">Execution | Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1558.004" data-text="kerberos tgt request — rc4 encryption in aes-only environment 1,3 high credential_access,t1558.004 credential access">
+  <td><a href="Kerberos TGT Request — RC4 Encryption in AES-Only Environment.html">Kerberos TGT Request — RC4 Encryption in AES-Only Environment</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1558.004</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="credential_access,t1212" data-text="kerberos error — unusual failure status code 1,3 medium credential_access,t1212 credential access">
+  <td><a href="Kerberos Error — Unusual Failure Status Code.html">Kerberos Error — Unusual Failure Status Code</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1212</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="credential_access,t1003.006" data-text="dcsync — msol_ or syncagent account replication 1,3 medium credential_access,t1003.006 credential access">
+  <td><a href="DCSync — MSOL_ or SyncAgent Account Replication.html">DCSync — MSOL_ or SyncAgent Account Replication</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.006</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,t1003.006" data-text="dcsync — non-machine account directory replication 1,3 critical credential_access,t1003.006 credential access">
+  <td><a href="DCSync — Non-Machine Account Directory Replication.html">DCSync — Non-Machine Account Directory Replication</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.006</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1003.004" data-text="dpapi domain backup key — bckupkey secret object access 1,10,17 high credential_access,t1003.004 credential access">
+  <td><a href="DPAPI Domain Backup Key — BCKUPKEY Secret Object Access.html">DPAPI Domain Backup Key — BCKUPKEY Secret Object Access</a></td>
+  <td class="col-eids">1,10,17</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.004</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,lateral_movement,t1003.004" data-text="protected storage named pipe — dpapi remote key theft 3,17,18 high credential_access,lateral_movement,t1003.004 credential access | lateral movement">
+  <td><a href="Protected Storage Named Pipe — DPAPI Remote Key Theft.html">Protected Storage Named Pipe — DPAPI Remote Key Theft</a></td>
+  <td class="col-eids">3,17,18</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1003.004</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1187" data-text="petitpotam — anonymous lsarpc pipe access (ipc$) 1,3,17 high credential_access,t1187 credential access">
+  <td><a href="PetitPotam — Anonymous LSARPC Pipe Access (IPC$).html">PetitPotam — Anonymous LSARPC Pipe Access (IPC$)</a></td>
+  <td class="col-eids">1,3,17</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1187</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1187" data-text="petitpotam — computer account tgt with certificate 1,3 high credential_access,t1187 credential access">
+  <td><a href="PetitPotam — Computer Account TGT with Certificate.html">PetitPotam — Computer Account TGT with Certificate</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1187</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1557" data-text="kerberos dns spn coercion — encoded dns object 1,3,22 high credential_access,t1557 credential access">
+  <td><a href="Kerberos DNS SPN Coercion — Encoded DNS Object.html">Kerberos DNS SPN Coercion — Encoded DNS Object</a></td>
+  <td class="col-eids">1,3,22</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1557</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="credential_access,lateral_movement,t1187" data-text="spoolss named pipe — printerbug ntlm coercion 1,3,17 medium credential_access,lateral_movement,t1187 credential access | lateral movement">
+  <td><a href="SpoolSS Named Pipe — PrinterBug NTLM Coercion.html">SpoolSS Named Pipe — PrinterBug NTLM Coercion</a></td>
+  <td class="col-eids">1,3,17</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1187</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1557.001" data-text="ntlm relay — lsarpc or spoolss to forced authentication 1,3,17 high credential_access,t1557.001 credential access">
+  <td><a href="NTLM Relay — LSARPC or SpoolSS to Forced Authentication.html">NTLM Relay — LSARPC or SpoolSS to Forced Authentication</a></td>
+  <td class="col-eids">1,3,17</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1557.001</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,command_and_control,t1021.001,t1572" data-text="rdp tunnel through localhost — ssh port forward 1,3 high lateral_movement,command_and_control,t1021.001,t1572 lateral movement | command and control">
+  <td><a href="RDP Tunnel Through localhost — SSH Port Forward.html">RDP Tunnel Through localhost — SSH Port Forward</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">command_and_control</span> <span class="tag-pill">t1021.001</span> <span class="tag-pill">t1572</span></td>
+  <td class="col-tactics">Lateral Movement | Command and Control</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,command_and_control,t1090.001,t1021.001" data-text="rdp reverse tunnel — wfp loopback on port 3389 1,3 high lateral_movement,command_and_control,t1090.001,t1021.001 lateral movement | command and control">
+  <td><a href="RDP Reverse Tunnel — WFP Loopback on Port 3389.html">RDP Reverse Tunnel — WFP Loopback on Port 3389</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">command_and_control</span> <span class="tag-pill">t1090.001</span> <span class="tag-pill">t1021.001</span></td>
+  <td class="col-tactics">Lateral Movement | Command and Control</td>
+</tr>
+<tr data-level="medium" data-tags="initial_access,lateral_movement,t1133,t1078,t1021.001" data-text="external rdp from non-rfc1918 ip range 1,3 medium initial_access,lateral_movement,t1133,t1078,t1021.001 initial access | lateral movement">
+  <td><a href="External RDP from Non-RFC1918 IP Range.html">External RDP from Non-RFC1918 IP Range</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1133</span> <span class="tag-pill">t1078</span> <span class="tag-pill">t1021.001</span></td>
+  <td class="col-tactics">Initial Access | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="initial_access,lateral_movement,t1133,t1021.002" data-text="external smb logon from public internet ip 1,3 high initial_access,lateral_movement,t1133,t1021.002 initial access | lateral movement">
+  <td><a href="External SMB Logon from Public Internet IP.html">External SMB Logon from Public Internet IP</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1133</span> <span class="tag-pill">t1021.002</span></td>
+  <td class="col-tactics">Initial Access | Lateral Movement</td>
+</tr>
+<tr data-level="low" data-tags="lateral_movement,execution,t1047" data-text="wmi remote execution — wmiprvse child logon 1,3 low lateral_movement,execution,t1047 execution | lateral movement">
+  <td><a href="WMI Remote Execution — WmiPrvSE Child Logon.html">WMI Remote Execution — WmiPrvSE Child Logon</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1047</span></td>
+  <td class="col-tactics">Execution | Lateral Movement</td>
+</tr>
+<tr data-level="medium" data-tags="lateral_movement,execution,persistence,t1053.002" data-text="atsvc named pipe write — remote task scheduling 1,3,17,18 medium lateral_movement,execution,persistence,t1053.002 execution | persistence | lateral movement">
+  <td><a href="ATSVC Named Pipe Write — Remote Task Scheduling.html">ATSVC Named Pipe Write — Remote Task Scheduling</a></td>
+  <td class="col-eids">1,3,17,18</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1053.002</span></td>
+  <td class="col-tactics">Execution | Persistence | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,execution,command_and_control,t1021.006,t1059.001" data-text="winrm inbound — wfp port 5985 or 5986 permitted 1,3 high lateral_movement,execution,command_and_control,t1021.006,t1059.001 execution | lateral movement | command and control">
+  <td><a href="WinRM Inbound — WFP Port 5985 or 5986 Permitted.html">WinRM Inbound — WFP Port 5985 or 5986 Permitted</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">command_and_control</span> <span class="tag-pill">t1021.006</span> <span class="tag-pill">t1059.001</span></td>
+  <td class="col-tactics">Execution | Lateral Movement | Command and Control</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,execution,persistence,t1484.001,t1053.005" data-text="gpo scheduled task deployment — sysvol write 1,3,11 high lateral_movement,execution,persistence,t1484.001,t1053.005 execution | persistence | lateral movement">
+  <td><a href="GPO Scheduled Task Deployment — SYSVOL Write.html">GPO Scheduled Task Deployment — SYSVOL Write</a></td>
+  <td class="col-eids">1,3,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1484.001</span> <span class="tag-pill">t1053.005</span></td>
+  <td class="col-tactics">Execution | Persistence | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="privilege_escalation,t1134.001,t1558" data-text="kerberos relay local — krbrelayup ldap localhost 1,3 high privilege_escalation,t1134.001,t1558 privilege escalation">
+  <td><a href="Kerberos Relay Local — KrbRelayUp LDAP Localhost.html">Kerberos Relay Local — KrbRelayUp LDAP Localhost</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1134.001</span> <span class="tag-pill">t1558</span></td>
+  <td class="col-tactics">Privilege Escalation</td>
+</tr>
+<tr data-level="high" data-tags="privilege_escalation,persistence,t1098" data-text="seenabledelegationprivilege assigned — delegation backdoor 1,3 high privilege_escalation,persistence,t1098 persistence | privilege escalation">
+  <td><a href="SeEnableDelegationPrivilege Assigned — Delegation Backdoor.html">SeEnableDelegationPrivilege Assigned — Delegation Backdoor</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1098</span></td>
+  <td class="col-tactics">Persistence | Privilege Escalation</td>
+</tr>
+<tr data-level="high" data-tags="privilege_escalation,persistence,credential_access,t1098" data-text="unconstrained delegation set on user — msds-allowedtodelegateto 1,3 high privilege_escalation,persistence,credential_access,t1098 persistence | privilege escalation | credential access">
+  <td><a href="Unconstrained Delegation Set on User — msDS-AllowedToDelegateTo.html">Unconstrained Delegation Set on User — msDS-AllowedToDelegateTo</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">persistence</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1098</span></td>
+  <td class="col-tactics">Persistence | Privilege Escalation | Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="privilege_escalation,t1078.002" data-text="samaccountname spoofing — nopac (cve-2021-42278) 1,3 critical privilege_escalation,t1078.002 privilege escalation">
+  <td><a href="SamAccountName Spoofing — noPac (CVE-2021-42278).html">SamAccountName Spoofing — noPac (CVE-2021-42278)</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1078.002</span></td>
+  <td class="col-tactics">Privilege Escalation</td>
+</tr>
+<tr data-level="critical" data-tags="privilege_escalation,credential_access,t1210" data-text="zerologon — machine account password change by non-self 1,3 critical privilege_escalation,credential_access,t1210 privilege escalation | credential access">
+  <td><a href="Zerologon — Machine Account Password Change by Non-Self.html">Zerologon — Machine Account Password Change by Non-Self</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1210</span></td>
+  <td class="col-tactics">Privilege Escalation | Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="persistence,credential_access,t1098" data-text="dcsync backdoor — ntsecuritydescriptor replication rights 1,3 high persistence,credential_access,t1098 persistence | credential access">
+  <td><a href="DCSync Backdoor — ntSecurityDescriptor Replication Rights.html">DCSync Backdoor — ntSecurityDescriptor Replication Rights</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1098</span></td>
+  <td class="col-tactics">Persistence | Credential Access</td>
+</tr>
+<tr data-level="low" data-tags="privilege_escalation,credential_access,t1649" data-text="adcs esc1 — enrollee supplies subject flag in template 1,3 low privilege_escalation,credential_access,t1649 privilege escalation | credential access">
+  <td><a href="ADCS ESC1 — Enrollee Supplies Subject Flag in Template.html">ADCS ESC1 — Enrollee Supplies Subject Flag in Template</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1649</span></td>
+  <td class="col-tactics">Privilege Escalation | Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1557,t1649" data-text="adcs esc8 — web enrollment ntlm relay to certificate 1,3 high credential_access,t1557,t1649 credential access">
+  <td><a href="ADCS ESC8 — Web Enrollment NTLM Relay to Certificate.html">ADCS ESC8 — Web Enrollment NTLM Relay to Certificate</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1557</span> <span class="tag-pill">t1649</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="persistence,defense_evasion,t1136.001" data-text="hidden user — anonymous logon masquerade account 1 high persistence,defense_evasion,t1136.001 persistence | defense evasion">
+  <td><a href="Hidden User — ANONYMOUS LOGON Masquerade Account.html">Hidden User — ANONYMOUS LOGON Masquerade Account</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1136.001</span></td>
+  <td class="col-tactics">Persistence | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="persistence,defense_evasion,t1036" data-text="account renamed — dollar sign hidden admin 1 high persistence,defense_evasion,t1036 persistence | defense evasion">
+  <td><a href="Account Renamed — Dollar Sign Hidden Admin.html">Account Renamed — Dollar Sign Hidden Admin</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1036</span></td>
+  <td class="col-tactics">Persistence | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="persistence,t1098" data-text="dsrm local admin — directory services restore mode password set 1,3 high persistence,t1098 persistence">
+  <td><a href="DSRM Local Admin — Directory Services Restore Mode Password Set.html">DSRM Local Admin — Directory Services Restore Mode Password Set</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">t1098</span></td>
+  <td class="col-tactics">Persistence</td>
+</tr>
+<tr data-level="medium" data-tags="lateral_movement,execution,t1021.003" data-text="dcom object activation — lateral movement via com 1,3 medium lateral_movement,execution,t1021.003 execution | lateral movement">
+  <td><a href="DCOM Object Activation — Lateral Movement via COM.html">DCOM Object Activation — Lateral Movement via COM</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1021.003</span></td>
+  <td class="col-tactics">Execution | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,defense_evasion,t1562.001" data-text="weak encryption — des or no pre-auth uac flag set on account 1,3 high credential_access,defense_evasion,t1562.001 defense evasion | credential access">
+  <td><a href="Weak Encryption — DES or No Pre-Auth UAC Flag Set on Account.html">Weak Encryption — DES or No Pre-Auth UAC Flag Set on Account</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.001</span></td>
+  <td class="col-tactics">Defense Evasion | Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="defense_evasion,t1222.001" data-text="ad writedac — write_dac permission on domain object 1,3 critical defense_evasion,t1222.001 defense evasion">
+  <td><a href="AD WriteDAC — WRITE_DAC Permission on Domain Object.html">AD WriteDAC — WRITE_DAC Permission on Domain Object</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1222.001</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1562" data-text="edrsilencer — wfp custom outbound filter blocking edr 1,3 high defense_evasion,t1562 defense evasion">
+  <td><a href="EDRSilencer — WFP Custom Outbound Filter Blocking EDR.html">EDRSilencer — WFP Custom Outbound Filter Blocking EDR</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="low" data-tags="defense_evasion,persistence,privilege_escalation,t1574.011" data-text="service registry permissions check — dll hijack prep 1,12,13 low defense_evasion,persistence,privilege_escalation,t1574.011 persistence | privilege escalation | defense evasion">
+  <td><a href="Service Registry Permissions Check — DLL Hijack Prep.html">Service Registry Permissions Check — DLL Hijack Prep</a></td>
+  <td class="col-eids">1,12,13</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">persistence</span> <span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1574.011</span></td>
+  <td class="col-tactics">Persistence | Privilege Escalation | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,persistence,t1562.001,t1112" data-text="netntlm downgrade — lmcompatibilitylevel registry write 1,13 high defense_evasion,persistence,t1562.001,t1112 persistence | defense evasion">
+  <td><a href="NetNTLM Downgrade — LmCompatibilityLevel Registry Write.html">NetNTLM Downgrade — LmCompatibilityLevel Registry Write</a></td>
+  <td class="col-eids">1,13</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1562.001</span> <span class="tag-pill">t1112</span></td>
+  <td class="col-tactics">Persistence | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1562.002" data-text="audit policy — critical subcategory success or failure removed 1 high defense_evasion,t1562.002 defense evasion">
+  <td><a href="Audit Policy — Critical Subcategory Success or Failure Removed.html">Audit Policy — Critical Subcategory Success or Failure Removed</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.002</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="low" data-tags="command_and_control,t1071" data-text="wfp blocked outbound — potential c2 traffic blocked 1,3 low command_and_control,t1071 command and control">
+  <td><a href="WFP Blocked Outbound — Potential C2 Traffic Blocked.html">WFP Blocked Outbound — Potential C2 Traffic Blocked</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-low">Low</span></td>
+  <td class="col-tags"><span class="tag-pill">command_and_control</span> <span class="tag-pill">t1071</span></td>
+  <td class="col-tactics">Command and Control</td>
+</tr>
+<tr data-level="medium" data-tags="command_and_control,exfiltration,t1048,t1071" data-text="wfp permitted outbound — suspicious process to external ip 1,3 medium command_and_control,exfiltration,t1048,t1071 command and control | exfiltration">
+  <td><a href="WFP Permitted Outbound — Suspicious Process to External IP.html">WFP Permitted Outbound — Suspicious Process to External IP</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">command_and_control</span> <span class="tag-pill">exfiltration</span> <span class="tag-pill">t1048</span> <span class="tag-pill">t1071</span></td>
+  <td class="col-tactics">Command and Control | Exfiltration</td>
+</tr>
+<tr data-level="medium" data-tags="credential_access,t1555.004" data-text="credential manager vault read — non-standard process 1,10 medium credential_access,t1555.004 credential access">
+  <td><a href="Credential Manager Vault Read — Non-Standard Process.html">Credential Manager Vault Read — Non-Standard Process</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1555.004</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="credential_access,collection,t1555.005" data-text="signal desktop config or db — non-signal process access 1,10,11 medium credential_access,collection,t1555.005 credential access | collection">
+  <td><a href="Signal Desktop Config or DB — Non-Signal Process Access.html">Signal Desktop Config or DB — Non-Signal Process Access</a></td>
+  <td class="col-eids">1,10,11</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">collection</span> <span class="tag-pill">t1555.005</span></td>
+  <td class="col-tactics">Credential Access | Collection</td>
+</tr>
+<tr data-level="high" data-tags="discovery,credential_access,t1087.002" data-text="sam handle request — privileged group rid enumeration 1,10 high discovery,credential_access,t1087.002 credential access | discovery">
+  <td><a href="SAM Handle Request — Privileged Group RID Enumeration.html">SAM Handle Request — Privileged Group RID Enumeration</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1087.002</span></td>
+  <td class="col-tactics">Credential Access | Discovery</td>
+</tr>
+<tr data-level="medium" data-tags="discovery,t1069.001" data-text="sensitive group query — local group membership 4799 1 medium discovery,t1069.001 discovery">
+  <td><a href="Sensitive Group Query — Local Group Membership 4799.html">Sensitive Group Query — Local Group Membership 4799</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1069.001</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="medium" data-tags="initial_access,defense_evasion,t1078" data-text="failed logon — unusual sub-status codes (policy probe) 1,3 medium initial_access,defense_evasion,t1078 initial access | defense evasion">
+  <td><a href="Failed Logon — Unusual Sub-Status Codes (Policy Probe).html">Failed Logon — Unusual Sub-Status Codes (Policy Probe)</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1078</span></td>
+  <td class="col-tactics">Initial Access | Defense Evasion</td>
+</tr>
+<tr data-level="medium" data-tags="credential_access,t1003.004" data-text="dpapi master key backup attempt — recovery server 1,3,10 medium credential_access,t1003.004 credential access">
+  <td><a href="DPAPI Master Key Backup Attempt — Recovery Server.html">DPAPI Master Key Backup Attempt — Recovery Server</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.004</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="credential_access,collection,t1003.004" data-text="dpapi master key recovery — decryption extraction 1,10 medium credential_access,collection,t1003.004 credential access | collection">
+  <td><a href="DPAPI Master Key Recovery — Decryption Extraction.html">DPAPI Master Key Recovery — Decryption Extraction</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">collection</span> <span class="tag-pill">t1003.004</span></td>
+  <td class="col-tactics">Credential Access | Collection</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,execution,t1218,t1569.002" data-text="lolbas execution via service — certutil or mshta or rundll32 1,3,7 high defense_evasion,execution,t1218,t1569.002 execution | defense evasion">
+  <td><a href="LOLBAS Execution via Service — certutil or mshta or rundll32.html">LOLBAS Execution via Service — certutil or mshta or rundll32</a></td>
+  <td class="col-eids">1,3,7</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1218</span> <span class="tag-pill">t1569.002</span></td>
+  <td class="col-tactics">Execution | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="execution,defense_evasion,t1059.001,t1027" data-text="invoke-obfuscation service — env var or clip or stdin patterns 1,24 high execution,defense_evasion,t1059.001,t1027 execution | defense evasion">
+  <td><a href="Invoke-Obfuscation Service — ENV VAR or CLIP or STDIN Patterns.html">Invoke-Obfuscation Service — ENV VAR or CLIP or STDIN Patterns</a></td>
+  <td class="col-eids">1,24</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1059.001</span> <span class="tag-pill">t1027</span></td>
+  <td class="col-tactics">Execution | Defense Evasion</td>
+</tr>
+<tr data-level="critical" data-tags="persistence,defense_evasion,credential_access,t1543" data-text="skeleton key — sedebugprivilege on dc + logon process 1,10 critical persistence,defense_evasion,credential_access,t1543 persistence | defense evasion | credential access">
+  <td><a href="Skeleton Key — SeDebugPrivilege on DC + Logon Process.html">Skeleton Key — SeDebugPrivilege on DC + Logon Process</a></td>
+  <td class="col-eids">1,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1543</span></td>
+  <td class="col-tactics">Persistence | Defense Evasion | Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="privilege_escalation,t1078.002" data-text="domain admin logon to workstation — credential exposure 1,3 medium privilege_escalation,t1078.002 privilege escalation">
+  <td><a href="Domain Admin Logon to Workstation — Credential Exposure.html">Domain Admin Logon to Workstation — Credential Exposure</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1078.002</span></td>
+  <td class="col-tactics">Privilege Escalation</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,t1003.003" data-text="ntds.dit extraction — ntdsutil or wbadmin or vssadmin 1,9 critical credential_access,t1003.003 credential access">
+  <td><a href="NTDS.dit Extraction — ntdsutil or wbadmin or vssadmin.html">NTDS.dit Extraction — ntdsutil or wbadmin or vssadmin</a></td>
+  <td class="col-eids">1,9</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.003</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="privilege_escalation,defense_evasion,t1134.005" data-text="sid history injection failure — attempted sid abuse 1,3 high privilege_escalation,defense_evasion,t1134.005 privilege escalation | defense evasion">
+  <td><a href="SID History Injection Failure — Attempted SID Abuse.html">SID History Injection Failure — Attempted SID Abuse</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1134.005</span></td>
+  <td class="col-tactics">Privilege Escalation | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="initial_access,credential_access,t1110.003,t1078" data-text="account lockout reset followed by immediate logon 1,3 high initial_access,credential_access,t1110.003,t1078 initial access | credential access">
+  <td><a href="Account Lockout Reset Followed by Immediate Logon.html">Account Lockout Reset Followed by Immediate Logon</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1110.003</span> <span class="tag-pill">t1078</span></td>
+  <td class="col-tactics">Initial Access | Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="initial_access,credential_access,t1110.003,t1078" data-text="password spray success — failure burst then logon 1,3 critical initial_access,credential_access,t1110.003,t1078 initial access | credential access">
+  <td><a href="Password Spray Success — Failure Burst Then Logon.html">Password Spray Success — Failure Burst Then Logon</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1110.003</span> <span class="tag-pill">t1078</span></td>
+  <td class="col-tactics">Initial Access | Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1558.003" data-text="spn added to user — kerberoasting target creation 1,3 high credential_access,t1558.003 credential access">
+  <td><a href="SPN Added to User — Kerberoasting Target Creation.html">SPN Added to User — Kerberoasting Target Creation</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1558.003</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1558.001" data-text="kerberos unconstrained delegation — tgt capture indicator 1,3,10 high credential_access,t1558.001 credential access">
+  <td><a href="Kerberos Unconstrained Delegation — TGT Capture Indicator.html">Kerberos Unconstrained Delegation — TGT Capture Indicator</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1558.001</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="impact,execution,t1484.001,t1053.005,t1486,t1489" data-text="gpo-based ransomware deployment full chain 1,3,11,13 critical impact,execution,t1484.001,t1053.005,t1486,t1489 execution | impact">
+  <td><a href="GPO-Based Ransomware Deployment Full Chain.html">GPO-Based Ransomware Deployment Full Chain</a></td>
+  <td class="col-eids">1,3,11,13</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1484.001</span> <span class="tag-pill">t1053.005</span> <span class="tag-pill">t1486</span> <span class="tag-pill">t1489</span></td>
+  <td class="col-tactics">Execution | Impact</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,t1003.003,t1003.006" data-text="dcsync + lsass access — complete credential harvest 1,3,10 critical credential_access,t1003.003,t1003.006 credential access">
+  <td><a href="DCSync + LSASS Access — Complete Credential Harvest.html">DCSync + LSASS Access — Complete Credential Harvest</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.003</span> <span class="tag-pill">t1003.006</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="lateral_movement,execution,t1021.002,t1569.002" data-text="lateral movement chain — network logon + admin share + service 1,3,17,18 critical lateral_movement,execution,t1021.002,t1569.002 execution | lateral movement">
+  <td><a href="Lateral Movement Chain — Network Logon + Admin Share + Service.html">Lateral Movement Chain — Network Logon + Admin Share + Service</a></td>
+  <td class="col-eids">1,3,17,18</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1021.002</span> <span class="tag-pill">t1569.002</span></td>
+  <td class="col-tactics">Execution | Lateral Movement</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,lateral_movement,t1558.001,t1134" data-text="golden ticket — tgs without prior tgt + special privileges 1,3,10 critical credential_access,lateral_movement,t1558.001,t1134 credential access | lateral movement">
+  <td><a href="Golden Ticket — TGS Without Prior TGT + Special Privileges.html">Golden Ticket — TGS Without Prior TGT + Special Privileges</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1558.001</span> <span class="tag-pill">t1134</span></td>
+  <td class="col-tactics">Credential Access | Lateral Movement</td>
+</tr>
+<tr data-level="critical" data-tags="impact,defense_evasion,t1486,t1490,t1070,t1531" data-text="full ransomware kill chain — logon + vss delete + encrypt 1,3,11,23 critical impact,defense_evasion,t1486,t1490,t1070,t1531 defense evasion | impact">
+  <td><a href="Full Ransomware Kill Chain — Logon + VSS Delete + Encrypt.html">Full Ransomware Kill Chain — Logon + VSS Delete + Encrypt</a></td>
+  <td class="col-eids">1,3,11,23</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1486</span> <span class="tag-pill">t1490</span> <span class="tag-pill">t1070</span> <span class="tag-pill">t1531</span></td>
+  <td class="col-tactics">Defense Evasion | Impact</td>
+</tr>
+<tr data-level="high" data-tags="execution,initial_access,t1566.001,t1059.001" data-text="office application spawns shell — macro or ole phishing 1,8 high execution,initial_access,t1566.001,t1059.001 initial access | execution">
+  <td><a href="Office Application Spawns Shell — Macro or OLE Phishing.html">Office Application Spawns Shell — Macro or OLE Phishing</a></td>
+  <td class="col-eids">1,8</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">initial_access</span> <span class="tag-pill">t1566.001</span> <span class="tag-pill">t1059.001</span></td>
+  <td class="col-tactics">Initial Access | Execution</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,command_and_control,t1105,t1218" data-text="certutil.exe payload download — lolbin abuse 1,3,11 high defense_evasion,command_and_control,t1105,t1218 defense evasion | command and control">
+  <td><a href="certutil.exe Payload Download — LOLBin Abuse.html">certutil.exe Payload Download — LOLBin Abuse</a></td>
+  <td class="col-eids">1,3,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">command_and_control</span> <span class="tag-pill">t1105</span> <span class="tag-pill">t1218</span></td>
+  <td class="col-tactics">Defense Evasion | Command and Control</td>
+</tr>
+<tr data-level="medium" data-tags="defense_evasion,persistence,t1197,t1105" data-text="bitsadmin.exe file download — lolbin persistence 1,3,11 medium defense_evasion,persistence,t1197,t1105 persistence | defense evasion">
+  <td><a href="bitsadmin.exe File Download — LOLBin Persistence.html">bitsadmin.exe File Download — LOLBin Persistence</a></td>
+  <td class="col-eids">1,3,11</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1197</span> <span class="tag-pill">t1105</span></td>
+  <td class="col-tactics">Persistence | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="execution,t1059.005,t1059.007" data-text="wscript or cscript executes remote script — dropper 1,3,11 high execution,t1059.005,t1059.007 execution">
+  <td><a href="wscript or cscript Executes Remote Script — Dropper.html">wscript or cscript Executes Remote Script — Dropper</a></td>
+  <td class="col-eids">1,3,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">t1059.005</span> <span class="tag-pill">t1059.007</span></td>
+  <td class="col-tactics">Execution</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,execution,t1218.005" data-text="mshta.exe remote hta execution — fileless malware 1,3,22 high defense_evasion,execution,t1218.005 execution | defense evasion">
+  <td><a href="mshta.exe Remote HTA Execution — Fileless Malware.html">mshta.exe Remote HTA Execution — Fileless Malware</a></td>
+  <td class="col-eids">1,3,22</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1218.005</span></td>
+  <td class="col-tactics">Execution | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,execution,t1218.010,t1218.009" data-text="regsvr32 or regasm executes remote com dll — applocker bypass 1,3,7 high defense_evasion,execution,t1218.010,t1218.009 execution | defense evasion">
+  <td><a href="regsvr32 or regasm Executes Remote COM DLL — AppLocker Bypass.html">regsvr32 or regasm Executes Remote COM DLL — AppLocker Bypass</a></td>
+  <td class="col-eids">1,3,7</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1218.010</span> <span class="tag-pill">t1218.009</span></td>
+  <td class="col-tactics">Execution | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,execution,t1218.011" data-text="rundll32 executes remote script — lolbin proxy execution 1,3,7 high defense_evasion,execution,t1218.011 execution | defense evasion">
+  <td><a href="rundll32 Executes Remote Script — LOLBin Proxy Execution.html">rundll32 Executes Remote Script — LOLBin Proxy Execution</a></td>
+  <td class="col-eids">1,3,7</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1218.011</span></td>
+  <td class="col-tactics">Execution | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="execution,defense_evasion,t1059.001,t1027" data-text="powershell encoded command — obfuscated execution 1 high execution,defense_evasion,t1059.001,t1027 execution | defense evasion">
+  <td><a href="PowerShell Encoded Command — Obfuscated Execution.html">PowerShell Encoded Command — Obfuscated Execution</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1059.001</span> <span class="tag-pill">t1027</span></td>
+  <td class="col-tactics">Execution | Defense Evasion</td>
+</tr>
+<tr data-level="medium" data-tags="discovery,persistence,t1087.001,t1136.001" data-text="net.exe or net1.exe account management commands 1 medium discovery,persistence,t1087.001,t1136.001 persistence | discovery">
+  <td><a href="net.exe or net1.exe Account Management Commands.html">net.exe or net1.exe Account Management Commands</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1087.001</span> <span class="tag-pill">t1136.001</span></td>
+  <td class="col-tactics">Persistence | Discovery</td>
+</tr>
+<tr data-level="critical" data-tags="impact,t1490" data-text="vssadmin.exe delete shadows — backup destruction 1 critical impact,t1490 impact">
+  <td><a href="vssadmin.exe Delete Shadows — Backup Destruction.html">vssadmin.exe Delete Shadows — Backup Destruction</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">t1490</span></td>
+  <td class="col-tactics">Impact</td>
+</tr>
+<tr data-level="high" data-tags="execution,lateral_movement,t1047" data-text="wmic.exe remote code execution — wmi lolbin 1,3 high execution,lateral_movement,t1047 execution | lateral movement">
+  <td><a href="wmic.exe Remote Code Execution — WMI LOLBin.html">wmic.exe Remote Code Execution — WMI LOLBin</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1047</span></td>
+  <td class="col-tactics">Execution | Lateral Movement</td>
+</tr>
+<tr data-level="medium" data-tags="discovery,t1033" data-text="whoami.exe spawned by service account — post-compromise recon 1 medium discovery,t1033 discovery">
+  <td><a href="whoami.exe Spawned by Service Account — Post-Compromise Recon.html">whoami.exe Spawned by Service Account — Post-Compromise Recon</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1033</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="medium" data-tags="discovery,t1482" data-text="nltest.exe domain trust discovery — adversary recon 1,3 medium discovery,t1482 discovery">
+  <td><a href="nltest.exe Domain Trust Discovery — Adversary Recon.html">nltest.exe Domain Trust Discovery — Adversary Recon</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">t1482</span></td>
+  <td class="col-tactics">Discovery</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1055.012" data-text="suspicious process spawned by svchost — hollow process 1,8,25 high defense_evasion,t1055.012 defense evasion">
+  <td><a href="Suspicious Process Spawned by svchost — Hollow Process.html">Suspicious Process Spawned by svchost — Hollow Process</a></td>
+  <td class="col-eids">1,8,25</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1055.012</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="critical" data-tags="execution,initial_access,t1566.001,t1059.001,t1055" data-text="emotet or qakbot kill chain — word → powershell → payload 1,3,7,22 critical execution,initial_access,t1566.001,t1059.001,t1055 initial access | execution">
+  <td><a href="Emotet or Qakbot Kill Chain — Word → PowerShell → Payload.html">Emotet or Qakbot Kill Chain — Word → PowerShell → Payload</a></td>
+  <td class="col-eids">1,3,7,22</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">initial_access</span> <span class="tag-pill">t1566.001</span> <span class="tag-pill">t1059.001</span> <span class="tag-pill">t1055</span></td>
+  <td class="col-tactics">Initial Access | Execution</td>
+</tr>
+<tr data-level="high" data-tags="execution,command_and_control,t1105" data-text="apt32 certutil download + execute — stage-2 dropper 1,3,11 high execution,command_and_control,t1105 execution | command and control">
+  <td><a href="APT32 Certutil Download + Execute — Stage-2 Dropper.html">APT32 Certutil Download + Execute — Stage-2 Dropper</a></td>
+  <td class="col-eids">1,3,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">execution</span> <span class="tag-pill">command_and_control</span> <span class="tag-pill">t1105</span></td>
+  <td class="col-tactics">Execution | Command and Control</td>
+</tr>
+<tr data-level="medium" data-tags="defense_evasion,t1070.006" data-text="system time change — timestomping anti-forensics 1,2 medium defense_evasion,t1070.006 defense evasion">
+  <td><a href="System Time Change — Timestomping Anti-Forensics.html">System Time Change — Timestomping Anti-Forensics</a></td>
+  <td class="col-eids">1,2</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1070.006</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1562.006" data-text="sacl removed from object — audit evasion 1,3 high defense_evasion,t1562.006 defense evasion">
+  <td><a href="SACL Removed from Object — Audit Evasion.html">SACL Removed from Object — Audit Evasion</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.006</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="medium" data-tags="defense_evasion,impact,t1222" data-text="object dacl modified — ransomware permission change 1,3 medium defense_evasion,impact,t1222 defense evasion | impact">
+  <td><a href="Object DACL Modified — Ransomware Permission Change.html">Object DACL Modified — Ransomware Permission Change</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">impact</span> <span class="tag-pill">t1222</span></td>
+  <td class="col-tactics">Defense Evasion | Impact</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,persistence,t1014,t1547.006" data-text="code integrity — boot tamper or unsigned driver loaded 6 high defense_evasion,persistence,t1014,t1547.006 persistence | defense evasion">
+  <td><a href="Code Integrity — Boot Tamper or Unsigned Driver Loaded.html">Code Integrity — Boot Tamper or Unsigned Driver Loaded</a></td>
+  <td class="col-eids">6</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1014</span> <span class="tag-pill">t1547.006</span></td>
+  <td class="col-tactics">Persistence | Defense Evasion</td>
+</tr>
+<tr data-level="medium" data-tags="exfiltration,initial_access,t1091,t1052.001" data-text="new external usb device recognized — potential exfiltration 6,11 medium exfiltration,initial_access,t1091,t1052.001 initial access | exfiltration">
+  <td><a href="New External USB Device Recognized — Potential Exfiltration.html">New External USB Device Recognized — Potential Exfiltration</a></td>
+  <td class="col-eids">6,11</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">exfiltration</span> <span class="tag-pill">initial_access</span> <span class="tag-pill">t1091</span> <span class="tag-pill">t1052.001</span></td>
+  <td class="col-tactics">Initial Access | Exfiltration</td>
+</tr>
+<tr data-level="medium" data-tags="exfiltration,defense_evasion,t1052.001" data-text="unauthorized device blocked — policy enforcement bypass attempt 1,6 medium exfiltration,defense_evasion,t1052.001 defense evasion | exfiltration">
+  <td><a href="Unauthorized Device Blocked — Policy Enforcement Bypass Attempt.html">Unauthorized Device Blocked — Policy Enforcement Bypass Attempt</a></td>
+  <td class="col-eids">1,6</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">exfiltration</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1052.001</span></td>
+  <td class="col-tactics">Defense Evasion | Exfiltration</td>
+</tr>
+<tr data-level="high" data-tags="initial_access,execution,t1200,t1091" data-text="usb badusb or hid attack — keyboard device connection 1,6 high initial_access,execution,t1200,t1091 initial access | execution">
+  <td><a href="USB BadUSB or HID Attack — Keyboard Device Connection.html">USB BadUSB or HID Attack — Keyboard Device Connection</a></td>
+  <td class="col-eids">1,6</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1200</span> <span class="tag-pill">t1091</span></td>
+  <td class="col-tactics">Initial Access | Execution</td>
+</tr>
+<tr data-level="high" data-tags="exfiltration,t1052.001,t1005" data-text="external storage write + subsequent logoff — insider exfiltration 1,6,11 high exfiltration,t1052.001,t1005 exfiltration">
+  <td><a href="External Storage Write + Subsequent Logoff — Insider Exfiltration.html">External Storage Write + Subsequent Logoff — Insider Exfiltration</a></td>
+  <td class="col-eids">1,6,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">exfiltration</span> <span class="tag-pill">t1052.001</span> <span class="tag-pill">t1005</span></td>
+  <td class="col-tactics">Exfiltration</td>
+</tr>
+<tr data-level="medium" data-tags="persistence,t1547.001" data-text="run key persistence — hklm currentversion run modified 1,13 medium persistence,t1547.001 persistence">
+  <td><a href="Run Key Persistence — HKLM CurrentVersion Run Modified.html">Run Key Persistence — HKLM CurrentVersion Run Modified</a></td>
+  <td class="col-eids">1,13</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">t1547.001</span></td>
+  <td class="col-tactics">Persistence</td>
+</tr>
+<tr data-level="high" data-tags="persistence,privilege_escalation,t1546.010" data-text="appinit_dlls registry modification — dll injection persistence 7,13 high persistence,privilege_escalation,t1546.010 persistence | privilege escalation">
+  <td><a href="AppInit_DLLs Registry Modification — DLL Injection Persistence.html">AppInit_DLLs Registry Modification — DLL Injection Persistence</a></td>
+  <td class="col-eids">7,13</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1546.010</span></td>
+  <td class="col-tactics">Persistence | Privilege Escalation</td>
+</tr>
+<tr data-level="high" data-tags="persistence,privilege_escalation,defense_evasion,t1546.012" data-text="debugger registry key — image file execution options hijack 1,13 high persistence,privilege_escalation,defense_evasion,t1546.012 persistence | privilege escalation | defense evasion">
+  <td><a href="Debugger Registry Key — Image File Execution Options Hijack.html">Debugger Registry Key — Image File Execution Options Hijack</a></td>
+  <td class="col-eids">1,13</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">privilege_escalation</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1546.012</span></td>
+  <td class="col-tactics">Persistence | Privilege Escalation | Defense Evasion</td>
+</tr>
+<tr data-level="high" data-tags="defense_evasion,t1562.001" data-text="windows defender exclusion added via registry 13 high defense_evasion,t1562.001 defense evasion">
+  <td><a href="Windows Defender Exclusion Added via Registry.html">Windows Defender Exclusion Added via Registry</a></td>
+  <td class="col-eids">13</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.001</span></td>
+  <td class="col-tactics">Defense Evasion</td>
+</tr>
+<tr data-level="critical" data-tags="persistence,credential_access,t1547.005,t1556.002" data-text="security providers or lsa dll — credential access persistence 7,13 critical persistence,credential_access,t1547.005,t1556.002 persistence | credential access">
+  <td><a href="Security Providers or LSA DLL — Credential Access Persistence.html">Security Providers or LSA DLL — Credential Access Persistence</a></td>
+  <td class="col-eids">7,13</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1547.005</span> <span class="tag-pill">t1556.002</span></td>
+  <td class="col-tactics">Persistence | Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="persistence,privilege_escalation,t1546.008" data-text="sticky keys or accessibility tool replaced — backdoor logon 1,13 high persistence,privilege_escalation,t1546.008 persistence | privilege escalation">
+  <td><a href="Sticky Keys or Accessibility Tool Replaced — Backdoor Logon.html">Sticky Keys or Accessibility Tool Replaced — Backdoor Logon</a></td>
+  <td class="col-eids">1,13</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1546.008</span></td>
+  <td class="col-tactics">Persistence | Privilege Escalation</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1555.003" data-text="browser password database access — chrome or firefox decrypt 1,10,11 high credential_access,t1555.003 credential access">
+  <td><a href="Browser Password Database Access — Chrome or Firefox Decrypt.html">Browser Password Database Access — Chrome or Firefox Decrypt</a></td>
+  <td class="col-eids">1,10,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1555.003</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1555.001" data-text="keepass database file access — password manager theft 1,10,11 high credential_access,t1555.001 credential access">
+  <td><a href="KeePass Database File Access — Password Manager Theft.html">KeePass Database File Access — Password Manager Theft</a></td>
+  <td class="col-eids">1,10,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1555.001</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1552.004" data-text="ssh private key file access — lateral movement credential 1,11 high credential_access,t1552.004 credential access">
+  <td><a href="SSH Private Key File Access — Lateral Movement Credential.html">SSH Private Key File Access — Lateral Movement Credential</a></td>
+  <td class="col-eids">1,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1552.004</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="high" data-tags="credential_access,t1552.004,t1649" data-text="certificate private key export — certificate theft 1,10,11 high credential_access,t1552.004,t1649 credential access">
+  <td><a href="Certificate Private Key Export — Certificate Theft.html">Certificate Private Key Export — Certificate Theft</a></td>
+  <td class="col-eids">1,10,11</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1552.004</span> <span class="tag-pill">t1649</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="medium" data-tags="initial_access,t1078" data-text="logon outside working hours — after-hours account activity 1,3 medium initial_access,t1078 initial access">
+  <td><a href="Logon Outside Working Hours — After-Hours Account Activity.html">Logon Outside Working Hours — After-Hours Account Activity</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">t1078</span></td>
+  <td class="col-tactics">Initial Access</td>
+</tr>
+<tr data-level="high" data-tags="privilege_escalation,t1078.003" data-text="service account interactive logon — unusual logon type 1 high privilege_escalation,t1078.003 privilege escalation">
+  <td><a href="Service Account Interactive Logon — Unusual Logon Type.html">Service Account Interactive Logon — Unusual Logon Type</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1078.003</span></td>
+  <td class="col-tactics">Privilege Escalation</td>
+</tr>
+<tr data-level="medium" data-tags="lateral_movement,t1078" data-text="computer account network logon — unauthorized system access 1,3 medium lateral_movement,t1078 lateral movement">
+  <td><a href="Computer Account Network Logon — Unauthorized System Access.html">Computer Account Network Logon — Unauthorized System Access</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1078</span></td>
+  <td class="col-tactics">Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="impact,t1531" data-text="bulk account deletion — insider threat or sabotage 1 high impact,t1531 impact">
+  <td><a href="Bulk Account Deletion — Insider Threat or Sabotage.html">Bulk Account Deletion — Insider Threat or Sabotage</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">t1531</span></td>
+  <td class="col-tactics">Impact</td>
+</tr>
+<tr data-level="medium" data-tags="privilege_escalation,persistence,t1098" data-text="user rights assignment changed — new logon right granted 1 medium privilege_escalation,persistence,t1098 persistence | privilege escalation">
+  <td><a href="User Rights Assignment Changed — New Logon Right Granted.html">User Rights Assignment Changed — New Logon Right Granted</a></td>
+  <td class="col-eids">1</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1098</span></td>
+  <td class="col-tactics">Persistence | Privilege Escalation</td>
+</tr>
+<tr data-level="medium" data-tags="credential_access,t1110" data-text="account locked after manual unlock — brute force persistence 1,3 medium credential_access,t1110 credential access">
+  <td><a href="Account Locked After Manual Unlock — Brute Force Persistence.html">Account Locked After Manual Unlock — Brute Force Persistence</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1110</span></td>
+  <td class="col-tactics">Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="credential_access,exfiltration,t1003,t1041" data-text="suspicious outbound connection from lsass — credential exfil 3,10 critical credential_access,exfiltration,t1003,t1041 credential access | exfiltration">
+  <td><a href="Suspicious Outbound Connection from LSASS — Credential Exfil.html">Suspicious Outbound Connection from LSASS — Credential Exfil</a></td>
+  <td class="col-eids">3,10</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">exfiltration</span> <span class="tag-pill">t1003</span> <span class="tag-pill">t1041</span></td>
+  <td class="col-tactics">Credential Access | Exfiltration</td>
+</tr>
+<tr data-level="high" data-tags="command_and_control,persistence,t1571" data-text="inbound connection to non-standard bind port — backdoor 1,3 high command_and_control,persistence,t1571 persistence | command and control">
+  <td><a href="Inbound Connection to Non-Standard Bind Port — Backdoor.html">Inbound Connection to Non-Standard Bind Port — Backdoor</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">command_and_control</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1571</span></td>
+  <td class="col-tactics">Persistence | Command and Control</td>
+</tr>
+<tr data-level="medium" data-tags="discovery,lateral_movement,t1135,t1018" data-text="smb enumeration across many hosts — lateral movement recon 1,3 medium discovery,lateral_movement,t1135,t1018 discovery | lateral movement">
+  <td><a href="SMB Enumeration Across Many Hosts — Lateral Movement Recon.html">SMB Enumeration Across Many Hosts — Lateral Movement Recon</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1135</span> <span class="tag-pill">t1018</span></td>
+  <td class="col-tactics">Discovery | Lateral Movement</td>
+</tr>
+<tr data-level="critical" data-tags="lateral_movement,impact,t1021.002,t1486" data-text="administrative share mass access — ransomware spread 1,3 critical lateral_movement,impact,t1021.002,t1486 lateral movement | impact">
+  <td><a href="Administrative Share Mass Access — Ransomware Spread.html">Administrative Share Mass Access — Ransomware Spread</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">impact</span> <span class="tag-pill">t1021.002</span> <span class="tag-pill">t1486</span></td>
+  <td class="col-tactics">Lateral Movement | Impact</td>
+</tr>
+<tr data-level="high" data-tags="initial_access,execution,t1195.002" data-text="supply chain attack — signed binary with unusual parent 1,7 high initial_access,execution,t1195.002 initial access | execution">
+  <td><a href="Supply Chain Attack — Signed Binary with Unusual Parent.html">Supply Chain Attack — Signed Binary with Unusual Parent</a></td>
+  <td class="col-eids">1,7</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1195.002</span></td>
+  <td class="col-tactics">Initial Access | Execution</td>
+</tr>
+<tr data-level="high" data-tags="lateral_movement,execution,persistence,t1053.005" data-text="living-off-the-land — schtasks remote task creation 1,3 high lateral_movement,execution,persistence,t1053.005 execution | persistence | lateral movement">
+  <td><a href="Living-off-the-Land — schtasks Remote Task Creation.html">Living-off-the-Land — schtasks Remote Task Creation</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1053.005</span></td>
+  <td class="col-tactics">Execution | Persistence | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="collection,lateral_movement,t1039,t1021.002" data-text="lateral movement + data collection — smb share mass read 1,3 high collection,lateral_movement,t1039,t1021.002 lateral movement | collection">
+  <td><a href="Lateral Movement + Data Collection — SMB Share Mass Read.html">Lateral Movement + Data Collection — SMB Share Mass Read</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">collection</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1039</span> <span class="tag-pill">t1021.002</span></td>
+  <td class="col-tactics">Lateral Movement | Collection</td>
+</tr>
+<tr data-level="critical" data-tags="initial_access,execution,t1190,t1505.003" data-text="exchange server web shell execution — 4688 from w3wp 1,11 critical initial_access,execution,t1190,t1505.003 initial access | execution">
+  <td><a href="Exchange Server Web Shell Execution — 4688 from w3wp.html">Exchange Server Web Shell Execution — 4688 from w3wp</a></td>
+  <td class="col-eids">1,11</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">initial_access</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1190</span> <span class="tag-pill">t1505.003</span></td>
+  <td class="col-tactics">Initial Access | Execution</td>
+</tr>
+<tr data-level="medium" data-tags="lateral_movement,privilege_escalation,t1558" data-text="constrained kerberos delegation — s4u2proxy service ticket 1,3 medium lateral_movement,privilege_escalation,t1558 privilege escalation | lateral movement">
+  <td><a href="Constrained Kerberos Delegation — S4U2Proxy Service Ticket.html">Constrained Kerberos Delegation — S4U2Proxy Service Ticket</a></td>
+  <td class="col-eids">1,3</td>
+  <td><span class="badge badge-medium">Medium</span></td>
+  <td class="col-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1558</span></td>
+  <td class="col-tactics">Privilege Escalation | Lateral Movement</td>
+</tr>
+<tr data-level="high" data-tags="privilege_escalation,credential_access,t1134,t1558" data-text="kerberos bronze bit — s4u2self forged pac 1,3,10 high privilege_escalation,credential_access,t1134,t1558 privilege escalation | credential access">
+  <td><a href="Kerberos Bronze Bit — S4U2Self Forged PAC.html">Kerberos Bronze Bit — S4U2Self Forged PAC</a></td>
+  <td class="col-eids">1,3,10</td>
+  <td><span class="badge badge-high">High</span></td>
+  <td class="col-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">credential_access</span> <span class="tag-pill">t1134</span> <span class="tag-pill">t1558</span></td>
+  <td class="col-tactics">Privilege Escalation | Credential Access</td>
+</tr>
+<tr data-level="critical" data-tags="impact,execution,persistence,t1484.001,t1053.005" data-text="gpo abuse — default policy scheduled task for ransomware 1,3,11,13 critical impact,execution,persistence,t1484.001,t1053.005 execution | persistence | impact">
+  <td><a href="GPO Abuse — Default Policy Scheduled Task for Ransomware.html">GPO Abuse — Default Policy Scheduled Task for Ransomware</a></td>
+  <td class="col-eids">1,3,11,13</td>
+  <td><span class="badge badge-critical">Critical</span></td>
+  <td class="col-tags"><span class="tag-pill">impact</span> <span class="tag-pill">execution</span> <span class="tag-pill">persistence</span> <span class="tag-pill">t1484.001</span> <span class="tag-pill">t1053.005</span></td>
+  <td class="col-tactics">Execution | Persistence | Impact</td>
+</tr>
+  </tbody>
+</table>
+</div>
+<script>
+
+    const searchBox = document.getElementById('search');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const tagFilterBtns = document.querySelectorAll('.tag-filter-btn');
+    const tableRows = document.querySelectorAll('#sop-table tbody tr');
+    const counter = document.getElementById('row-counter');
+    const headers = document.querySelectorAll('#sop-table th[data-col]');
+
+    let activeLevel = 'all';
+    let activeTags = new Set();
+    let searchTerm = '';
+    let sortCol = -1;
+    let sortAsc = true;
+
+    function tagMatches(tr) {
+      if (activeTags.size === 0) return true;
+      const rowTags = (tr.dataset.tags || "").split(",").map(s => s.trim()).filter(Boolean);
+      return [...activeTags].some(t => rowTags.includes(t));
+    }
+
+    function updateTable() {
+      let visible = 0;
+      tableRows.forEach(tr => {
+        const lvl = tr.dataset.level;
+        const txt = tr.dataset.text;
+        const levelOk = activeLevel === 'all' || lvl === activeLevel;
+        const tagOk   = tagMatches(tr);
+        const searchOk = searchTerm === '' || txt.includes(searchTerm);
+        if (levelOk && tagOk && searchOk) {
+          tr.style.display = '';
+          visible++;
+        } else {
+          tr.style.display = 'none';
+        }
+      });
+      counter.textContent = `Showing ${visible} of 273`;
+    }
+
+    searchBox.addEventListener('input', e => {
+      searchTerm = e.target.value.toLowerCase();
+      updateTable();
+    });
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeLevel = btn.dataset.level;
+        updateTable();
+      });
+    });
+
+    tagFilterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tag = btn.dataset.tag;
+        if (activeTags.has(tag)) {
+          activeTags.delete(tag);
+          btn.classList.remove('active');
+        } else {
+          activeTags.add(tag);
+          btn.classList.add('active');
+        }
+        updateTable();
+      });
+    });
+
+    headers.forEach(th => {
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', () => {
+        const col = parseInt(th.dataset.col);
+        if (sortCol === col) {
+          sortAsc = !sortAsc;
+        } else {
+          sortCol = col;
+          sortAsc = true;
+        }
+        headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+        th.classList.add(sortAsc ? 'sort-asc' : 'sort-desc');
+
+        const tbody = document.querySelector('#sop-table tbody');
+        const rowsArr = Array.from(tbody.querySelectorAll('tr'));
+        rowsArr.sort((a, b) => {
+          const aText = a.cells[col].textContent.trim().toLowerCase();
+          const bText = b.cells[col].textContent.trim().toLowerCase();
+          const cmp = aText.localeCompare(bText);
+          return sortAsc ? cmp : -cmp;
+        });
+        rowsArr.forEach(r => tbody.appendChild(r));
+      });
+    });
+
+    updateTable();
+    
+</script>
+</body>
+</html>

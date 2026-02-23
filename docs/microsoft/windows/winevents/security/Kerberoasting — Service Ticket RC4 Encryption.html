@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kerberoasting — Service Ticket RC4 Encryption</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Kerberoasting — Service Ticket RC4 Encryption</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1558.003</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> Kerberoasting — Service Ticket RC4 Encryption
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Kerberoasting — Service Ticket RC4 Encryption</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1558.003</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4769</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, t1558.003</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+Kerberoasting is an offline credential attack technique in which an adversary requests Kerberos service tickets (TGS — Ticket-Granting Service) for service accounts that use weak encryption types (most commonly RC4-HMAC), then attempts to crack the encrypted part of the ticket offline to recover the service account’s password (NT hash).
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong>       : Steal or Forge Kerberos Tickets: Kerberoasting (T1558.003)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker obtains any domain user credentials (even low-privileged / standard user).</li>
+  <li>Attacker enumerates service principal names (<strong>SPNs</strong>) — usually via LDAP queries (<code>setspn</code>, PowerView <code>Get-DomainUser -SPN</code>, BloodHound/SharpHound, Rubeus <code>kerberoast /spns</code>).</li>
+  <li>Attacker requests a Kerberos TGS ticket for each targeted SPN using their own user ticket (TGT).</li>
+  <li>The KDC returns an encrypted TGS where the session key is encrypted with the target service account’s long-term key (password-derived NT hash).</li>
+  <li>If the service account uses RC4-HMAC (etype 23 / 0x17), the ticket is weak and can be cracked offline using hashcat / JohnTheRipper.</li>
+  <li>Attacker cracks the hash → gains plaintext password or NT hash of the service account (often highly privileged).</li>
+</ol>
+
+<strong>Most common tools observed performing Kerberoasting in 2024–2026:</strong>
+<ul>
+  <li>Rubeus (<code>kerberoast</code>, <code>kerberoast /outfile</code>, <code>triage</code>, <code>monitor</code>)</li>
+  <li>Impacket (<code>GetUserSPNs.py</code>)</li>
+  <li>Mimikatz (<code>kerberos::list /export</code>)</li>
+  <li>PowerView / PowerSploit (<code>Invoke-Kerberoast</code>)</li>
+  <li>SharpHound / BloodHound collection phase</li>
+  <li>Custom .NET / PowerShell scripts</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4769">4. Key Windows Security Event Indicators (Event ID 4769)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4769</strong> (A Kerberos service ticket was requested)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>TicketEncryptionType</strong></td><td>0x17 (23 decimal) = RC4-HMAC</td><td>Strongest indicator — modern environments should use AES (0x18 / 0x1A)</td></tr>
+<tr><td><strong>TicketOptions</strong></td><td>0x40810000 (forwardable + renewable + canonicalize + renewable_ok) or very similar</td><td>Typical default request pattern for Kerberoasting</td></tr>
+<tr><td><strong>ServiceName</strong></td><td>Ends in <code>$</code> (computer accounts) <strong>or</strong> service accounts with SPNs (sqlservice, sapr3svc, etc.)</td><td>Target of the roast — high-value service accounts are preferred</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Attacker workstation / jump host / VPN exit node</td><td>Source of the TGS request</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Low-privileged domain user (often recently created / unusual account)</td><td>The account used to request many tickets</td></tr>
+<tr><td><strong>Status</strong></td><td>0x0 (success)</td><td>Successful ticket issuance</td></tr>
+<tr><td><strong>PreAuthType</strong></td><td>Usually 2 or 15 (depends on client)</td><td>Not usually suspicious by itself</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (classic Kerberoasting signature):</strong>
+<pre><code>Event ID = 4769
+TicketEncryptionType = 0x17    (or decimal 23)
+ServiceName ends with $        or belongs to known high-value SPN list
+→ many such events in short time window from same SubjectUserName / IpAddress
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Event ID = 4769</li>
+  <li>TicketEncryptionType = 0x17 (RC4)</li>
+  <li>ServiceName matches pattern of service / computer accounts</li>
+  <li>Exclude known legitimate RC4 usage (very rare in 2025+ environments)</li>
+</ul>
+
+<strong>Behavioral / Volume-based Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Count of 4769 events where TicketEncryptionType = 0x17 per SubjectUserName → &gt; 5–10 in &lt; 5 minutes = very suspicious</li>
+  <li>4769 with RC4 + SubjectUserName is <strong>not</strong> a service / machine account</li>
+  <li>Same IpAddress requesting TGS for many different ServiceNames in short timeframe</li>
+  <li>Correlate with preceding LDAP/SPN enumeration (4661/4662 on user/computer objects with filter ≈ servicePrincipalName)</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legacy applications / very old SQL Server, SAP, Oracle installations still using RC4</li>
+  <li>Misconfigured older domain functional level + old clients</li>
+  <li>Some third-party Kerberos implementations</li>
+</ul>
+
+<strong>Recommended Hardening (to prevent / reduce impact)</strong>
+<ul>
+  <li>Set <code>msDS-SupportedEncryptionTypes</code> to require AES only (disable RC4) on service accounts</li>
+  <li>Use long, complex, randomly generated passwords for service accounts (&gt;25 characters)</li>
+  <li>Enable Group Managed Service Accounts (gMSA) wherever possible</li>
+  <li>Monitor for SPN additions (5136 on user/computer objects)</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Immediately reset password of roasted service accounts (Target = ServiceName)</li>
+  <li>Force sign-out / ticket invalidation if possible</li>
+  <li>Hunt for usage of cracked credentials (new 4624 logons with the service account from unusual IPs / workstations)</li>
+  <li>Investigate source workstation (IpAddress) for compromise (process creation 4688, suspicious binaries, prior credential access)</li>
+  <li>Check for preceding enumeration (LDAP queries, BloodHound collection indicators)</li>
+  <li>Consider enabling AES-only Kerberos policy domain-wide if legacy compatibility allows</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

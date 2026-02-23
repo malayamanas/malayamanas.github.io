@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Lockout Storm — Potential Ransomware</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Account Lockout Storm — Potential Ransomware</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Impact</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">impact</span> <span class="tag-pill">t1531</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> Account Lockout Storm — Potential Ransomware
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Account Lockout Storm — Potential Ransomware</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1531</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Impact</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4740</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>impact, t1531</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+A sudden surge in account lockout events (Event ID 4740) across many accounts in a short time window is a strong behavioral indicator of ransomware lateral spread or mass credential brute-forcing preceding encryption. Ransomware families such as Ryuk, Conti, and LockBit are known to attempt broad authentication before encrypting network shares, triggering mass lockouts. Windows Security Event ID 4740 is generated on Domain Controllers each time a user account is locked out due to too many failed authentication attempts.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Impact</li>
+</ul><br>
+  <strong>Technique</strong>       : Account Access Removal (T1531)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Ransomware (or the human operator behind it) compromises an initial foothold account and begins spreading laterally using stolen credentials or brute-force attempts across the network.</li>
+  <li>The ransomware or associated credential-access tool attempts to authenticate to many systems simultaneously using a list of discovered usernames, triggering failed logon attempts.</li>
+  <li>When failed logon attempts exceed the configured account lockout threshold, Active Directory locks out accounts — triggering Event 4740 on the Domain Controller.</li>
+  <li>Mass lockouts disrupt user operations (&quot;account lockout storm&quot;), serving the ransomware&#x27;s goal of maximizing impact and preventing defenders from logging in to respond.</li>
+  <li>Simultaneously or shortly after, ransomware begins encrypting file shares and local drives, and may delete Volume Shadow Copies to prevent recovery.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>Conti ransomware (built-in lateral movement via SMB/WMI)</li>
+  <li>LockBit 3.0 (mass deployment via domain GPO abuse)</li>
+  <li>Ryuk / WIZARD SPIDER (paired with TrickBot/BazarLoader for credential harvesting)</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4740">4. Key Windows Security Event Indicators (Event ID 4740)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4740</strong> (A user account was locked out)
+
+<strong>Critical fields to monitor / correlate:</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>TargetUserName</strong></td><td>Multiple distinct user accounts in rapid succession</td><td>Mass lockouts across many accounts in a short window is the core signal</td></tr>
+<tr><td><strong>TargetDomainName</strong></td><td>Production domain (e.g., CORP\, CONTOSO\)</td><td>Confirms lockouts are against domain accounts rather than local accounts</td></tr>
+<tr><td><strong>TargetSid</strong></td><td>Multiple unique SIDs locked out rapidly</td><td>Quantifies the breadth of the lockout storm</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>SYSTEM, machine account ($), or unknown user</td><td>The account initiating lockouts; machine accounts may indicate automated spread</td></tr>
+<tr><td><strong>SubjectDomainName</strong></td><td>Domain name or workstation name</td><td>Helps identify the originating system</td></tr>
+<tr><td><strong>SubjectLogonId</strong></td><td>Correlate with Event 4624 to find source IP and logon session</td><td>Traces back to the source session that triggered lockouts</td></tr>
+<tr><td><strong>CallerComputerName</strong></td><td>Single host generating lockouts for many accounts</td><td>One machine causing lockouts on many accounts is a top IOC</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination:</strong>
+<pre><code>EventID = 4740
+AND COUNT(DISTINCT TargetUserName) &gt;= 5 within 5 minutes grouped by CallerComputerName
+ALERT: Account lockout storm — potential ransomware lateral movement
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Alert when 5 or more distinct TargetUserName values are locked out (Event 4740) within a 5-minute window originating from the same CallerComputerName.</li>
+  <li>Alert on any account lockout (4740) for privileged accounts: Domain Admins, Service Accounts, backup operator accounts.</li>
+</ul>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li><code>EventID:4740 | stats dc(TargetUserName) as lockout_count by CallerComputerName _time | where lockout_count &gt; 5</code></li>
+  <li><code>EventID:4740 | timechart span=1m count by TargetUserName | where count &gt; 10</code> — identify lockout spike timeline</li>
+  <li>Correlate 4740 surge with 4688 events for <code>vssadmin.exe delete shadows</code>, <code>wmic shadowcopy delete</code>, or <code>bcdedit /set recoveryenabled No</code> on same or nearby timeframe</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Misconfigured service accounts with expired passwords cycling through lockouts on many servers simultaneously.</li>
+  <li>End-user running a script or application with cached old credentials against multiple systems.</li>
+  <li>Scheduled tasks using stale credentials after a password change.</li>
+</ul>
+
+<strong>Recommended Hardening</strong>
+<ul>
+  <li>Configure account lockout threshold to 5–10 attempts with a 15-minute observation window.</li>
+  <li>Enable fine-grained password policies for privileged accounts with stricter lockout thresholds.</li>
+  <li>Deploy Microsoft Defender for Identity (MDI) to detect lockout storm patterns automatically.</li>
+  <li>Segment network shares and restrict SMB access to only necessary hosts.</li>
+  <li>Implement LAPS (Local Administrator Password Solution) to prevent credential reuse for local admin accounts.</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Immediately identify CallerComputerName generating the lockout storm and isolate it from the network.</li>
+  <li>Review the isolated host for ransomware processes, unusual executables, or encrypted files.</li>
+  <li>Check all locked-out accounts for unauthorized password resets or privilege escalations.</li>
+  <li>Perform a snapshot of all system states before attempting remediation to preserve forensic evidence.</li>
+  <li>Scan all accessible file shares for ransom notes or encrypted file extensions (.locked, .crypt, etc.).</li>
+  <li>Reset credentials for all locked-out accounts only after confirming the source host is isolated.</li>
+  <li>Engage incident response procedures: escalate to CSIRT, notify leadership, begin forensic imaging of the source host.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suspicious Remote Named Pipe via IPC$</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Suspicious Remote Named Pipe via IPC$</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Lateral Movement</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1021.002</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> Suspicious Remote Named Pipe via IPC$
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Suspicious Remote Named Pipe via IPC$</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1021.002</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Lateral Movement</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>5145</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>lateral_movement, t1021.002</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+Attackers abuse the IPC$ (Inter-Process Communication) share to access named pipes on remote systems for lateral movement. Named pipes over IPC$ are used by tools like PsExec, Impacket, CobaltStrike, and Metasploit to execute commands and interact with remote services. Event ID 5145 logs detailed network share object access including the specific pipe name accessed, enabling detection of suspicious pipe connections from unexpected sources.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Lateral Movement</li>
+</ul><br>
+  <strong>Technique</strong>       : Remote Services: SMB/Windows Admin Shares (T1021.002)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker authenticates to a target system (often using stolen credentials or pass-the-hash).</li>
+  <li>Attacker connects to the IPC$ share on the remote host over SMB (TCP 445).</li>
+  <li>Attacker opens a specific named pipe (e.g., <code>\PIPE\svcctl</code>, <code>\PIPE\atsvc</code>, <code>\PIPE\winreg</code>, <code>\PIPE\samr</code>) to communicate with Windows services remotely.</li>
+  <li>Commands or payloads are sent through the named pipe to the target service (e.g., Service Control Manager, Task Scheduler, Registry).</li>
+  <li>The remote service executes the attacker&#x27;s payload, enabling code execution or further post-exploitation activity.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>Impacket suite (psexec.py, smbexec.py, atexec.py)</li>
+  <li>Cobalt Strike (SMB Beacon via named pipes)</li>
+  <li>PsExec (PSEXESVC named pipe)</li>
+  <li>Metasploit SMB modules</li>
+  <li>SharpExec</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-5145">4. Key Windows Security Event Indicators (Event ID 5145)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>5145</strong> (A network share object was checked to see whether the client can be granted desired access)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>SubjectUserSid</strong></td><td>Non-SYSTEM SID accessing named pipes remotely</td><td>Identifies the security principal making the pipe access request</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Unexpected user account; machine accounts not ending in $ for service access</td><td>Identifies which account is performing the named pipe access</td></tr>
+<tr><td><strong>SubjectDomainName</strong></td><td>External domain or workgroup mismatch</td><td>Helps identify cross-domain or external access attempts</td></tr>
+<tr><td><strong>SubjectLogonId</strong></td><td>Correlate with Event 4624 to identify logon session, source IP, and type</td><td>Links to the originating logon session for enrichment</td></tr>
+<tr><td><strong>ShareName</strong></td><td><code>\\*\IPC$</code> — exclusively IPC$ share</td><td>IPC$ is the primary channel for named pipe lateral movement; access from unexpected hosts is suspicious</td></tr>
+<tr><td><strong>RelativeTargetName</strong></td><td><code>\PIPE\svcctl</code>, <code>\PIPE\atsvc</code>, <code>\PIPE\winreg</code>, <code>\PIPE\samr</code>, <code>\PIPE\netlogon</code>, <code>\PIPE\lsarpc</code>, <code>\PIPE\PSEXESVC</code></td><td>Specific named pipe names reveal the targeted service and tool in use</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Non-RFC1918 addresses; unexpected internal subnets; Tor exit nodes</td><td>External IPs accessing IPC$ named pipes indicate intrusion; unexpected internal IPs indicate lateral movement</td></tr>
+<tr><td><strong>AccessMask</strong></td><td><code>0x12019F</code> (full access), <code>0x1</code> (read), <code>0x3</code> (read/write)</td><td>High access masks on sensitive pipes indicate active exploitation attempts</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination:</strong>
+<pre><code>EventID = 5145
+AND ShareName = &quot;\\*\IPC$&quot;
+AND RelativeTargetName IN (&quot;\PIPE\svcctl&quot;, &quot;\PIPE\atsvc&quot;, &quot;\PIPE\winreg&quot;, &quot;\PIPE\samr&quot;, &quot;\PIPE\PSEXESVC&quot;, &quot;\PIPE\paexec&quot;)
+AND IpAddress NOT IN [trusted_internal_subnets]
+AND SubjectUserName NOT LIKE &quot;%$&quot;
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Alert on Event 5145 where ShareName is <code>IPC$</code> and RelativeTargetName matches known lateral movement pipe names (<code>svcctl</code>, <code>atsvc</code>, <code>PSEXESVC</code>, <code>paexec</code>, <code>remcomsvc</code>) from non-administrative source IPs.</li>
+  <li>Create a baseline of legitimate named pipe usage per host and alert on deviations.</li>
+</ul>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Hunt for Event 5145 on IPC$ from any external IP (not RFC1918): <code>IpAddress != &quot;10.*&quot; AND IpAddress != &quot;172.16.*-172.31.*&quot; AND IpAddress != &quot;192.168.*&quot; AND ShareName = &quot;IPC$&quot;</code></li>
+  <li>Correlate Event 5145 (IPC$ pipe access) with Event 7045 (new service installed) within 5 minutes on the same host to detect PsExec/SMBExec patterns.</li>
+  <li>Hunt for rare or first-seen named pipe names accessed via IPC$ across your environment.</li>
+  <li>Correlate SubjectLogonId from Event 5145 with Event 4624 LogonType=3 to identify the source of network authentication.</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Administrative tools (SCCM, antivirus management agents, backup software) legitimately access named pipes over IPC$ for management functions.</li>
+  <li>Legitimate remote administration using tools like Sysinternals PsExec by IT staff.</li>
+  <li>Windows services performing legitimate RPC communications (printer spooler, DFSN, DFS replication) over named pipes.</li>
+  <li>Domain Controllers legitimately access <code>\PIPE\netlogon</code> and <code>\PIPE\lsarpc</code> for authentication.</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Block inbound SMB (TCP 445) from workstations to workstations at the network layer (micro-segmentation).</li>
+  <li>Enable Windows Firewall rules to restrict IPC$ access to authorized administrative hosts only.</li>
+  <li>Restrict anonymous access to IPC$ via Group Policy: <code>Network access: Restrict anonymous access to Named Pipes and Shares</code>.</li>
+  <li>Implement Named Pipe deny lists for known malicious pipe names via AppLocker or similar.</li>
+  <li>Audit and remove unnecessary local administrator accounts to reduce lateral movement paths.</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Immediately isolate the source host identified in IpAddress from the network to prevent further lateral movement.</li>
+  <li>Correlate the SubjectLogonId with Event 4624 to determine the originating session, authentication method, and source workstation.</li>
+  <li>Investigate the account (SubjectUserName) for signs of compromise: recent password changes, unusual logon hours, multiple concurrent sessions.</li>
+  <li>Review the target host for new services (Event 7045), scheduled tasks (Event 4698), or registry modifications occurring around the same time.</li>
+  <li>Capture and analyze memory from both source and target hosts for indicators of post-exploitation frameworks (Cobalt Strike, Metasploit beacons).</li>
+  <li>Reset credentials for the compromised account and force logoff of all active sessions.</li>
+  <li>Review all other hosts this account or source IP accessed in the same time window for lateral movement scope.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

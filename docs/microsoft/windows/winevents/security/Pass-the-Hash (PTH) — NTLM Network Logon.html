@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pass-the-Hash (PTH) — NTLM Network Logon</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Pass-the-Hash (PTH) — NTLM Network Logon</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access | Lateral Movement</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1550.002</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> Pass-the-Hash (PTH) — NTLM Network Logon
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Pass-the-Hash (PTH) — NTLM Network Logon</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1550.002</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access, Lateral Movement</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4624</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, lateral_movement, t1550.002</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+Pass-the-Hash (PtH) is an attack technique in which an adversary uses a stolen NTLM hash to authenticate to remote systems <strong>without ever knowing or needing the clear-text password</strong>. The attacker performs an NTLM network logon (Logon Type 3) using the hash directly.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong>       : Use Alternate Authentication Material: Pass the Hash (T1550.002)</p>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Lateral Movement  </li>
+</ul><br>
+  <strong>Technique</strong>       : Use Alternate Authentication Material: Pass the Hash (T1550.002)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker obtains NTLM hash of a user (most commonly via Mimikatz sekurlsa::logonpasswords, LSASS dump, or previous credential access)</li>
+  <li>Attacker uses a tool that supports PtH (Mimikatz, Impacket psexec/smbexec/wmiexec, CrackMapExec, native Windows tools with runas /netonly limitations, etc.)</li>
+  <li>Tool performs NTLM authentication to a remote target machine using only the NT hash (no password)</li>
+  <li>Target Windows system logs a successful <strong>Type 3 (Network) logon</strong> — even though no password was ever transmitted in clear text</li>
+  <li>Attacker gains access to the remote system under the stolen account context</li>
+</ol>
+
+<strong>Most common tools observed performing PtH in 2024–2026:</strong>
+<ul>
+  <li>Mimikatz (<code>sekurlsa::pth</code>)</li>
+  <li>Impacket (<code>psexec.py</code>, <code>smbexec.py</code>, <code>wmiexec.py</code>)</li>
+  <li>CrackMapExec (<code>-H</code> flag)</li>
+  <li>Rubeus (some modes)</li>
+  <li>Custom PowerShell / .NET assemblies</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4624">4. Key Windows Security Event Indicators (Event ID 4624)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4624</strong> (An account was successfully logged on)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>LogonType</strong></td><td>3</td><td>Network logon — hallmark of PtH / PtT / over-PtH</td></tr>
+<tr><td><strong>AuthenticationPackageName</strong></td><td>NTLM</td><td>PtH almost always uses NTLM (Kerberos would be Over-Pass-the-Hash)</td></tr>
+<tr><td><strong>LmPackageName</strong></td><td>- (empty) or NTLM V2</td><td>Classic PtH usually shows NTLM; modern may show NTLM V2</td></tr>
+<tr><td><strong>KeyLength</strong></td><td>0</td><td>Very strong indicator — no key material exchanged (hash used directly)</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Internal attacker workstation / jump host / C2 IP</td><td>Source of the authentication attempt</td></tr>
+<tr><td><strong>WorkstationName</strong></td><td>Attacker-controlled machine name (often random or staging hostname)</td><td>Helps identify compromised / attacker-controlled endpoints</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>SYSTEM, NETWORK SERVICE, or the account performing the attack (sometimes LOCAL SERVICE)</td><td>Who launched the PtH tool</td></tr>
+<tr><td><strong>TargetUserName</strong></td><td>High-value account (admin, service account, domain admin…)</td><td>The stolen account being abused</td></tr>
+<tr><td><strong>LogonProcessName</strong></td><td>Advapi, Kerberos, NtLmSsp (most common for PtH)</td><td>NtLmSsp is very typical for PtH</td></tr>
+<tr><td><strong>ProcessId / ProcessName</strong></td><td>Often suspicious parent process (cmd.exe, powershell.exe, rundll32.exe, wscript.exe, mshta.exe, etc.)</td><td>Helps identify the tool / launcher</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (classic PtH signature):</strong>
+<pre><code>Logon Type = 3
+Authentication Package = NTLM
+KeyLength = 0
+LmPackageName = - (empty)
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Event ID = 4624</li>
+  <li>LogonType = 3</li>
+  <li>AuthenticationPackageName = NTLM</li>
+  <li>KeyLength = 0</li>
+  <li><strong>Exclude</strong> known legitimate scenarios (backup software, monitoring agents, specific service accounts with documented NTLM-only behavior)</li>
+</ul>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Count of Logon Type 3 events with KeyLength=0 per TargetUserName → sudden spike = suspicious</li>
+  <li>Logon Type 3 + NTLM + KeyLength=0 + IpAddress NOT in corporate VPN / known admin subnets</li>
+  <li>TargetUserName = privileged account + Logon from unusual workstation / IP</li>
+  <li>Correlate with preceding LSASS access (4656/4663) or credential dumping events</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Some legacy applications still force NTLM + KeyLength=0</li>
+  <li>Certain backup / monitoring agents</li>
+  <li>SCCM / MECM client push (rarely)</li>
+  <li>Very old printers / scanners using NTLM</li>
+</ul>
+
+<strong>Recommended Tuning / Allow-listing</strong>
+<ul>
+  <li>Known administrative jump servers / jump hosts</li>
+  <li>Specific legacy service accounts with documented behavior</li>
+  <li>Backup software service accounts</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate source workstation (IpAddress / WorkstationName)</li>
+  <li>Immediately reset password + force sign-out of the abused account (TargetUserName)</li>
+  <li>Check for additional lateral movement from the compromised host (more 4624 Type 3 events, 5140/5145 share access, 7045/4697 service creation…)</li>
+  <li>Hunt for credential access events prior to this logon (LSASS access, Mimikatz indicators, 4662 on domain backup keys…)</li>
+  <li>Consider full credential reset of the affected account if domain admin / tier-0</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

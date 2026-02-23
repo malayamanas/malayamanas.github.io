@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Group Policy Object Deletion</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Group Policy Object Deletion</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Defense Evasion | Impact</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">impact</span> <span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1484.001</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> Group Policy Object Deletion
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Group Policy Object Deletion</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1484.001</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Defense Evasion, Impact</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>5141</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>impact, defense_evasion, t1484.001</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+An adversary bypasses, disables, or subverts security monitoring and controls by exploiting Domain Policy Modification: Group Policy Modification. Windows Security Event 5141 (A directory service object was deleted) provides the primary detection signal when properly audited and monitored in a SIEM.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Defense Evasion  </li>
+</ul><br>
+  <strong>Technique</strong>       : Domain Policy Modification: Group Policy Modification (T1484.001)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker gains Domain Admin or accounts with permissions to create/modify Group Policy Objects.</li>
+  <li>A new GPO is created or an existing GPO is modified using Group Policy Management Console or PowerShell cmdlets.</li>
+  <li>The GPO change targets a scheduled task, startup script, or software deployment that executes malicious code on affected machines.</li>
+  <li>Event 5136 logs the AD object modification (gPCUserExtensionNames or gPCMachineExtensionNames attributes) when the GPO is modified.</li>
+  <li>Event 4698 logs scheduled task creation embedded in the GPO; affected machines execute the payload on next Group Policy refresh.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>SharpGPOAbuse</li>
+  <li>PowerGPOAbuse</li>
+  <li>PowerSploit Set-DomainObject</li>
+  <li>Native GPMC + PowerShell</li>
+  <li>BloodHound-identified GPO delegation paths</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-5141-a-directory-service-object-was-deleted">4. Key Windows Security Event Indicators (Event ID 5141 (A directory service object was deleted))</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>5141</strong> (A directory service object was deleted)
+
+<strong>Critical fields to monitor / correlate (Required attributes):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>SubjectUserSid</strong></td><td>Non-SYSTEM SID from an interactive user or service account not normally performing this action</td><td>Uniquely identifies the security principal; unexpected SIDs performing sensitive operations are high-priority IOCs</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Unexpected user accounts, machine accounts in human context, or recently created/renamed accounts</td><td>Human-readable identity of the actor; enables cross-event correlation and user-behaviour analysis</td></tr>
+<tr><td><strong>SubjectDomainName</strong></td><td>Workgroup name, external/untrusted domain, or NT AUTHORITY when privileged account is expected</td><td>Confirms account origin; cross-domain or workgroup operations in AD environments indicate lateral movement</td></tr>
+<tr><td><strong>SubjectLogonId</strong></td><td>Correlate with Event 4624 to reveal logon type (3=network, 10=remote interactive), source IP, and workstation</td><td>Links this event to a specific authenticated session; essential for timeline and pivot-path reconstruction</td></tr>
+<tr><td><strong>ObjectDN</strong></td><td>Domain root DN, Schema partition, sensitive user/computer DNs being modified; OU structure manipulation</td><td>Distinguished Name of the AD object; modifications to sensitive AD objects indicate domain-level compromise</td></tr>
+<tr><td><strong>DSName</strong></td><td>Unexpected domain or application partition names; cross-forest partition modifications from non-DC accounts</td><td>Identifies the directory service partition; cross-partition operations from unexpected sources indicate privilege abuse</td></tr>
+</tbody></table>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Alert on Event ID 5141 matching the highest-fidelity field combination shown above</li>
+  <li>Apply thresholds appropriate to the environment: a single event may be sufficient for critical-level detections; volume thresholds apply for medium/low</li>
+  <li>Correlate with Event 4624 (successful logon) using SubjectLogonId to establish the session context and identify the source IP and workstation</li>
+</ul>
+
+<strong>Highest-Fidelity Correlation (SIEM Query Logic):</strong>
+<pre><code>EventID = 5141
+AND SubjectUserName NOT IN &lt;approved_admin_accounts&gt;
+</code></pre>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Correlate 5141 events where SubjectLogonId links to a Type 3 (network) or Type 10 (remote interactive) logon from an external IP address</li>
+  <li>Alert on 5141 events from accounts in privileged groups (Domain Admins, Enterprise Admins) outside approved maintenance windows</li>
+  <li>Hunt for 5141 events followed within 60 seconds by lateral movement indicators (5140, 4624 to other hosts) from the same SubjectLogonId</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate disk encryption tools (BitLocker, VeraCrypt, enterprise DLP encryption) generate similar file access patterns</li>
+  <li>Large-scale data migration or backup operations may create bursts of file creation/modification events</li>
+  <li>Anti-virus scan engines performing deep reads of files create access events without modification</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Implement immutable offline or air-gapped backups following the 3-2-1-1-0 backup rule</li>
+  <li>Deploy application allowlisting to prevent unknown executables from running on endpoints and servers</li>
+  <li>Enable Controlled Folder Access (Windows Defender) on all endpoints to block unauthorized file modification</li>
+  <li>Segment networks to prevent ransomware from reaching backup infrastructure and file servers simultaneously</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the affected host from the network immediately if active exploitation or lateral movement is confirmed.</li>
+  <li>Identify the initiating account (SubjectUserName/SubjectLogonId) and disable it pending investigation.</li>
+  <li>Preserve all relevant Windows Security Event logs from the affected host(s) before any remediation.</li>
+  <li>Correlate the triggering event with Event 4624 logon records to identify the source IP, workstation, and session that performed the action.</li>
+  <li>Immediately disconnect all affected hosts from network shares and backup systems to prevent ransomware spread.</li>
+  <li>Identify the ransomware strain and check for available decryptors (nomoreransom.org, vendor resources).</li>
+  <li>Restore from the most recent clean backup after confirming the restore environment is isolated and clean.</li>
+  <li>Engage legal, compliance, and communications teams as ransomware incidents typically trigger regulatory notification requirements.</li>
+  <li>Conduct post-incident root cause analysis to identify and close the initial access vector before restoration.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

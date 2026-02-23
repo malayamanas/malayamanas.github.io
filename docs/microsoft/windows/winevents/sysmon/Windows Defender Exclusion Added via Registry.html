@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windows Defender Exclusion Added via Registry</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Sysmon Detection SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Windows Defender Exclusion Added via Registry</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Sysmon Event IDs:</strong> 13</span>
+    <span class="meta-item"><strong>Tactics:</strong> Defense Evasion</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1562.001</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Sysmon Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> Windows Defender Exclusion Added via Registry
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Windows Defender Exclusion Added via Registry</td></tr>
+<tr><td><strong>Primary Sysmon Event ID(s)</strong></td><td>13 (RegistryEvent (Value Set))</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1562.001</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Defense Evasion</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Sysmon (System Monitor) Event Log</td></tr>
+<tr><td><strong>Logsource Category</strong></td><td>sysmon</td></tr>
+<tr><td><strong>Tags</strong></td><td>defense_evasion, t1562.001</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+An adversary bypasses, disables, or subverts security monitoring and controls through Windows Defender Exclusion Added via Registry. Sysmon Event(s) 13 (RegistryEvent (Value Set)) provide the primary Sysmon-layer detection signal for this technique.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>     : Defense Evasion  </li>
+</ul><br>
+  <strong>Technique</strong> : Impair Defenses: Disable or Modify Tools (T1562.001)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker achieves code execution on the target system with sufficient privileges to write to the target registry key.</li>
+  <li>Sysmon Event 13 (RegistryValueSet) fires when the persistence registry value is written — this is the primary Sysmon detection signal, capturing the key path, data, and writing process.</li>
+  <li>For key creation (new Run entry or IFEO key), Sysmon Event 12 (RegistryCreateDelete) fires first.</li>
+  <li>On trigger (logon, process start, system boot), the registered payload executes — Sysmon Event 1 captures the spawned process with the persistence path as Image.</li>
+  <li>Sysmon Event 7 (ImageLoaded) fires when DLL-based persistence (AppInit_DLLs, Security Packages) loads the malicious DLL into target processes.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>Reg.exe / PowerShell Set-ItemProperty</li>
+  <li>CobaltStrike registry persistence</li>
+  <li>Metasploit persistence modules</li>
+  <li>SharPersist</li>
+</ul>
+
+<h3 id="4-key-sysmon-event-indicators">4. Key Sysmon Event Indicators</h3>
+
+<h4 id="sysmon-event-13-registryevent-value-set">Sysmon Event 13 — RegistryEvent (Value Set)</h4>
+
+<p>A registry value was set. Captures the key path, value name, and new data written.</p>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Suspicious Value / Pattern</th><th>Why It Matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>TargetObject</strong></td><td>HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\* (startup persistence); HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\*\Debugger (IFEO hijack); HKLM\SYSTEM\CurrentControlSet\Control\Lsa\Security Packages (LSA DLL); HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA (UAC disable); HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest\UseLogonCredential (WDigest enable)</td><td>Exact registry path being written; specific paths identify the persistence mechanism, credential exposure technique, or defense evasion method</td></tr>
+<tr><td><strong>Details</strong></td><td>Paths in %TEMP%, %AppData%, or UNC paths (\\server\share\payload.exe); PowerShell -EncodedCommand values; base64-encoded strings; 1 (enabling WDigest/features that weaken security)</td><td>The actual value written; payload paths, encoded commands, and security-weakening flags in the data field are direct IOCs</td></tr>
+<tr><td><strong>Image</strong></td><td>powershell.exe, reg.exe, regedit.exe, mshta.exe, wscript.exe setting registry values; non-standard processes modifying LSA or Winlogon keys</td><td>Process writing the registry value; unexpected processes modifying sensitive registry paths reveal the persistence or defense evasion tool</td></tr>
+<tr><td><strong>EventType</strong></td><td>SetValue (value data being written)</td><td>Always SetValue for this event; the field confirms this is a write operation rather than a key creation</td></tr>
+</tbody></table>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Alert on Sysmon event(s) 13 matching the field combinations shown in Section 4</li>
+  <li>Apply environment-specific thresholds: a single matching event may be sufficient for critical-level detections</li>
+</ul>
+
+<strong>Sigma Detection Rule (YAML skeleton):</strong>
+<pre><code class="language-yaml">title: Windows Defender Exclusion Added via Registry
+status: experimental
+logsource:
+    category: process_creation  # adjust per primary Sysmon event type
+    product: windows
+detection:
+    selection:
+    EventID: 13  # Sysmon RegistryEvent (Value Set)
+    EventType: &#x27;SetValue&#x27;
+    TargetObject|contains|any:
+      - &#x27;\CurrentVersion\Run&#x27;
+      - &#x27;\Image File Execution Options&#x27;
+      - &#x27;\Security Packages&#x27;
+      - &#x27;\WDigest\UseLogonCredential&#x27;
+    condition: selection
+level: high
+tags:
+    - defense_evasion
+    - t1562.001
+</code></pre>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Hunt for <code>Sysmon 13</code> events where Image is NOT in the approved software baseline</li>
+  <li>Alert on Sysmon 13 from accounts in privileged groups outside approved maintenance windows</li>
+  <li>Correlate Sysmon 13 events with subsequent Windows Security 4624/4625 events to link process activity to authentication events</li>
+  <li>Stack-rank <code>Sysmon 13</code> events by Image path to identify rare/novel executables across the fleet</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate software installers write to Run keys on installation</li>
+  <li>Enterprise management platforms (SCCM, Intune) deploy registry configurations</li>
+  <li>AV/EDR agents modify their own registry configuration at startup</li>
+  <li>Group Policy preferences apply registry settings across domain members</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Implement attack surface reduction (ASR) rules to block persistence via Run keys and AppInit_DLLs</li>
+  <li>Use application allowlisting (WDAC/AppLocker) to restrict which processes can modify persistence-relevant registry paths</li>
+  <li>Enable Sysmon registry monitoring for all persistence-relevant key paths (RunOnce, AppInit, IFEO, LSA)</li>
+  <li>Restrict registry write permissions on HKLM hives to SYSTEM and TrustedInstaller only</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the affected host from the network immediately if active exploitation or lateral movement is confirmed.</li>
+  <li>Identify the initiating account (from Sysmon Event 1 User field or Windows Security 4624 correlation) and disable it pending investigation.</li>
+  <li>Preserve Sysmon event logs from the affected host(s) before any remediation — export the Microsoft-Windows-Sysmon/Operational channel.</li>
+  <li>Correlate the Sysmon events with Windows Security logs using the LogonId field to link process activity to authenticated sessions.</li>
+  <li>Identify and remove the persistence mechanism (registry key, scheduled task, service, WMI subscription) from all affected hosts.</li>
+  <li>Search for the same persistence IOC (file hash, registry key path and value, task name) across all endpoints in the fleet.</li>
+  <li>Review the affected account&#x27;s full Sysmon event history for the past 30 days to understand the full scope of attacker activity.</li>
+  <li>Rebuild the affected host from a known-good image if multiple persistence mechanisms or deep kernel-level persistence is suspected.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

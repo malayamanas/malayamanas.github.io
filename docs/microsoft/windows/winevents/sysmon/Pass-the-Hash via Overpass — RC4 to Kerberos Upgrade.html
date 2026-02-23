@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pass-the-Hash via Overpass — RC4 to Kerberos Upgrade</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Sysmon Detection SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Pass-the-Hash via Overpass — RC4 to Kerberos Upgrade</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Sysmon Event IDs:</strong> 1,3,10</span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access | Lateral Movement</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1550.002</span> <span class="tag-pill">t1558</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Sysmon Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> Pass-the-Hash via Overpass — RC4 to Kerberos Upgrade
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Pass-the-Hash via Overpass — RC4 to Kerberos Upgrade</td></tr>
+<tr><td><strong>Primary Sysmon Event ID(s)</strong></td><td>1 (Process Creation), 3 (Network Connection), 10 (ProcessAccess)</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1550.002</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access, Lateral Movement</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Sysmon (System Monitor) Event Log</td></tr>
+<tr><td><strong>Logsource Category</strong></td><td>sysmon</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, lateral_movement, t1550.002, t1558</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+An adversary targets credentials or authentication material to enable further compromise through Pass-the-Hash via Overpass — RC4 to Kerberos Upgrade. Sysmon Event(s) 1, 3, 10 (Process Creation, Network Connection, ProcessAccess) provide the primary Sysmon-layer detection signal for this technique.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>     : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong> : Use Alternate Authentication Material: Pass the Hash (T1550.002)<br>
+<ul>
+  <li><strong>Tactic</strong>     : Lateral Movement  </li>
+</ul><br>
+  <strong>Technique</strong> : Steal or Forge Kerberos Tickets (T1558)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker obtains an NT hash through credential dumping — Sysmon Event 10 (ProcessAccess) on lsass.exe captures the dump step.</li>
+  <li>Sysmon Event 1 captures the PTH tool (Mimikatz sekurlsa::pth, Impacket, CrackMapExec).</li>
+  <li>The NT hash is used directly for NTLM authentication to remote services — Sysmon Event 3 captures the resulting network connection to the target (port 445, 135, or 5985).</li>
+  <li>For Overpass-the-Hash, Sysmon Event 3 shows a Kerberos TGT request (port 88) following the NTLM hash injection, upgrading the session to Kerberos.</li>
+  <li>Subsequent lateral movement events (Sysmon 1, 3, 11, 17) from the new session link back to the PTH session via LogonId correlation.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>Mimikatz sekurlsa::pth</li>
+  <li>CrackMapExec (-H flag)</li>
+  <li>Impacket smbclient / wmiexec / psexec</li>
+  <li>Rubeus (asktgt for Overpass-the-Hash)</li>
+</ul>
+
+<h3 id="4-key-sysmon-event-indicators">4. Key Sysmon Event Indicators</h3>
+
+<h4 id="sysmon-event-1-process-creation">Sysmon Event 1 — Process Creation</h4>
+
+<p>A new process was created. Captures image path, command line, parent, hashes, user, and integrity level.</p>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Suspicious Value / Pattern</th><th>Why It Matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Image</strong></td><td>mimikatz.exe, crackmapexec, wmiexec.py, psexec.py — tools supporting NTLM hash-based authentication</td><td>Pass-the-Hash tools; any process authenticated with an NTLM hash rather than a password</td></tr>
+<tr><td><strong>CommandLine</strong></td><td>Encoded commands (-EncodedCommand, -enc), LOLBin abuse flags (certutil -decode, mshta http://), credential access arguments (sekurlsa, lsadump, pth)</td><td>Full command line reveals exact attacker intent; encoded or obfuscated arguments are critical IOCs</td></tr>
+<tr><td><strong>ParentImage</strong></td><td>Office apps (winword.exe, excel.exe) spawning PowerShell/cmd; browsers spawning cmd; svchost.exe spawning unexpected children; w3wp.exe (IIS) spawning shells</td><td>Abnormal parent-child relationships reveal the initial execution vector (macro, exploit, injection)</td></tr>
+<tr><td><strong>ParentCommandLine</strong></td><td>Encoded PowerShell from Office; mshta.exe launching script; wscript.exe executing remote content</td><td>Parent&#x27;s full command clarifies the delivery mechanism and payload stage</td></tr>
+<tr><td><strong>OriginalFileName</strong></td><td>Mismatch between Image filename and OriginalFileName field (e.g., Image=svchost.exe but OriginalFileName=mimikatz.exe)</td><td>Catches renamed attacker tools that attempt to masquerade as legitimate Windows binaries</td></tr>
+<tr><td><strong>Hashes</strong></td><td>Known malware hashes (cross-reference threat intelligence feeds); unsigned binaries with high-entropy names</td><td>Hash-based detection is immune to filename changes; enables instant enrichment with threat intelligence</td></tr>
+<tr><td><strong>IntegrityLevel</strong></td><td>High or System from a process spawned by a low-privilege parent; elevation without UAC prompt context</td><td>Indicates whether the process ran with elevated privileges; unexpected elevation reveals bypass techniques</td></tr>
+<tr><td><strong>User</strong></td><td>SYSTEM-context processes from interactive user sessions; service accounts launching interactive processes</td><td>Process owner; unexpected user context for a given image path indicates impersonation or privilege escalation</td></tr>
+</tbody></table>
+
+<h4 id="sysmon-event-3-network-connection">Sysmon Event 3 — Network Connection</h4>
+
+<p>An outbound or inbound TCP/UDP connection was established. Captures source/destination IP, port, and process.</p>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Suspicious Value / Pattern</th><th>Why It Matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>DestinationIp</strong></td><td>Non-RFC1918 addresses from internal processes; Tor exit nodes; cloud infrastructure IPs (AWS/Azure ranges not matching enterprise use); C2 IP ranges from threat intel</td><td>Destination of the connection; external IPs from unexpected processes indicate C2, exfiltration, or lateral movement staging</td></tr>
+<tr><td><strong>DestinationPort</strong></td><td>88 (Kerberos — ticket requests and validation); 749 (Kerberos admin); 389 (LDAP — for pre-attack LDAP-based coercion)</td><td>Kerberos port 88 is the primary target for ticket attacks; bulk TGS requests from a single source IP indicate Kerberoasting</td></tr>
+<tr><td><strong>DestinationHostname</strong></td><td>Random-character domains (DGA), newly registered domains, domains not in corporate allow-list, C2 domains from threat intel feeds</td><td>Destination hostname for C2 detection; DGA domains and suspicious TLDs are high-confidence indicators</td></tr>
+<tr><td><strong>Image</strong></td><td>LSASS.exe making outbound connections, svchost.exe connecting to non-Microsoft IPs, powershell.exe/cmd.exe making direct outbound connections</td><td>Process initiating the network connection; system processes making unexpected external connections indicate compromise</td></tr>
+<tr><td><strong>Initiated</strong></td><td>True (outbound) from LSASS, winlogon, or svchost to external addresses; False (inbound) on non-standard ports from Internet</td><td>Connection direction; outbound from credential processes to external hosts indicates exfiltration</td></tr>
+<tr><td><strong>SourcePort</strong></td><td>High-numbered ephemeral ports from persistent long-running processes; same source port across multiple connections (keepalive)</td><td>Source port; persistent connections from the same source port indicate sustained C2 sessions</td></tr>
+<tr><td><strong>Protocol</strong></td><td>UDP from processes that normally use TCP; ICMP from any process (tunnelling); non-standard protocol numbers from system processes</td><td>Transport protocol; tunnelling attacks over DNS/ICMP use protocol anomalies as a covert channel</td></tr>
+</tbody></table>
+
+<h4 id="sysmon-event-10-processaccess">Sysmon Event 10 — ProcessAccess</h4>
+
+<p>A process opened a handle to another process. Captures source/target process and the access rights (GrantedAccess) requested.</p>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Suspicious Value / Pattern</th><th>Why It Matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>TargetImage</strong></td><td>lsass.exe (credential dumping), winlogon.exe (credential interception), csrss.exe (system process injection), ntoskrnl.exe (kernel access)</td><td>Process being accessed; lsass.exe is the primary target for credential dumping — any unexpected process access is high-priority</td></tr>
+<tr><td><strong>GrantedAccess</strong></td><td>0x1010 (PROCESS_VM_READ + PROCESS_QUERY_INFORMATION — classic LSASS dump), 0x1410 (adds PROCESS_VM_OPERATION), 0x1F0FFF (full access), 0x40 (DuplicateHandle for token theft)</td><td>Access rights granted to the handle; specific bit patterns reveal the exact operation being performed (memory read, token theft, etc.)</td></tr>
+<tr><td><strong>SourceImage</strong></td><td>powershell.exe, cmd.exe, procdump.exe, rundll32.exe (comsvcs.dll), werfault.exe (abused), taskhost.exe, non-system processes opening lsass.exe</td><td>Process requesting the handle; any non-security tool opening lsass.exe with memory-read rights is a critical credential dumping indicator</td></tr>
+<tr><td><strong>CallTrace</strong></td><td>Calls originating from unbacked memory (shellcode): [heap], [stack]; absence of ntdll.dll/kernelbase.dll; Mimikatz-specific call stack patterns</td><td>Stack trace of the access request; shellcode-based dumpers leave no legitimate module reference — unbacked memory calls are definitive injection indicators</td></tr>
+</tbody></table>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Alert on Sysmon event(s) 1, 3, 10 matching the field combinations shown in Section 4</li>
+  <li>Apply environment-specific thresholds: a single matching event may be sufficient for critical-level detections</li>
+</ul>
+
+<strong>Sigma Detection Rule (YAML skeleton):</strong>
+<pre><code class="language-yaml">title: Pass-the-Hash via Overpass — RC4 to Kerberos Upgrade
+status: experimental
+logsource:
+    category: process_creation  # adjust per primary Sysmon event type
+    product: windows
+detection:
+    selection:
+    EventID: 1  # Sysmon Process Creation
+    ParentImage|endswith|any:  # Suspicious parent
+      - &#x27;\\winword.exe&#x27;
+      - &#x27;\\excel.exe&#x27;
+      - &#x27;\\powerpnt.exe&#x27;
+      - &#x27;\\w3wp.exe&#x27;
+    Image|endswith|any:
+      - &#x27;\\cmd.exe&#x27;
+      - &#x27;\\powershell.exe&#x27;
+      - &#x27;\\wscript.exe&#x27;
+    condition: selection
+level: high
+tags:
+    - credential_access
+    - lateral_movement
+    - t1550.002
+    - t1558
+</code></pre>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Hunt for <code>Sysmon 1 / Sysmon 3 / Sysmon 10</code> events where Image is NOT in the approved software baseline</li>
+  <li>Alert on Sysmon 1 / Sysmon 3 / Sysmon 10 from accounts in privileged groups outside approved maintenance windows</li>
+  <li>Correlate Sysmon 1 events with subsequent Windows Security 4624/4625 events to link process activity to authentication events</li>
+  <li>Stack-rank <code>Sysmon 1 / Sysmon 3 / Sysmon 10</code> events by Image path to identify rare/novel executables across the fleet</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate administrative operations by IT staff may generate similar Sysmon events</li>
+  <li>Authorized enterprise management platforms performing identical operations</li>
+  <li>Security scanning and vulnerability assessment tools in approved assessment windows</li>
+  <li>Development and testing environments running attack simulation frameworks</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Apply Principle of Least Privilege: restrict the ability to perform this attack to the minimum required accounts</li>
+  <li>Deploy comprehensive Sysmon configuration (SwiftOnSecurity or Florian Roth config) to capture all relevant events</li>
+  <li>Configure SIEM correlation rules to baseline normal Sysmon patterns and alert on deviations</li>
+  <li>Enable Microsoft Defender for Endpoint or equivalent EDR for behavioral detection in addition to Sysmon event-based detection</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the affected host from the network immediately if active exploitation or lateral movement is confirmed.</li>
+  <li>Identify the initiating account (from Sysmon Event 1 User field or Windows Security 4624 correlation) and disable it pending investigation.</li>
+  <li>Preserve Sysmon event logs from the affected host(s) before any remediation — export the Microsoft-Windows-Sysmon/Operational channel.</li>
+  <li>Correlate the Sysmon events with Windows Security logs using the LogonId field to link process activity to authenticated sessions.</li>
+  <li>Review all Sysmon events (1, 3, 11, 13) from the same LogonId session to identify the full scope of attacker actions.</li>
+  <li>Check for additional persistence mechanisms in the same time window using Sysmon Event 12/13/17/18 correlation.</li>
+  <li>Conduct a targeted threat hunt across similar hosts in the same network segment for matching Sysmon event patterns.</li>
+  <li>Engage the incident response team to scope the full extent of the compromise before returning any affected systems to production.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

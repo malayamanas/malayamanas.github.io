@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Integrity Check Failure — Tampered Driver</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Sysmon Detection SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Code Integrity Check Failure — Tampered Driver</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Sysmon Event IDs:</strong> 6</span>
+    <span class="meta-item"><strong>Tactics:</strong> Defense Evasion</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">defense_evasion</span> <span class="tag-pill">t1014</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Sysmon Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> Code Integrity Check Failure — Tampered Driver
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Code Integrity Check Failure — Tampered Driver</td></tr>
+<tr><td><strong>Primary Sysmon Event ID(s)</strong></td><td>6 (Driver Loaded)</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1014</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Defense Evasion</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Sysmon (System Monitor) Event Log</td></tr>
+<tr><td><strong>Logsource Category</strong></td><td>sysmon</td></tr>
+<tr><td><strong>Tags</strong></td><td>defense_evasion, t1014</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+An adversary bypasses, disables, or subverts security monitoring and controls through Code Integrity Check Failure — Tampered Driver. Sysmon Event(s) 6 (Driver Loaded) provide the primary Sysmon-layer detection signal for this technique.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>     : Defense Evasion  </li>
+</ul><br>
+  <strong>Technique</strong> : T1014 (T1014)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker requires a kernel-mode capability: EDR bypass, privilege escalation (BYOVD), network capture, or system-level access.</li>
+  <li>Sysmon Event 6 (DriverLoaded) fires when the driver is loaded — this is the primary detection event, capturing the driver path, hashes, and signing status.</li>
+  <li>For BYOVD attacks, a known-vulnerable but signed driver is loaded, then exploited to disable security controls or escalate privileges.</li>
+  <li>Sysmon Event 1 captures the loader process that drops and loads the driver; Event 11 captures the driver file being written to disk.</li>
+  <li>For network capture drivers (npcap, WinPcap), Sysmon Event 6 fires with the capture driver image path — correlate with the capturing application process.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>Known vulnerable drivers (RTCore64.sys, WinRing0x64.sys, gdrv.sys for BYOVD)</li>
+  <li>npcap / WinPcap (network capture)</li>
+  <li>Custom kernel drivers for EDR killing</li>
+</ul>
+
+<h3 id="4-key-sysmon-event-indicators">4. Key Sysmon Event Indicators</h3>
+
+<h4 id="sysmon-event-6-driver-loaded">Sysmon Event 6 — Driver Loaded</h4>
+
+<p>A kernel-mode driver was loaded. Captures image path, hash, and signing status.</p>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Suspicious Value / Pattern</th><th>Why It Matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>ImageLoaded</strong></td><td>Driver paths outside %SystemRoot%\System32\drivers\; drivers in %TEMP%, user-writable directories, or with random names; known vulnerable driver names (RTCore64.sys, PROCEXP152.sys)</td><td>Full path of the loaded driver; drivers outside standard system paths or matching known-vulnerable names are critical IOCs</td></tr>
+<tr><td><strong>Signed</strong></td><td>False — unsigned driver loading requires disabling Secure Boot or exploiting driver signing bypass</td><td>Signing status; unsigned drivers in modern environments indicate Secure Boot bypass or BYOVD (Bring Your Own Vulnerable Driver) attack</td></tr>
+<tr><td><strong>Signature</strong></td><td>Revoked certificates; certificates belonging to companies whose signing keys were leaked; self-signed certificates</td><td>Signing entity; revoked or suspicious certificates on drivers indicate attacker infrastructure or compromised vendor keys</td></tr>
+<tr><td><strong>SignatureStatus</strong></td><td>Expired, Revoked, or HashMismatch — all indicate the driver was tampered with after signing</td><td>Signature validation result; any non-Valid status for a system driver is a critical indicator of tampering or BYOVD</td></tr>
+<tr><td><strong>Hashes</strong></td><td>Hashes matching known vulnerable or malicious drivers in threat intelligence feeds (e.g., LOLDrivers project)</td><td>Driver hash; cross-reference with LOLDrivers database to identify vulnerable drivers used for privilege escalation or EDR killing</td></tr>
+</tbody></table>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Alert on Sysmon event(s) 6 matching the field combinations shown in Section 4</li>
+  <li>Apply environment-specific thresholds: a single matching event may be sufficient for critical-level detections</li>
+</ul>
+
+<strong>Sigma Detection Rule (YAML skeleton):</strong>
+<pre><code class="language-yaml">title: Code Integrity Check Failure — Tampered Driver
+status: experimental
+logsource:
+    category: process_creation  # adjust per primary Sysmon event type
+    product: windows
+detection:
+    selection:
+    EventID: 6  # Sysmon Driver Loaded
+    condition: selection
+level: high
+tags:
+    - defense_evasion
+    - t1014
+</code></pre>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Hunt for <code>Sysmon 6</code> events where Image is NOT in the approved software baseline</li>
+  <li>Alert on Sysmon 6 from accounts in privileged groups outside approved maintenance windows</li>
+  <li>Correlate Sysmon 6 events with subsequent Windows Security 4624/4625 events to link process activity to authentication events</li>
+  <li>Stack-rank <code>Sysmon 6</code> events by Image path to identify rare/novel executables across the fleet</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate network monitoring tools (Wireshark/npcap, Microsoft Network Monitor) load capture drivers</li>
+  <li>VPN clients load network filter drivers on installation</li>
+  <li>AV/EDR solutions load kernel-mode filter drivers for real-time protection</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Enable Secure Boot and enforce UEFI firmware integrity to prevent unsigned driver loading</li>
+  <li>Enable Driver Signature Enforcement (DSE) — never disable for production systems</li>
+  <li>Use HVCI (Hypervisor-Protected Code Integrity) to enforce kernel code signing</li>
+  <li>Maintain an allowlist of approved drivers and alert on any driver not on the list</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the affected host from the network immediately if active exploitation or lateral movement is confirmed.</li>
+  <li>Identify the initiating account (from Sysmon Event 1 User field or Windows Security 4624 correlation) and disable it pending investigation.</li>
+  <li>Preserve Sysmon event logs from the affected host(s) before any remediation — export the Microsoft-Windows-Sysmon/Operational channel.</li>
+  <li>Correlate the Sysmon events with Windows Security logs using the LogonId field to link process activity to authenticated sessions.</li>
+  <li>Perform memory analysis of the affected system to identify all injected code, hollowed processes, and loaded kernel modules.</li>
+  <li>Search for the same driver hash or injected DLL hash across all endpoints using EDR retrospective hunt.</li>
+  <li>If a vulnerable driver was loaded (BYOVD), check all systems for the vulnerable driver and remove/block it via WDAC policy.</li>
+  <li>Rebuild the affected system — kernel-level compromise cannot be reliably remediated without full OS reinstall.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

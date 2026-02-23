@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ransomware — Bulk File Encryption Pattern</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Ransomware — Bulk File Encryption Pattern</h1>
+  <div class="page-meta">
+    <span class="badge badge-critical">Critical</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Impact</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">impact</span> <span class="tag-pill">t1486</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> Ransomware — Bulk File Encryption Pattern
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Ransomware — Bulk File Encryption Pattern</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1486</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Impact</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Critical</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4663</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>impact, t1486</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+Ransomware executing data encryption (T1486) generates a distinctive pattern of high-volume file access events. Windows Security Event ID 4663 (An attempt was made to access an object) is generated for each file operation when Object Access auditing is enabled. During ransomware execution, a single process reads thousands of files and writes encrypted versions in rapid succession, creating an anomalous spike in 4663 events per process within a short time window.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Impact</li>
+</ul><br>
+  <strong>Technique</strong>       : Data Encrypted for Impact (T1486)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Ransomware gains execution on a host (typically via phishing, exploited vulnerability, or lateral movement from a compromised system) and elevates privileges if needed.</li>
+  <li>The ransomware process enumerates file system paths, network shares, and removable drives to identify files for encryption.</li>
+  <li>For each target file, the ransomware opens the file (generating a 4663 WriteData/ReadData access event), reads the content, encrypts it using a hybrid encryption scheme (RSA + AES/ChaCha20), and writes the encrypted content back.</li>
+  <li>Original files are deleted or overwritten; ransom notes (README.txt, DECRYPT_FILES.html, etc.) are dropped in each directory.</li>
+  <li>The ransomware may also delete Volume Shadow Copies (vssadmin delete shadows) and disable Windows recovery to prevent restoration.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>LockBit 3.0 (uses multi-threaded I/O completion ports for extremely fast encryption)</li>
+  <li>BlackCat/ALPHV (Rust-based, highly configurable encryption targeting network shares)</li>
+  <li>Cl0p ransomware (targets managed file transfer servers and enterprise storage)</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4663">4. Key Windows Security Event Indicators (Event ID 4663)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4663</strong> (An attempt was made to access an object — file system)
+
+<strong>Critical fields to monitor / correlate:</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>SubjectUserName</strong></td><td>Domain user or service account executing ransomware</td><td>Identifies which credential context is encrypting files</td></tr>
+<tr><td><strong>SubjectUserSid</strong></td><td>Non-SYSTEM SID performing mass file writes</td><td>Distinguishes ransomware process from OS operations</td></tr>
+<tr><td><strong>SubjectDomainName</strong></td><td>Production domain or local machine name</td><td>Confirms domain context for the encrypting account</td></tr>
+<tr><td><strong>SubjectLogonId</strong></td><td>Correlate with 4624 for source IP/logon type</td><td>Ties the encryption event to the logon session origin</td></tr>
+<tr><td><strong>ObjectName</strong></td><td>Bulk files across many directories; ransom note filenames</td><td>High rate of unique ObjectName values per process = encryption sweep</td></tr>
+<tr><td><strong>ObjectType</strong></td><td>File</td><td>Confirms file system target rather than registry/other</td></tr>
+<tr><td><strong>AccessList</strong></td><td>WriteData (0x2), AppendData (0x4)</td><td>Write access to many files from one process is the core signal</td></tr>
+<tr><td><strong>AccessMask</strong></td><td>0x2 (WriteData), 0x40 (WriteAttributes)</td><td>Ransomware writes encrypted content; mask matches write operations</td></tr>
+<tr><td><strong>HandleId</strong></td><td>High volume of unique handle IDs per short interval</td><td>Indicates many files opened and closed rapidly</td></tr>
+<tr><td><strong>ProcessId</strong></td><td>Single PID generating thousands of 4663 events</td><td>One process responsible for mass file access is the top IOC</td></tr>
+<tr><td><strong>ProcessName</strong></td><td>Random or temp-path binary, or masquerading as known process</td><td>Ransomware often has random names or runs from %TEMP%, %APPDATA%</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination:</strong>
+<pre><code>EventID = 4663
+AND ObjectType = &quot;File&quot;
+AND AccessList CONTAINS &quot;WriteData&quot;
+AND COUNT(DISTINCT ObjectName) &gt; 100 within 60 seconds grouped by ProcessId, SubjectUserName
+ALERT: Bulk file write pattern — potential ransomware encryption
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Critical Confidence)</strong>
+<ul>
+  <li>Alert when a single ProcessId generates more than 100 distinct file write events (4663 with WriteData/AppendData) within 60 seconds, especially targeting user home directories, network shares, or document folders.</li>
+  <li>Alert on creation of known ransom note filenames: README.txt, DECRYPT.txt, HOW_TO_RECOVER.html, !!!RESTORE.txt.</li>
+</ul>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li><code>EventID:4663 AccessList=&quot;%%4417&quot; | stats dc(ObjectName) as file_count by ProcessId SubjectUserName | where file_count &gt; 100</code></li>
+  <li><code>EventID:4663 | timechart span=10s count by ProcessName | where count &gt; 50</code> — identify encryption rate spike</li>
+  <li>Hunt for 4663 events on paths containing <code>\\Users\\</code>, <code>\\Documents\\</code>, <code>\\Desktop\\</code>, or UNC paths <code>\\\\</code> with WriteData access from non-system processes</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Backup agents (Veeam, Acronis, Windows Backup) generating high-volume file access during scheduled backup jobs.</li>
+  <li>Antivirus or EDR scanning all files during a full system scan generating high 4663 counts.</li>
+  <li>Large file copy or data migration operations by IT staff.</li>
+  <li>Software installers unpacking and writing many files simultaneously.</li>
+</ul>
+
+<strong>Recommended Hardening</strong>
+<ul>
+  <li>Enable Object Access auditing for file system on sensitive directories and file shares (Success and Failure).</li>
+  <li>Deploy Windows Controlled Folder Access (Ransomware Protection) to block unauthorized writes to Documents, Desktop, Pictures folders.</li>
+  <li>Configure file share permissions with least privilege — users should not have write access to all shares.</li>
+  <li>Deploy EDR with behavioral ransomware detection (e.g., Microsoft Defender for Endpoint, CrowdStrike Falcon).</li>
+  <li>Maintain offline/immutable backups that ransomware cannot access or delete.</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Immediately identify the ProcessId and ProcessName responsible for mass file writes and terminate the process.</li>
+  <li>Isolate the affected host from the network to prevent ransomware from spreading to additional shares.</li>
+  <li>Identify the SubjectLogonId and correlate with Event 4624 to determine the source IP and logon type of the compromised account.</li>
+  <li>Disable the compromised user account in Active Directory to prevent further authentication.</li>
+  <li>Check for Volume Shadow Copy deletion (Event 4688 for vssadmin.exe / wmic.exe with shadow deletion arguments).</li>
+  <li>Assess the scope of encrypted files by enumerating directories for ransom notes and changed file extensions.</li>
+  <li>Restore affected files from the most recent clean backup; do not pay the ransom without legal/executive authorization.</li>
+  <li>Conduct full forensic analysis of the source host to determine initial access vector and lateral movement path.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

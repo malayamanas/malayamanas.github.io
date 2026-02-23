@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCSync — AD Replication Rights Abuse</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">DCSync — AD Replication Rights Abuse</h1>
+  <div class="page-meta">
+    <span class="badge badge-critical">Critical</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1003.006</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> DCSync — AD Replication Rights Abuse
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>DCSync — AD Replication Rights Abuse</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1003.006</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Critical</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4662</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, t1003.006</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+DCSync is a post-exploitation technique that abuses Active Directory replication privileges to impersonate a Domain Controller and extract password hashes (NT hashes) of any user/computer account — most critically the KRBTGT account — without executing code directly on a DC. This allows offline cracking or direct use of hashes for pass-the-hash, golden/silver tickets, etc.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong>       : OS Credential Dumping: DCSync (T1003.006)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<p><ol>
+  <li>Attacker gains sufficient privileges on a domain-joined machine (commonly via:</li>
+</ol><br>
+<ul>
+  <li>Domain Admin / Enterprise Admin membership</li>
+  <li>Replication rights granted via <code>Replicating Directory Changes</code>, <code>Replicating Directory Changes All</code>, or <code>Replicating Directory Changes In Filtered Set</code> on the domain NC)</li>
+</ul><br>
+<ol>
+  <li>Attacker uses a tool to simulate Domain Controller replication behavior (DSInternals, Mimikatz <code>lsadump::dcsync</code>, Impacket <code>secretsdump.py</code>, Rubeus, etc.).</li>
+  <li>Tool performs LDAP bind and issues replication requests (GetNCChanges) to a real Domain Controller.</li>
+  <li>DC honors the request (due to granted rights) and returns highly sensitive attributes including:</li>
+</ol><br>
+<ul>
+  <li>unicodePwd (clear-text in replication context → NT hash derived)</li>
+  <li>lmPwdHistory / ntPwdHistory</li>
+  <li>supplementalCredentials (DPAPI keys, etc.)</li>
+  <li>Especially dangerous: KRBTGT account hash</li>
+</ul><br>
+<ol>
+  <li>Attacker extracts hashes → can forge golden tickets, perform pass-the-hash, or crack offline.</li>
+</ol></p>
+
+<strong>Most common tools observed performing DCSync in 2024–2026:</strong>
+<ul>
+  <li>Mimikatz (<code>lsadump::dcsync /user:krbtgt</code> or <code>/all</code>)</li>
+  <li>Impacket (<code>secretsdump.py -just-dc</code>)</li>
+  <li>DSInternals (<code>Get-ADReplAccount -NamingContext ...</code>)</li>
+  <li>Rubeus (<code>dcsync</code>)</li>
+  <li>SharpKatz / custom .NET replication abusers</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4662">4. Key Windows Security Event Indicators (Event ID 4662)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4662</strong> (An operation was performed on an object)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>ObjectServer</strong></td><td>DS (Directory Service)</td><td>Indicates Active Directory object access</td></tr>
+<tr><td><strong>ObjectType</strong></td><td>domain-DNS, domain, or user/computer objects</td><td>Replication targets the domain naming context</td></tr>
+<tr><td><strong>ObjectName</strong></td><td>Distinguished name of the domain root (e.g., DC=lab,DC=local) or specific user DN</td><td>Scope of replication abuse</td></tr>
+<tr><td><strong>AccessList</strong></td><td>Contains <strong>Control Access Rights</strong> such as: Replicating Directory Changes (1131f6aa-9c07-11d1-f79f-00c04fc2dcd2)</td><td>Exact rights abused for DCSync</td></tr>
+<tr><td><strong>Properties</strong></td><td>unicodePwd, lmPwdHistory, ntPwdHistory, supplementalCredentials, or all nTDSPassword attributes</td><td>Sensitive password-related attributes being read</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Non-DC computer account or user account (not NT AUTHORITY\SYSTEM from a DC)</td><td>Legitimate replication uses DC machine accounts</td></tr>
+<tr><td><strong>SubjectLogonId</strong></td><td>Tied to privileged user session (often Domain Admin)</td><td>Who initiated the replication request</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (classic DCSync signature):</strong>
+<pre><code>Event ID = 4662
+ObjectServer = DS
+AccessList contains Replicating Directory Changes rights GUIDs
+Properties includes unicodePwd / ntPwdHistory / supplementalCredentials
+SubjectUserName is **not** a Domain Controller computer account ($ ending)
+→ especially when targeting krbtgt or many users in short time
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Critical Confidence)</strong>
+<ul>
+  <li>Event ID = 4662</li>
+  <li>ObjectServer = DS</li>
+  <li>AccessList contains replication rights GUIDs (e.g., 1131f6aa-9c07-11d1-f79f-00c04fc2dcd2)</li>
+  <li>Subject account is <strong>not</strong> a DC machine account</li>
+  <li>Properties list includes password attributes (unicodePwd, ntPwdHistory, etc.)</li>
+</ul>
+
+<strong>Behavioral / Correlation-based Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>4662 replication access + SubjectUserName is regular user/machine (not DC$)</li>
+  <li>Multiple 4662 events reading password attributes from same SubjectLogonId / IpAddress</li>
+  <li>4662 on krbtgt object → immediate critical alert</li>
+  <li>Preceding privilege escalation (4672 SeDebugPrivilege, 4624 privileged logon) + 4662 replication</li>
+  <li>Unusual LDAP binds from non-DC IPs requesting GetNCChanges / replication</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate backup / monitoring solutions using replication (e.g., ADMT, certain DR tools)</li>
+  <li>Azure AD Connect / AAD Sync service account (usually identifiable by name MSOL_ or similar)</li>
+  <li>RODC replication polling (originates from RODC computer account)</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Strictly limit who has “Replicating Directory Changes” rights — remove from Domain Admins / built-in groups</li>
+  <li>Use <strong>tiered administration model</strong> — no DA logons to regular workstations</li>
+  <li>Enable <strong>LDAP signing + channel binding</strong> (prevents relay → DCSync)</li>
+  <li>Regularly audit replication rights via PowerShell (<code>Get-ADObjectAcl</code> filtered for replication GUIDs)</li>
+  <li>Monitor KRBTGT account specifically for any attribute reads</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li><strong>Immediate KRBTGT password reset (twice!)</strong> if krbtgt was targeted — invalidates golden tickets</li>
+  <li>Revoke / audit replication rights of compromised account</li>
+  <li>Isolate source workstation / server (where tool ran)</li>
+  <li>Reset passwords of all dumped accounts (especially privileged ones)</li>
+  <li>Hunt for usage of extracted hashes (4624 NTLM/Kerberos logons, 4769 TGS requests)</li>
+  <li>Full review of 4662, 5136 (directory modifications), and 4624 events from source</li>
+  <li>Consider enabling advanced auditing on Directory Service objects</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

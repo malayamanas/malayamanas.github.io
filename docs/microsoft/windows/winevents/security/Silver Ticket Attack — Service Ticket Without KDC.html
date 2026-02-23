@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silver Ticket Attack — Service Ticket Without KDC</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Silver Ticket Attack — Service Ticket Without KDC</h1>
+  <div class="page-meta">
+    <span class="badge badge-critical">Critical</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access | Lateral Movement</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1558.002</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> Silver Ticket Attack — Service Ticket Without KDC
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Silver Ticket Attack — Service Ticket Without KDC</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1558.002</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access, Lateral Movement</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Critical</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4624</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, lateral_movement, t1558.002</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+A Silver Ticket is a forged Kerberos service ticket (TGS — Ticket-Granting Service) created using the NT hash of a target service account (e.g., a computer account or service principal). Unlike a Golden Ticket, it does <strong>not</strong> require the KRBTGT hash and is scoped to a single service / host. The attacker bypasses the KDC entirely — no legitimate TGT or TGS request is sent to the domain controller.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong>       : Steal or Forge Kerberos Tickets: Silver Ticket (T1558.002)</p>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Lateral Movement  </li>
+</ul><br>
+  <strong>Technique</strong>       : Use Alternate Authentication Material: Pass the Ticket (T1550.003) / Silver Ticket usage</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker obtains the NT hash of a target service account (most commonly a computer account — e.g., via DCSync, password spraying, Kerberoasting crack, or previous compromise of the machine).</li>
+  <li>Using tools like Mimikatz or Rubeus, the attacker forges a TGS for a specific SPN (e.g., HOST/targetmachine, CIFS/targetmachine) with arbitrary user SID/PAC (often Domain Admin or SYSTEM privileges).</li>
+  <li>The forged ticket is injected into the attacker’s session (Mimikatz <code>kerberos::golden /target:... /service:... /rc4:... /ptt</code> or Rubeus <code>silver</code>).</li>
+  <li>Attacker uses the silver ticket to authenticate directly to the target service (SMB, WinRM, LDAP, etc.) — <strong>no communication with the KDC</strong> occurs for ticket issuance.</li>
+  <li>Because the ticket is presented directly to the service, the target machine validates it using its own machine account key — no 4768/4769 events are generated on the domain controller.</li>
+</ol>
+
+<strong>Most common tools observed performing Silver Ticket attacks in 2024–2026:</strong>
+<ul>
+  <li>Mimikatz (<code>kerberos::golden /target:dc01.lab.local /service:cifs /rc4:... /user:Administrator /sid:... /ptt</code>)</li>
+  <li>Rubeus (<code>silver /target:... /service:host /rc4:... /user:... /ptt</code>)</li>
+  <li>Impacket (some pass-the-ticket modules)</li>
+  <li>Custom .NET / PowerShell silver ticket implementations</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4624">4. Key Windows Security Event Indicators (Event ID 4624)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4624</strong> (An account was successfully logged on)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>LogonType</strong></td><td>3 (Network)</td><td>Most common for silver ticket usage (SMB, WinRM, etc.)</td></tr>
+<tr><td><strong>AuthenticationPackageName</strong></td><td>Kerberos</td><td>Silver tickets are Kerberos-based (not NTLM)</td></tr>
+<tr><td><strong>LogonProcessName</strong></td><td>Kerberos</td><td>Indicates Kerberos authentication was used</td></tr>
+<tr><td><strong>KeyLength</strong></td><td>0</td><td>Forged tickets often show no key exchange (direct ticket presentation)</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Attacker-controlled host (may be same subnet as target or unusual internal IP)</td><td>Source of the forged authentication</td></tr>
+<tr><td><strong>WorkstationName</strong></td><td>Attacker machine name (often random, staging, or compromised host)</td><td>Helps identify origin</td></tr>
+<tr><td><strong>TargetUserName</strong></td><td>High-privilege impersonated account (Administrator, SYSTEM, service accounts)</td><td>Forged PAC often elevates privileges</td></tr>
+<tr><td><strong>LogonGuid</strong></td><td>No preceding 4768/4769 in the same session / LogonGuid</td><td>No legitimate TGT/TGS request occurred</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (strong Silver Ticket indicator):</strong>
+<pre><code>Event ID = 4624
+LogonType = 3
+AuthenticationPackageName = Kerberos
+KeyLength = 0
+No preceding 4768 (TGT) or 4769 (TGS request) for the same LogonGuid / SubjectLogonId
+→ especially when TargetUserName is privileged and IpAddress is not a known admin workstation
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Critical Confidence)</strong>
+<ul>
+  <li>Event ID = 4624</li>
+  <li>LogonType = 3</li>
+  <li>AuthenticationPackageName = Kerberos</li>
+  <li>KeyLength = 0</li>
+  <li><strong>No associated 4768 or 4769</strong> in recent time for the same LogonGuid / IpAddress / WorkstationName</li>
+</ul>
+
+<strong>Behavioral / Correlation-based Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Kerberos Logon Type 3 with KeyLength=0 and no prior 4768/4769 in session</li>
+  <li>4624 (Kerberos) + 4672 (special privileges assigned) in same LogonId — forged PAC often grants extra rights</li>
+  <li>Unusual privileged network logons to specific hosts (e.g., CIFS to file servers, HOST/ to RDP/WinRM targets) from non-admin IPs</li>
+  <li>Correlate with preceding credential access events (4662/4769 on service accounts, DCSync indicators)</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Rare legitimate Kerberos pass-through scenarios (constrained delegation misconfigurations)</li>
+  <li>Some federation / SSO bridges with direct ticket presentation</li>
+  <li>RODC / cached credentials in disconnected environments</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Rotate machine account passwords frequently (default 30 days → shorten to 1–7 days via GPO)</li>
+  <li>Monitor for NT hash exposure of computer accounts (Kerberoasting, DCSync on $ accounts)</li>
+  <li>Restrict high-privilege group membership in PAC via Protected Users or authentication policies</li>
+  <li>Enable Kerberos Armoring (FAST) and channel binding where supported</li>
+  <li>Use Credential Guard / LSA protection on critical servers to prevent hash extraction</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the target machine (victim of silver ticket usage) and source workstation (IpAddress)</li>
+  <li>Reset machine account password of the compromised service/computer (<code>Reset-ComputerMachinePassword</code> or <code>nltest /sc_reset</code>)</li>
+  <li>Reset passwords of any impersonated privileged accounts appearing in logons</li>
+  <li>Hunt for preceding hash theft (Kerberoasting 4769 RC4, DCSync 4662, LSASS access 4656/4663)</li>
+  <li>Review all 4624/5140/5145 events from the source IP for lateral movement scope</li>
+  <li>Consider KRBTGT rotation if silver ticket was combined with golden ticket indicators</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

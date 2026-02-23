@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NTLM Relay or Downgrade Attack Detection</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">NTLM Relay or Downgrade Attack Detection</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1557.001</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> NTLM Relay / Downgrade Attack Detection
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>NTLM Relay / Downgrade Attack Detection</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1557.001</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4624</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, t1557.001</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+NTLM relay attacks involve an adversary intercepting or coercing an NTLM authentication attempt (e.g., via SMB, HTTP, LDAP, or coerced protocols like PetitPotam/PrinterBug) and relaying it to another service to gain unauthorized access or escalate privileges. Downgrade attacks force systems to fall back to weaker NTLM instead of Kerberos or modern authentication, often to enable relay or cracking.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong>       : Adversary-in-the-Middle: LLMNR/NBT-NS Poisoning and SMB Relay (T1557.001)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<p><ol>
+  <li><strong>Coercion phase</strong> (optional but common): Attacker forces a victim machine/user to authenticate to attacker-controlled system (PetitPotam, PrinterBug/SpoolSample, DFSCoerce, ShadowCoerce, WebClient service abuse, etc.).</li>
+  <li>Victim machine sends NTLM challenge-response authentication (Type 1/2/3 messages) to attacker.</li>
+  <li>Attacker relays the NTLM messages to a target service (SMB, LDAP, HTTP endpoint, etc.) that accepts NTLM.</li>
+  <li>If successful:</li>
+</ol><br>
+<ul>
+  <li>Attacker gains access as the victim machine/user</li>
+  <li>Common targets: domain controller LDAP (add RBCD, shadow credentials), SMB shares, HTTP endpoints</li>
+</ul><br>
+<ol>
+  <li>Downgrade component: Attacker may force fallback from Kerberos to NTLM (e.g., via Responder poisoning, disabling Kerberos via policy tampering, or network manipulation).</li>
+</ol></p>
+
+<strong>Most common tools &amp; vectors observed in 2024–2026:</strong>
+<ul>
+  <li>Responder / Inveigh (LLMNR/NBNS/WPAD poisoning)</li>
+  <li>PetitPotam / PrinterBug / SpoolSample / DFSCoerce / ShadowCoerce</li>
+  <li>ntlmrelayx.py (Impacket) — relays to LDAP/SMB/HTTP</li>
+  <li>mitm6 (WPAD + IPv6 DNS poisoning)</li>
+  <li>Coercer / Coercion toolkit family</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4624">4. Key Windows Security Event Indicators (Event ID 4624)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4624</strong> (An account was successfully logged on)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>LogonType</strong></td><td>3 (Network)</td><td>NTLM relay almost always uses network logons</td></tr>
+<tr><td><strong>AuthenticationPackageName</strong></td><td>NTLM</td><td>Relay uses NTLM (rarely Kerberos)</td></tr>
+<tr><td><strong>LmPackageName</strong></td><td>NTLM V1 or NTLM V2 (often V1 in classic relay)</td><td>Older/less secure versions easier to relay</td></tr>
+<tr><td><strong>KeyLength</strong></td><td>0 or very low (especially 0 with NTLMv1)</td><td>No key exchange — classic relay indicator</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Attacker-controlled IP (often same subnet or unusual internal IP)</td><td>Source of relayed authentication</td></tr>
+<tr><td><strong>WorkstationName</strong></td><td>Random / suspicious / missing / matches coercion tool hostname</td><td>Victim workstation name may be spoofed or missing</td></tr>
+<tr><td><strong>TargetUserName</strong></td><td>MACHINE$ (computer account) or high-privilege user</td><td>Relay often targets machine accounts for RBCD / shadow creds</td></tr>
+<tr><td><strong>TargetLogonId / LogonGuid</strong></td><td>Correlates with unusual patterns (no interactive logon before)</td><td>Helps track relayed session</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (classic NTLM relay signature):</strong>
+<pre><code>Event ID = 4624
+LogonType = 3
+AuthenticationPackageName = NTLM
+KeyLength = 0
+IpAddress is internal but NOT the expected source workstation subnet
+TargetUserName ends with $ (machine account) OR is privileged user
+→ especially when preceded by coercion indicators (5145 unusual named pipe access, 4624 from unexpected IP)
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Event ID = 4624</li>
+  <li>LogonType = 3</li>
+  <li>AuthenticationPackageName = NTLM</li>
+  <li>KeyLength = 0</li>
+  <li>IpAddress ≠ WorkstationName subnet OR WorkstationName is anomalous/missing</li>
+  <li>TargetUserName is computer account ($) or privileged</li>
+</ul>
+
+<strong>Behavioral / Correlation-based Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>4624 NTLM Logon Type 3 + KeyLength=0 + TargetUserName ends with $ + IpAddress not matching source workstation</li>
+  <li>Spike in 4624 Type 3 NTLM from single IpAddress targeting many machine accounts</li>
+  <li>4624 relay indicators + preceding 5145 (IPC$ or unusual named pipe access) or 4768/4769 coercion failures</li>
+  <li>NTLM authentication from IPs that are <strong>not</strong> member servers/workstations (potential attacker relay box)</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legacy applications still forcing NTLM (printers, scanners, old file shares)</li>
+  <li>Backup / monitoring agents using NTLM</li>
+  <li>Misconfigured load balancers / proxies</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li><strong>Disable NTLM</strong> where possible (GPO → Network security: Restrict NTLM)</li>
+  <li>Enable <strong>LDAP signing + channel binding</strong> (prevents LDAP relay)</li>
+  <li>Enable <strong>SMB signing</strong> (prevents SMB relay)</li>
+  <li>Disable LLMNR &amp; NBT-NS (via GPO)</li>
+  <li>Block unnecessary outbound NTLM (Windows Defender Firewall rules)</li>
+  <li>Enable <strong>Extended Protection for Authentication</strong> on HTTP endpoints</li>
+  <li>Patch &amp; disable Print Spooler on non-print servers</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li><strong>Isolate suspected relay source</strong> (IpAddress in 4624) and target machine</li>
+  <li>Reset machine password of relayed computer account (TargetUserName ending in $)</li>
+  <li>Reset passwords of any user accounts successfully relayed</li>
+  <li>Hunt for privilege escalation follow-on (5136 RBCD/Shadow Credentials, 4624 new privileged logons)</li>
+  <li>Review 5145 (named pipe access), 4624, and 4768/4769 events for coercion patterns</li>
+  <li>Check for tools (Responder, ntlmrelayx) on compromised hosts (4688 process creation)</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

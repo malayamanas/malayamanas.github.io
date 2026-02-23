@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kerberos Ticket Replay Attack</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Kerberos Ticket Replay Attack</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1558</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> Kerberos Ticket Replay Attack
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Kerberos Ticket Replay Attack</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1558</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4649</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, t1558</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+A Kerberos ticket replay attack occurs when an adversary captures a valid Kerberos service ticket (TGS) — usually via network sniffing, man-in-the-middle, or previous credential access — and replays it to authenticate to the same or another service without possessing the long-term key. This bypasses normal authentication and can grant unauthorized access if the target service does not enforce replay protection (e.g., no strict timestamp checking, no nonce, or weak clock skew tolerance).
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong>       : Steal or Forge Kerberos Tickets (T1558)  <br>
+  <strong>Sub-technique</strong>   : (related to ticket replay / pass-the-ticket variant)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<p><ol>
+  <li>Attacker captures a legitimate Kerberos TGS (via:</li>
+</ol><br>
+<ul>
+  <li>Network capture (unencrypted Kerberos traffic — rare post-2014 due to encryption)</li>
+  <li>Previous compromise (LSASS dump, ticket extraction with Mimikatz/Rubeus)</li>
+  <li>Pass-the-ticket from another session)</li>
+</ul><br>
+<ol>
+  <li>Attacker replays the captured ticket to the target service (e.g., CIFS for file share, HOST for RDP/WinRM, HTTP for web services).</li>
+  <li>If the service accepts the replayed ticket (due to missing nonce, large clock skew tolerance, or no replay cache), the attacker gains access as the original user.</li>
+  <li>Modern Windows environments mitigate this via:</li>
+</ol><br>
+<ul>
+  <li>Clock skew checks (±5 minutes default)</li>
+  <li>Nonce in AP-REQ</li>
+  <li>PAC signature validation</li>
+  <li>But misconfigurations, legacy services, or custom apps can still be vulnerable.</li>
+</ul></p>
+
+<strong>Most common tools &amp; vectors observed in 2024–2026:</strong>
+<ul>
+  <li>Mimikatz (<code>kerberos::ptt</code> with captured ticket)</li>
+  <li>Rubeus (<code>ptt /ticket:...</code>)</li>
+  <li>Impacket (<code>gettgtpkinit.py</code> + replay modules, smbclient with captured ticket)</li>
+  <li>Custom tools replaying .kirbi / .ccache tickets</li>
+  <li>Rare in modern environments due to mitigations, but still seen against legacy / misconfigured services</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4649">4. Key Windows Security Event Indicators (Event ID 4649)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4649</strong> (A replay attack was detected)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>TargetUserName</strong></td><td>Legitimate user whose ticket was replayed (often privileged or service account)</td><td>Victim account of the replay</td></tr>
+<tr><td><strong>TargetDomainName</strong></td><td>Domain of the replayed ticket</td><td>Scope of the attack</td></tr>
+<tr><td><strong>ServiceName</strong></td><td>SPN of the service receiving the replay (e.g., cifs/server$, host/server$)</td><td>Target service being impersonated</td></tr>
+<tr><td><strong>TicketOptions</strong></td><td>Forwardable / renewable flags often present</td><td>Typical ticket properties</td></tr>
+<tr><td><strong>TicketEncryptionType</strong></td><td>Usually AES256 (0x18) or RC4 (0x17) — depends on original ticket</td><td>Encryption type of captured ticket</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Attacker-controlled IP (often different from original ticket issuer)</td><td>Source of replay attempt</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Often SYSTEM or service context on the receiving server</td><td>Server-side detection context</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (classic Kerberos replay signature):</strong>
+<pre><code>Event ID = 4649
+Status = success or detected replay
+TargetUserName is privileged or service account
+IpAddress differs from original authentication source (if correlated with prior 4624/4769)
+ServiceName is high-value (CIFS, HOST, LDAP)
+→ immediate critical alert — indicates successful or attempted replay
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Event ID = 4649 (replay detected)</li>
+  <li>TargetUserName is privileged or machine account</li>
+  <li>IpAddress is unexpected / different from original logon source</li>
+  <li>ServiceName is sensitive (CIFS/, HOST/, LDAP/)</li>
+</ul>
+
+<strong>Behavioral / Correlation-based Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>4649 replay detection + same TargetUserName / ServiceName from multiple IPs</li>
+  <li>4649 + preceding ticket theft indicators (4656/4663 LSASS access, 4769 unusual TGS requests)</li>
+  <li>4649 + subsequent 4624/5145 (successful access to shares / services as replayed user)</li>
+  <li>Spike in 4649 events across multiple servers from single IpAddress</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Very rare legitimate replays (misconfigured load balancers, proxies, or Kerberos delegation chains)</li>
+  <li>Clock skew issues between client/server (usually logged differently)</li>
+  <li>Some legacy Kerberos implementations (distinguishable by context)</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Enforce <strong>strict clock synchronization</strong> (NTP) — reduce allowable skew</li>
+  <li>Enable <strong>Kerberos Armoring</strong> (FAST) and <strong>channel binding</strong></li>
+  <li>Use <strong>strong ticket lifetimes</strong> and short renewal windows</li>
+  <li>Enable <strong>PAC validation</strong> and <strong>ticket signature checks</strong></li>
+  <li>Disable legacy / weak encryption types (RC4) — force AES</li>
+  <li>Monitor for unusual TGT/TGS requests (4768/4769) that may precede replay</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li><strong>Isolate source IP</strong> from which the replay originated</li>
+  <li><strong>Invalidate / force renewal</strong> of all tickets for the replayed account (reset password or force sign-out)</li>
+  <li>Reset password of the affected account (TargetUserName)</li>
+  <li>Hunt for original ticket theft source (LSASS access 4656/4663, unusual 4768/4769)</li>
+  <li>Review 4649, 4624, 4769, and 5145 events around the replay time</li>
+  <li>Check for follow-on activity: lateral movement (5140/5145 shares), privilege escalation (4672)</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

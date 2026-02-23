@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kerberos Relay Local — KrbRelayUp LDAP Localhost</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Kerberos Relay Local — KrbRelayUp LDAP Localhost</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Privilege Escalation</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">privilege_escalation</span> <span class="tag-pill">t1134.001</span> <span class="tag-pill">t1558</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> Kerberos Relay Local — KrbRelayUp LDAP Localhost
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Kerberos Relay Local — KrbRelayUp LDAP Localhost</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1134.001</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Privilege Escalation</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4624</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>privilege_escalation, t1134.001, t1558</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+An adversary elevates attacker privileges to gain broader access by exploiting Access Token Manipulation: Token Impersonation/Theft. Windows Security Event 4624 (An account was successfully logged on) provides the primary detection signal when properly audited and monitored in a SIEM.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Privilege Escalation  </li>
+</ul><br>
+  <strong>Technique</strong>       : Access Token Manipulation: Token Impersonation/Theft (T1134.001)<br>
+<ul>
+  <li><strong>Tactic</strong>          : Privilege Escalation  </li>
+</ul><br>
+  <strong>Technique</strong>       : Steal or Forge Kerberos Tickets (T1558)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker positions themselves to intercept NTLM authentication attempts (via Responder, LLMNR/NBT-NS poisoning, or PetitPotam coercion).</li>
+  <li>NTLM challenge-response is captured and forwarded (relayed) to a target service without cracking the hash.</li>
+  <li>Target service authenticates the relayed request, granting the attacker access as the victim&#x27;s identity.</li>
+  <li>Event 4624 on the relay target shows a network logon with NTLM authentication from the relay host, not the victim&#x27;s actual workstation.</li>
+  <li>Combined with ESC8 (ADCS relay) or SMB signing disabled, NTLM relay can achieve domain compromise.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>Responder (LLMNR/NBT-NS/mDNS poisoning)</li>
+  <li>ntlmrelayx.py (Impacket)</li>
+  <li>CrackMapExec --relay</li>
+  <li>MultiRelay</li>
+  <li>PetitPotam (NTLM coercion via EfsRpcOpenFileRaw)</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4624-an-account-was-successfully-logged-on">4. Key Windows Security Event Indicators (Event ID 4624 (An account was successfully logged on))</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4624</strong> (An account was successfully logged on)
+
+<strong>Critical fields to monitor / correlate (Required attributes):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>SubjectUserSid</strong></td><td>Non-SYSTEM SID from an interactive user or service account not normally performing this action</td><td>Uniquely identifies the security principal; unexpected SIDs performing sensitive operations are high-priority IOCs</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Unexpected user accounts, machine accounts in human context, or recently created/renamed accounts</td><td>Human-readable identity of the actor; enables cross-event correlation and user-behaviour analysis</td></tr>
+<tr><td><strong>SubjectDomainName</strong></td><td>Workgroup name, external/untrusted domain, or NT AUTHORITY when privileged account is expected</td><td>Confirms account origin; cross-domain or workgroup operations in AD environments indicate lateral movement</td></tr>
+<tr><td><strong>SubjectLogonId</strong></td><td>Correlate with Event 4624 to reveal logon type (3=network, 10=remote interactive), source IP, and workstation</td><td>Links this event to a specific authenticated session; essential for timeline and pivot-path reconstruction</td></tr>
+<tr><td><strong>TargetUserSid</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the TargetUserSid involved in this event</td></tr>
+<tr><td><strong>TargetUserName</strong></td><td>Privileged accounts (Administrator, KRBTGT, Domain Admin names, service accounts) are high-value targets</td><td>Identifies which account is under attack or being acted upon; privilege level determines impact</td></tr>
+<tr><td><strong>WorkstationName</strong></td><td>Workstation names absent from AD computer list; random strings (DESKTOP-XXXXXX); IP addresses instead of hostnames</td><td>Identifies the originating workstation; non-domain or rogue workstations using NTLM authentication are IOCs</td></tr>
+<tr><td><strong>LogonType</strong></td><td>Type 3 (network) from unexpected accounts; Type 10 (remote interactive) from non-admin accounts; Type 5 (service) from interactive users</td><td>Classifies how authentication occurred; type anomalies for the account class reveal misuse or attack patterns</td></tr>
+<tr><td><strong>AuthenticationPackageName</strong></td><td>NTLM in Kerberos-only environments (indicates downgrade attack); unexpected packages like MSV1_0 for service accounts</td><td>Authentication protocol used; protocol downgrade or unexpected packages reveal relay attacks or legacy exploitation</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Non-RFC1918 addresses, Tor exit nodes, cloud infrastructure IPs, or addresses not in the corporate IP inventory</td><td>Reveals the source of the connection; external or untrusted source IPs immediately elevate severity</td></tr>
+<tr><td><strong>IpPort</strong></td><td>Non-standard high-numbered ports from management processes; ephemeral ports from persistent connections suggest C2</td><td>Source port number; combined with IpAddress reveals the full network socket for threat intelligence correlation</td></tr>
+</tbody></table>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Alert on Event ID 4624 matching the highest-fidelity field combination shown above</li>
+  <li>Apply thresholds appropriate to the environment: a single event may be sufficient for critical-level detections; volume thresholds apply for medium/low</li>
+  <li>Correlate with Event 4624 (successful logon) using SubjectLogonId to establish the session context and identify the source IP and workstation</li>
+</ul>
+
+<strong>Highest-Fidelity Correlation (SIEM Query Logic):</strong>
+<pre><code>EventID = 4624
+AND SubjectUserName NOT IN &lt;approved_admin_accounts&gt;
+AND IpAddress NOT IN &lt;trusted_ip_ranges&gt;
+AND LogonType IN (3, 10)
+</code></pre>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Correlate 4624 events where SubjectLogonId links to a Type 3 (network) or Type 10 (remote interactive) logon from an external IP address</li>
+  <li>Alert on 4624 events from accounts in privileged groups (Domain Admins, Enterprise Admins) outside approved maintenance windows</li>
+  <li>Hunt for 4624 events followed within 60 seconds by lateral movement indicators (5140, 4624 to other hosts) from the same SubjectLogonId</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate after-hours work by on-call staff, developers, or global teams in different time zones</li>
+  <li>Service accounts performing scheduled maintenance tasks outside business hours</li>
+  <li>Automated monitoring and backup systems generating logon events at any hour</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Implement privileged access workstations (PAW) to restrict administrative logons to dedicated secure hosts</li>
+  <li>Enforce MFA for all remote and VPN logons to prevent credential-only attacks</li>
+  <li>Configure Conditional Access policies to block high-risk logons based on impossible travel or unfamiliar devices</li>
+  <li>Deploy LAPS to prevent lateral movement using shared local administrator credentials</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the affected host from the network immediately if active exploitation or lateral movement is confirmed.</li>
+  <li>Identify the initiating account (SubjectUserName/SubjectLogonId) and disable it pending investigation.</li>
+  <li>Preserve all relevant Windows Security Event logs from the affected host(s) before any remediation.</li>
+  <li>Correlate the triggering event with Event 4624 logon records to identify the source IP, workstation, and session that performed the action.</li>
+  <li>Review all events from the same SubjectLogonId session to identify what other actions the attacker performed.</li>
+  <li>Check for additional persistence mechanisms or privilege escalation attempts in the same time window.</li>
+  <li>Conduct a threat hunt across similar hosts in the same network segment for the same indicators.</li>
+  <li>Engage the incident response team to scope the full extent of the compromise before returning systems to production.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

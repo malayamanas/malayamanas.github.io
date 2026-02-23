@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scheduled Task Updated — Suspicious Modification</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Scheduled Task Updated — Suspicious Modification</h1>
+  <div class="page-meta">
+    <span class="badge badge-medium">Medium</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Persistence</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">t1053.005</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> Scheduled Task Updated — Suspicious Modification
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Scheduled Task Updated — Suspicious Modification</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1053.005</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Persistence</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Medium</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4702</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>persistence, t1053.005</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+Adversaries modify existing scheduled tasks to execute malicious payloads, providing persistent code execution that survives reboots. Windows Event ID 4702 is generated whenever a scheduled task is updated, capturing the task name, content, and the identity performing the modification. Monitoring for unexpected task modifications—especially those pointing to unusual paths, encoded commands, or temporary directories—is a reliable signal for attacker-driven persistence.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Persistence</li>
+</ul><br>
+  <strong>Technique</strong>       : Scheduled Task/Job: Scheduled Task (T1053.005)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker gains initial foothold (phishing, exploit, or valid credentials).</li>
+  <li>Attacker enumerates existing scheduled tasks to identify legitimate, trusted tasks that already run with elevated privileges.</li>
+  <li>The attacker modifies the task&#x27;s action to point to a malicious binary, PowerShell script, or encoded command stored in a temp or AppData location.</li>
+  <li>The modified task continues to appear legitimate while executing the attacker&#x27;s payload on its original schedule (e.g., daily, at startup, or at logon).</li>
+  <li>The payload may establish C2 communication, execute lateral movement tools, or exfiltrate data while blending in with scheduled maintenance activity.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>schtasks.exe (built-in Windows utility)</li>
+  <li>PowerShell (New-ScheduledTask, Set-ScheduledTask cmdlets)</li>
+  <li>CobaltStrike / Sliver (via post-exploitation modules)</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4702">4. Key Windows Security Event Indicators (Event ID 4702)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4702</strong> (A scheduled task was updated)
+
+<strong>Critical fields to monitor / correlate:</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>SubjectUserName</strong></td><td>Non-system accounts, service accounts not expected to modify tasks, or machine accounts</td><td>Identifies who performed the modification; unexpected accounts are high-risk</td></tr>
+<tr><td><strong>SubjectLogonId</strong></td><td>Cross-reference with Event 4624 to find source IP and logon type</td><td>Reveals whether the actor came from a remote session or interactive logon</td></tr>
+<tr><td><strong>SubjectDomainName</strong></td><td>Workgroup names, unfamiliar domains, or BUILTIN</td><td>Helps identify lateral movement from non-domain sources</td></tr>
+<tr><td><strong>TaskName</strong></td><td>Modifications to well-known system tasks (e.g., \Microsoft\Windows\*), or newly modified tasks with random/generic names</td><td>Disguising malicious tasks as legitimate ones is a common technique</td></tr>
+<tr><td><strong>TaskContent</strong></td><td>Encoded commands (base64), references to %TEMP%, %APPDATA%, PowerShell -enc, cmd.exe /c, mshta.exe, wscript.exe, or external URLs</td><td>The task body reveals the actual payload; encoded or obfuscated commands are strong IOCs</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination:</strong>
+<pre><code>EventID = 4702
+AND TaskContent CONTAINS (&quot;-enc&quot; OR &quot;-encodedcommand&quot; OR &quot;base64&quot; OR &quot;%TEMP%&quot; OR &quot;%APPDATA%&quot; OR &quot;mshta&quot; OR &quot;wscript&quot; OR &quot;http://&quot; OR &quot;https://&quot;)
+AND SubjectUserName NOT IN (known_admin_accounts)
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Medium Confidence)</strong>
+<ul>
+  <li>Alert on Event 4702 where TaskContent contains PowerShell -EncodedCommand, mshta.exe, wscript.exe, cscript.exe, or references to temp directories.</li>
+  <li>Alert when a task previously targeting a system binary is modified to target a user-writable path.</li>
+</ul>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Aggregate Event 4702 by SubjectUserName over a 24-hour window; users modifying more than 3 tasks are suspicious.</li>
+  <li>Correlate Event 4702 (task modification) with Event 4624 (LogonType=3 or 10) from the same SubjectLogonId to identify remote actors modifying tasks.</li>
+  <li>Search for Event 4702 events where TaskContent references paths outside of C:\Windows\ and C:\Program Files\.</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate software installers and update mechanisms frequently modify scheduled tasks; baseline known modification patterns by process and user.</li>
+  <li>Group Policy application may trigger task updates in bulk; correlate with GPO change events.</li>
+  <li>Security or monitoring software may update tasks during signature or configuration updates.</li>
+</ul>
+
+<strong>Recommended Hardening</strong>
+<ul>
+  <li>Enable &quot;Audit Other Object Access Events&quot; audit policy to ensure Event 4698 and 4702 are consistently generated.</li>
+  <li>Restrict who can modify scheduled tasks using ACLs on the task scheduler service and the task XML files in C:\Windows\System32\Tasks.</li>
+  <li>Deploy AppLocker or WDAC policies to prevent execution of unsigned or untrusted binaries from temp/AppData locations.</li>
+  <li>Enable script block logging for PowerShell to capture the decoded content of encoded commands.</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Immediately identify the full task XML content from the event and determine whether the modification was authorized.</li>
+  <li>Isolate the affected host if the task content contains encoded commands or references to external URLs.</li>
+  <li>Revert the scheduled task to its known-good configuration.</li>
+  <li>Investigate SubjectLogonId to trace the source of the modification; review Event 4624 for the associated logon session.</li>
+  <li>Scan the target binary or script referenced in the modified task with endpoint security tooling.</li>
+  <li>Search for lateral movement from the source host and identify whether other hosts have received similar task modifications.</li>
+  <li>Preserve forensic artifacts: task XML file, prefetch data, and relevant event logs.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

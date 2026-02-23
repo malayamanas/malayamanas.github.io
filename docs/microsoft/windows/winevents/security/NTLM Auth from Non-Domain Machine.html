@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NTLM Auth from Non-Domain Machine</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">NTLM Auth from Non-Domain Machine</h1>
+  <div class="page-meta">
+    <span class="badge badge-medium">Medium</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1078</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> NTLM Auth from Non-Domain Machine
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>NTLM Auth from Non-Domain Machine</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1078</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Medium</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4776</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, t1078</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+NTLM credential validation (Event ID 4776) originating from a workstation not joined to the domain may indicate a rogue host, lateral movement from an attacker-controlled machine, or credential spraying. Attackers use non-domain machines to avoid Kerberos constraints and submit stolen NTLM hashes directly to domain controllers. Monitoring the Workstation field for non-domain hostnames paired with non-zero Status codes reveals brute-force or Pass-the-Hash activity.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong>       : Valid Accounts (T1078)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker obtains NTLM credentials (hash or plaintext) for a domain account via phishing, credential dumping, or network capture.</li>
+  <li>The attacker uses a machine not joined to Active Directory to avoid Kerberos negotiation.</li>
+  <li>NTLM authentication requests are submitted directly to a domain controller using relay or hash-pass tools.</li>
+  <li>The DC logs Event ID 4776, recording the Workstation name and Status code.</li>
+  <li>On success (Status 0x0), the attacker gains authenticated access to domain resources without a valid Kerberos ticket.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>CrackMapExec (CME)</li>
+  <li>Mimikatz sekurlsa::pth</li>
+  <li>Responder / MultiRelay</li>
+  <li>Metasploit psexec_ntlm</li>
+  <li>Impacket smbclient / wmiexec</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4776">4. Key Windows Security Event Indicators (Event ID 4776)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4776</strong> (The computer attempted to validate the credentials for an account)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>TargetUserName</strong></td><td>Privileged accounts (Administrator, svc-*, domain admin names); accounts not expected on the source workstation</td><td>Identifies which credential is under attack; privileged accounts are high-value targets</td></tr>
+<tr><td><strong>Workstation</strong></td><td>Machine name absent from AD computer list; random strings (e.g., DESKTOP-XXXXXX); IP address instead of hostname; blank field</td><td>Non-domain workstations must use NTLM; rogue or attacker-controlled hosts are exposed here</td></tr>
+<tr><td><strong>Status</strong></td><td>0xC000006A (wrong password), 0xC0000064 (user does not exist), 0xC000006D (logon failure), 0x0 after prior failures</td><td>Status codes reveal brute-force patterns; 0x0 after repeated failures indicates successful compromise</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination:</strong>
+<pre><code>EventID = 4776
+AND TargetUserName IN &lt;privileged account list&gt;
+AND Workstation NOT IN &lt;known AD computer list&gt;
+AND (Status = 0x0 OR repeated Status = 0xC000006A within 60 seconds)
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Medium Confidence)</strong>
+<ul>
+  <li>Alert on Event ID 4776 where Workstation is absent from the domain computer list and TargetUserName is a privileged account.</li>
+  <li>Alert on more than 5 Event ID 4776 failures in 60 seconds from the same Workstation targeting the same TargetUserName.</li>
+  <li>Correlate 4776 Status=0x0 with a subsequent 4624 LogonType 3 (NTLM) from the same source IP.</li>
+</ul>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li><code>EventID=4776 AND Workstation NOT IN (AD_computers) AND Status=0x0</code> — non-domain NTLM authentication success.</li>
+  <li><code>EventID=4776 | stats count by Workstation, TargetUserName | where count &gt; 10</code> — volume-based spray detection.</li>
+  <li>Join 4776 (Status=0x0) with 4624 (LogonType=3, AuthenticationPackageName=NTLM) from same IpAddress within 30 seconds.</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legacy applications and printers authenticating via NTLM from static IPs with non-AD hostnames.</li>
+  <li>Service accounts on non-domain application servers configured for NTLM.</li>
+  <li>Workstations in DMZ or workgroup segments legitimately using NTLM against the domain.</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Enforce Kerberos-only authentication for privileged accounts via &quot;Network security: Restrict NTLM&quot; GPO.</li>
+  <li>Enable NTLM auditing via &quot;Network security: Audit Incoming NTLM Traffic&quot;.</li>
+  <li>Block NTLM at the perimeter and between segments where Kerberos is available.</li>
+  <li>Implement LAPS to prevent lateral movement using shared local admin passwords.</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Identify the Workstation field value and determine if it corresponds to a known asset; isolate if rogue.</li>
+  <li>Check TargetUserName for privilege level; if a domain admin or service account, escalate immediately.</li>
+  <li>Review prior 4776 events from the same Workstation for brute-force patterns.</li>
+  <li>If Status=0x0, trace subsequent 4624/4648 events from the same source to identify accessed resources.</li>
+  <li>Reset the targeted account password and review its group memberships.</li>
+  <li>Perform forensic triage on the source machine if identified.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

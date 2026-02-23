@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPAPI Domain Backup Key Extraction</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">DPAPI Domain Backup Key Extraction</h1>
+  <div class="page-meta">
+    <span class="badge badge-critical">Critical</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1555</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> DPAPI Domain Backup Key Extraction
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>DPAPI Domain Backup Key Extraction</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1555</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Critical</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4662</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, t1555</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+Attackers with sufficient privileges extract the DPAPI (Data Protection API) domain backup key (also called the &quot;preferred&quot; or &quot;BCKUPKEY&quot; key) from Active Directory. This master key allows offline decryption of any DPAPI-protected data encrypted with the domain-wide backup key — most importantly domain user master keys stored in users&#x27; roaming profiles or credential roaming, enabling credential theft (browser passwords, Wi-Fi keys, EFS certificates, etc.) without needing access to the victim&#x27;s machine.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong>       : Credentials from Password Stores (T1555)  <br>
+  <strong>Sub-technique</strong>   : (related to DPAPI domain backup key abuse)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<p><ol>
+  <li>Attacker gains high-privileged access (Domain Admin / Enterprise Admin or replication rights).</li>
+  <li>Attacker locates the DPAPI backup key objects in AD:</li>
+</ol><br>
+<ul>
+  <li><code>BCKUPKEY_&lt;GUID&gt;</code> (preferred backup key)</li>
+  <li><code>BCKUPKEY_&lt;GUID&gt;_PREV</code> (previous/legacy key)</li>
+</ul><br>
+   Located under CN=Microsoft,CN=System,DC=domain,DC=com<br>
+<ol>
+  <li>Attacker uses replication rights (or direct LDAP read with sufficient privileges) to extract the pvk (private key) attribute of these objects.</li>
+  <li>With the domain backup key in hand, attacker can:</li>
+</ol><br>
+<ul>
+  <li>Decrypt any domain-joined user&#x27;s DPAPI master keys offline</li>
+  <li>Extract stored credentials (Chrome/Edge passwords, Wi-Fi profiles, RDP credentials, EFS keys, etc.)</li>
+  <li>Use tools like Mimikatz <code>dpapi::backupkeys</code>, SharpDPAPI, or custom scripts</li>
+</ul><br>
+<ol>
+  <li>This is especially dangerous when combined with roaming profiles / credential roaming or when master keys are exfiltrated from many users.</li>
+</ol></p>
+
+<strong>Most common tools observed performing DPAPI domain backup key extraction in 2024–2026:</strong>
+<ul>
+  <li>Mimikatz (<code>dpapi::backupkeys /export</code>)</li>
+  <li>SharpDPAPI (<code>backupkeys</code>)</li>
+  <li>Impacket + custom LDAP extraction</li>
+  <li>DSInternals PowerShell (<code>Get-DPAPIBackupKey</code>)</li>
+  <li>Custom .NET / Python scripts abusing replication or direct LDAP reads</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4662">4. Key Windows Security Event Indicators (Event ID 4662)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4662</strong> (An operation was performed on an object)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>ObjectServer</strong></td><td>DS (Directory Service)</td><td>Active Directory object access</td></tr>
+<tr><td><strong>ObjectType</strong></td><td>msDS-Setting or backupKey</td><td>DPAPI backup key objects</td></tr>
+<tr><td><strong>ObjectName / ObjectDN</strong></td><td>Contains <code>CN=BCKUPKEY_</code> or <code>CN=Microsoft,CN=System,DC=...</code></td><td>Location of domain DPAPI backup keys</td></tr>
+<tr><td><strong>AccessList / Properties</strong></td><td>ReadProperty on pvk (private key) attribute or all properties</td><td>The sensitive private key blob being read</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Non-DC account (not NT AUTHORITY\SYSTEM from a DC) — often Domain Admin or replication-enabled user</td><td>Legitimate reads come from DCs</td></tr>
+<tr><td><strong>ObjectClass</strong></td><td>msDS-Setting or container</td><td>Class of the backup key object</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (classic DPAPI backup key extraction signature):</strong>
+<pre><code>Event ID = 4662
+ObjectServer = DS
+ObjectDN contains BCKUPKEY_ or Microsoft,CN=System
+Properties includes pvk or all attributes
+Subject account is **not** a Domain Controller machine account
+→ especially when combined with replication rights abuse indicators
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Critical Confidence)</strong>
+<ul>
+  <li>Event ID = 4662</li>
+  <li>ObjectServer = DS</li>
+  <li>ObjectDN contains <code>BCKUPKEY_</code> or <code>CN=Microsoft,CN=System</code></li>
+  <li>Properties / AccessList includes read of <code>pvk</code> attribute</li>
+  <li>SubjectUserName is <strong>not</strong> a DC computer account</li>
+</ul>
+
+<strong>Behavioral / Correlation-based Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>4662 on BCKUPKEY objects + Subject is user/machine account (not DC$)</li>
+  <li>Multiple 4662 reads of pvk attribute from same SubjectLogonId / IpAddress</li>
+  <li>4662 DPAPI key access + preceding privilege escalation (4672 SeDebugPrivilege, 4624 privileged logon)</li>
+  <li>Unusual LDAP binds from non-DC IPs targeting CN=Microsoft,CN=System</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Very rare legitimate scenarios (Microsoft support / recovery operations)</li>
+  <li>Some AD recovery / migration tools (distinguishable by context)</li>
+  <li>Backup / DR solutions reading System container (usually DC-initiated)</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li><strong>Remove replication rights</strong> from all non-DC accounts (Replicating Directory Changes All, etc.)</li>
+  <li>Enable <strong>LDAP signing + channel binding</strong> (prevents relay attacks to read sensitive objects)</li>
+  <li>Audit ACLs on <code>CN=Microsoft,CN=System</code> container — restrict read access</li>
+  <li>Monitor KRBTGT and BCKUPKEY objects specifically for any read operations</li>
+  <li>Use <strong>tier-0 isolation</strong> — no privileged accounts logging on to regular workstations</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li><strong>Isolate source workstation</strong> where extraction occurred (SubjectUserSid / IpAddress)</li>
+  <li><strong>Rotate DPAPI domain backup keys</strong> (force regeneration via Microsoft guidance or tools)</li>
+  <li>Reset passwords of accounts whose DPAPI master keys may have been decrypted</li>
+  <li>Hunt for exfiltration / usage of decrypted credentials (browser logins, Wi-Fi profiles, EFS files)</li>
+  <li>Review 4662, 5136 (modification attempts), and 4624 events from the source account/IP</li>
+  <li>Audit all accounts with read access to CN=Microsoft,CN=System — revoke unnecessary rights</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

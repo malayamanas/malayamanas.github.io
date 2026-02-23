@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brute Force — Repeated Failed Logons Same Account</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">Brute Force — Repeated Failed Logons Same Account</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1110.001</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> Brute Force — Repeated Failed Logons Same Account
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>Brute Force — Repeated Failed Logons Same Account</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1110.001</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4625</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, t1110.001</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+Brute-force password guessing against a single target account — most commonly domain accounts, local accounts, or service accounts — via repeated failed authentication attempts. Attackers systematically try passwords (dictionary, incremental, credential stuffing from previous breaches) until success or lockout. High-volume attempts against one account are easier to detect than low-and-slow spraying.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong>       : Brute Force: Password Guessing / Password Spraying (T1110.001)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<p><ol>
+  <li>Attacker identifies valid usernames (via enumeration, leaks, OSINT, LDAP queries, or previous compromise).</li>
+  <li>Attacker selects one high-value target account (e.g., Administrator, service account, executive, shared mailbox).</li>
+  <li>Attacker launches automated password guessing:</li>
+</ol><br>
+<ul>
+  <li>Dictionary attacks (common passwords, seasonal variants)</li>
+  <li>Incremental / mask attacks (e.g., Password1 → Password2)</li>
+  <li>Credential stuffing (reusing known breached passwords)</li>
+</ul><br>
+<ol>
+  <li>Attempts occur over:</li>
+</ol><br>
+<ul>
+  <li>SMB (445), RDP (3389), WinRM (5985/5986), LDAP (389/636), HTTP/NTLM endpoints</li>
+  <li>Tools: Hydra, Medusa, CrackMapExec, Patator, custom scripts</li>
+</ul><br>
+<ol>
+  <li>Goal: successful logon (4624) or account lockout (4740) to confirm weak password.</li>
+</ol></p>
+
+<strong>Most common tools &amp; vectors observed in 2024–2026:</strong>
+<ul>
+  <li>Hydra / Medusa / Ncrack</li>
+  <li>CrackMapExec (<code>-u user -p passwords.txt</code>)</li>
+  <li>Patator / crowbar</li>
+  <li>RDP brute-forcing (xHydra, custom RDP clients)</li>
+  <li>SMB / WinRM brute-forcing (impacket, evil-winrm)</li>
+  <li>External attacks against exposed RDP / VPN / OWA / ADFS endpoints</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4625">4. Key Windows Security Event Indicators (Event ID 4625)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4625</strong> (An account failed to log on)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>TargetUserName</strong></td><td>Same account repeated many times (e.g., Administrator, svc-sql, user@domain.com)</td><td>Single-target brute force focuses on one identity</td></tr>
+<tr><td><strong>Status / SubStatus</strong></td><td>0xC000006D (bad username/password) + 0xC000006A (wrong password)</td><td>Classic failed password attempt</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>External IP (internet-facing), VPN exit node, or unusual internal IP</td><td>Source of brute-force attempts</td></tr>
+<tr><td><strong>WorkstationName</strong></td><td>Random, suspicious, missing, or matches known attack tooling</td><td>Often attacker-controlled or spoofed</td></tr>
+<tr><td><strong>LogonType</strong></td><td>3 (Network), 10 (RemoteInteractive/RDP), 2 (Interactive – rare externally)</td><td>Common brute-force vectors</td></tr>
+<tr><td><strong>FailureReason</strong></td><td>&quot;Unknown user name or bad password.&quot;</td><td>Standard message for password guessing</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (classic single-account brute-force signature):</strong>
+<pre><code>Event ID = 4625
+TargetUserName = same value repeated
+Status = 0xC000006D + SubStatus = 0xC000006A
+IpAddress = external / same suspicious source
+→ threshold: &gt; 10–20 failures in &lt; 5–10 minutes against same TargetUserName
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Event ID = 4625</li>
+  <li>Same TargetUserName appears ≥ 15–25 times in short window (5–30 min)</li>
+  <li>Status/SubStatus = bad password combo (0xC000006D/0xC000006A)</li>
+  <li>IpAddress is external OR not in corporate VPN range</li>
+  <li>Exclude known noisy scanners / monitoring tools via allow-list</li>
+</ul>
+
+<strong>Behavioral / Correlation-based Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Count of 4625 events grouped by TargetUserName → high count + low unique IpAddress = focused brute force</li>
+  <li>4625 burst against privileged accounts (Administrator, krbtgt, service accounts)</li>
+  <li>4625 + same IpAddress → successful 4624 shortly after = successful brute force</li>
+  <li>Correlate with preceding enumeration (4661/4662 LDAP user reads, 4798/4799 local group enumeration)</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Users mistyping passwords repeatedly (usually low volume, same workstation)</li>
+  <li>Legacy applications / scripts with wrong credentials</li>
+  <li>Penetration testing / red-team activity (should be coordinated)</li>
+  <li>Backup / monitoring agents with stale credentials</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Enforce strong <strong>account lockout policy</strong> (5–10 attempts, 15–30 min lockout)</li>
+  <li>Implement <strong>multi-factor authentication</strong> (especially for RDP, VPN, OWA, ADFS)</li>
+  <li><strong>Disable NTLM</strong> where possible (especially externally)</li>
+  <li>Block direct internet exposure of RDP (3389), SMB (445), WinRM (5985/5986)</li>
+  <li>Use <strong>Azure AD Password Protection</strong> or on-prem equivalent for banned password lists</li>
+  <li>Monitor and alert on external 4625 volume against any single account</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li><strong>Temporarily lock or disable</strong> the targeted account if brute force is ongoing</li>
+  <li><strong>Block source IP(s)</strong> at firewall / endpoint level</li>
+  <li>Force password reset + MFA re-enrollment for targeted account</li>
+  <li>Hunt for successful logon immediately after failures (4624 with same IpAddress)</li>
+  <li>Review 4625, 4624, and 4771 (Kerberos pre-auth failures) events from the source IP</li>
+  <li>Check for follow-on activity: lateral movement (5140/5145 shares, 7045 services), privilege escalation (4672, 5136)</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

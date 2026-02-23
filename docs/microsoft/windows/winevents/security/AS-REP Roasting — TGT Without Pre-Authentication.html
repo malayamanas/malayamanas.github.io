@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AS-REP Roasting — TGT Without Pre-Authentication</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">AS-REP Roasting — TGT Without Pre-Authentication</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Credential Access</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">credential_access</span> <span class="tag-pill">t1558.004</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0  
+<strong>Date:</strong> February 2026  
+<strong>Usecase ID / Name:</strong> AS-REP Roasting — TGT Without Pre-Authentication
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>AS-REP Roasting — TGT Without Pre-Authentication</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1558.004</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Credential Access</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>4768</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>credential_access, t1558.004</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>  
+AS-REP Roasting is an offline credential attack in which an adversary requests Kerberos Authentication Service Response (AS-REP) tickets for accounts that do not require pre-authentication (UserAccountControl flag DONT_REQUIRE_PREAUTH = 4194304 / 0x400000 set). The KDC returns an AS-REP containing data encrypted with the target user’s long-term key (NT hash), which the attacker can then crack offline (similar to Kerberoasting but targets user accounts instead of service accounts).
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Credential Access  </li>
+</ul><br>
+  <strong>Technique</strong>       : Steal or Forge Kerberos Tickets: AS-REP Roasting (T1558.004)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker obtains low-privileged domain user credentials (or performs unauthenticated enumeration in some cases).</li>
+  <li>Attacker identifies user accounts with pre-authentication disabled — via LDAP query (<code>userAccountControl:1.2.840.113556.1.4.803:=4194304</code>), BloodHound/SharpHound, PowerView (<code>Get-DomainUser -PreauthNotRequired</code>), Rubeus, etc.</li>
+  <li>Attacker sends an AS-REQ to the KDC for the target user <strong>without</strong> providing pre-authentication data.</li>
+  <li>Because pre-auth is disabled, the KDC responds with an AS-REP containing the session key encrypted using the target user’s NT hash (RC4-HMAC by default in vulnerable accounts).</li>
+  <li>Attacker extracts the encrypted blob and cracks it offline using hashcat / JohnTheRipper (format: AS-REP hash / Kerberos 5 TGS-REP etype 23).</li>
+  <li>Successful crack → plaintext password or NT hash of the target user account (often privileged / legacy / service-like accounts).</li>
+</ol>
+
+<strong>Most common tools observed performing AS-REP Roasting in 2024–2026:</strong>
+<ul>
+  <li>Rubeus (<code>asreproast</code>, <code>asreproast /format:hashcat</code>, <code>monitor</code>)</li>
+  <li>Impacket (<code>GetNPUsers.py</code>)</li>
+  <li>Mimikatz (some modes support export)</li>
+  <li>PowerView / PowerSploit (<code>Invoke-ASREPRoast</code>)</li>
+  <li>Custom LDAP + Kerberos libraries in Python / .NET / Go</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-4768">4. Key Windows Security Event Indicators (Event ID 4768)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4768</strong> (A Kerberos authentication ticket (TGT) was requested)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>PreAuthType</strong></td><td><strong>-</strong> (empty / not present) <strong>or</strong> 0</td><td>Absence of pre-authentication data is the hallmark of AS-REP roasting</td></tr>
+<tr><td><strong>Status</strong></td><td>0x0 (success)</td><td>Successful AS-REP issuance without pre-auth</td></tr>
+<tr><td><strong>TicketEncryptionType</strong></td><td>0x17 (23 decimal) = RC4-HMAC</td><td>Vulnerable accounts almost always use RC4; AES would fail without pre-auth</td></tr>
+<tr><td><strong>TargetUserName</strong></td><td>User accounts (often legacy, service-like, or misconfigured admin accounts) — not computer$ accounts</td><td>The account being roasted</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Attacker workstation / jump host / external VPN / unusual subnet</td><td>Source of the AS-REQ</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Low-privileged / recently created / unusual domain user</td><td>Account used to request the ticket (sometimes anonymous in older setups)</td></tr>
+<tr><td><strong>CertIssuerName</strong> / <strong>CertSerialNumber</strong></td><td>Absent / empty</td><td>No certificate-based pre-auth used</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination (classic AS-REP Roasting signature):</strong>
+<pre><code>Event ID = 4768
+PreAuthType = - (missing / empty)
+Status = 0x0
+TicketEncryptionType = 0x17 (RC4)
+→ multiple such events in short time from same IpAddress / SubjectUserName targeting different TargetUserName
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Event ID = 4768</li>
+  <li>PreAuthType is missing / empty / 0</li>
+  <li>Status = 0x0</li>
+  <li>TicketEncryptionType = 0x17 (or 23 decimal)</li>
+  <li>TargetUserName is <strong>not</strong> a computer account (does not end in $)</li>
+</ul>
+
+<strong>Behavioral / Volume-based Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Count of 4768 events with missing PreAuthType per IpAddress or SubjectUserName → &gt; 3–5 in &lt; 10 minutes = highly suspicious</li>
+  <li>4768 missing PreAuth + TargetUserName has UserAccountControl bit 4194304 set (cross-reference with AD attributes)</li>
+  <li>Same source requesting TGTs for many different users without pre-auth</li>
+  <li>Correlate with preceding LDAP enumeration of DONT_REQUIRE_PREAUTH accounts (4661/4662 on user objects filtering userAccountControl)</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Extremely rare in modern environments (pre-auth disabled is a legacy / misconfiguration red flag)</li>
+  <li>Some very old third-party Kerberos implementations or broken clients</li>
+  <li>Certain smart-card / cert-based flows (but these usually populate CertIssuerName)</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention)</strong>
+<ul>
+  <li>Ensure <strong>no accounts</strong> have &quot;Do not require Kerberos preauthentication&quot; enabled (UserAccountControl: 4194304)</li>
+  <li>Regularly audit AD for this flag (<code>Get-ADUser -LDAPFilter &quot;(userAccountControl:1.2.840.113556.1.4.803:=4194304)&quot;</code>)</li>
+  <li>Enforce AES-only Kerberos (disable RC4 domain-wide where possible)</li>
+  <li>Monitor for new accounts created with this flag set</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Immediately reset password of all roasted / targeted accounts (especially if privileged)</li>
+  <li>Force Kerberos ticket invalidation / sign-out where possible</li>
+  <li>Investigate source workstation / IP for compromise (4688 process creation, prior credential access, enumeration activity)</li>
+  <li>Audit AD for any other accounts with pre-auth disabled — remediate them</li>
+  <li>Hunt for subsequent use of cracked credentials (new 4624 logons from unusual locations)</li>
+  <li>Enable stricter Kerberos auditing and consider Protected Users group for sensitive accounts</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

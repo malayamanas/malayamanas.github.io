@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WMI Event Subscription for Persistence</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">WMI Event Subscription for Persistence</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Execution | Persistence</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">persistence</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1546.003</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> WMI Event Subscription for Persistence
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>WMI Event Subscription for Persistence</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1546.003</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Execution, Persistence</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>5861</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>persistence, execution, t1546.003</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+An adversary runs attacker-controlled code on the target system by exploiting T1546.003. Windows Security Event 5861 (security event) provides the primary detection signal when properly audited and monitored in a SIEM.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Execution  </li>
+</ul><br>
+  <strong>Technique</strong>       : T1546.003 (T1546.003)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker authenticates to the target host using stolen credentials (pass-the-hash or plaintext).</li>
+  <li>WMI queries or Win32_Process create calls are issued remotely via the DCOM/RPC transport on port 135 and dynamic ports.</li>
+  <li>The remote WMI call spawns a new process on the target — visible as Event 4688 with parent WmiPrvSE.exe or svchost.exe (WMI service).</li>
+  <li>The spawned process executes the attacker&#x27;s command (PowerShell download cradle, reverse shell, or reconnaissance command).</li>
+  <li>Event 4624 LogonType 3 with AuthenticationPackageName indicating NTLM or Kerberos precedes the WMI process creation.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>Impacket wmiexec.py</li>
+  <li>CobaltStrike WMI lateral movement</li>
+  <li>PowerShell Invoke-WmiMethod</li>
+  <li>WMIS / wmic.exe (native)</li>
+  <li>Metasploit windows/wmi/wmi_exec</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-5861-security-event-5861">4. Key Windows Security Event Indicators (Event ID 5861 (Security event 5861))</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>5861</strong> (security event)
+
+<strong>Critical fields to monitor / correlate (Required attributes):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Namespace</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the Namespace involved in this event</td></tr>
+<tr><td><strong>Eventfilter</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the Eventfilter involved in this event</td></tr>
+<tr><td><strong>ESS</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the ESS involved in this event</td></tr>
+<tr><td><strong>Consumer</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the Consumer involved in this event</td></tr>
+<tr><td><strong>PossibleCause</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the PossibleCause involved in this event</td></tr>
+<tr><td><strong>Binding</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the Binding involved in this event</td></tr>
+<tr><td><strong>Filter</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the Filter involved in this event</td></tr>
+<tr><td><strong>CommandLineTemplate</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the CommandLineTemplate involved in this event</td></tr>
+<tr><td><strong>ScriptText</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the ScriptText involved in this event</td></tr>
+<tr><td><strong>Query</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the Query involved in this event</td></tr>
+<tr><td><strong>Provider_Name</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the Provider_Name involved in this event</td></tr>
+<tr><td><strong>Channel</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the Channel involved in this event</td></tr>
+<tr><td><strong>Level</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the Level involved in this event</td></tr>
+<tr><td><strong>TimeCreated</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the TimeCreated involved in this event</td></tr>
+<tr><td><strong>Computer</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the Computer involved in this event</td></tr>
+<tr><td><strong>ProcessID</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the ProcessID involved in this event</td></tr>
+<tr><td><strong>ThreadID</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the ThreadID involved in this event</td></tr>
+<tr><td><strong>UserID</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the UserID involved in this event</td></tr>
+<tr><td><strong>Message</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the Message involved in this event</td></tr>
+</tbody></table>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Alert on Event ID 5861 matching the highest-fidelity field combination shown above</li>
+  <li>Apply thresholds appropriate to the environment: a single event may be sufficient for critical-level detections; volume thresholds apply for medium/low</li>
+  <li>Correlate with Event 4624 (successful logon) using SubjectLogonId to establish the session context and identify the source IP and workstation</li>
+</ul>
+
+<strong>Highest-Fidelity Correlation (SIEM Query Logic):</strong>
+<pre><code>EventID = 5861
+</code></pre>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Correlate 5861 events where SubjectLogonId links to a Type 3 (network) or Type 10 (remote interactive) logon from an external IP address</li>
+  <li>Alert on 5861 events from accounts in privileged groups (Domain Admins, Enterprise Admins) outside approved maintenance windows</li>
+  <li>Hunt for 5861 events followed within 60 seconds by lateral movement indicators (5140, 4624 to other hosts) from the same SubjectLogonId</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate administrative activity during change management windows may generate similar events</li>
+  <li>Automated enterprise management platforms (SCCM, Ansible, Puppet) perform similar operations as part of configuration management</li>
+  <li>Security scanning and vulnerability assessment tools may trigger events matching this pattern</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Apply the Principle of Least Privilege: restrict the ability to perform this action to explicitly approved accounts</li>
+  <li>Enable advanced auditing via Group Policy (Advanced Audit Policy Configuration) to ensure all relevant events are captured</li>
+  <li>Deploy a SIEM with behavioral analytics to baseline normal activity and alert on deviations</li>
+  <li>Implement privileged access management (PAM) to control and audit use of privileged credentials</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the affected host from the network immediately if active exploitation or lateral movement is confirmed.</li>
+  <li>Identify the initiating account (SubjectUserName/SubjectLogonId) and disable it pending investigation.</li>
+  <li>Preserve all relevant Windows Security Event logs from the affected host(s) before any remediation.</li>
+  <li>Correlate the triggering event with Event 4624 logon records to identify the source IP, workstation, and session that performed the action.</li>
+  <li>Identify and remove the persistence mechanism (registry key, scheduled task, service, or DLL) from all affected hosts.</li>
+  <li>Search for the same persistence IOC (file hash, registry key value, task content) across all endpoints in the environment.</li>
+  <li>Review the affected account&#x27;s full activity history for the past 30 days to understand the scope of the compromise.</li>
+  <li>Rebuild the affected host from a known-good image if deep persistence (bootkit, firmware, or multiple mechanisms) is suspected.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

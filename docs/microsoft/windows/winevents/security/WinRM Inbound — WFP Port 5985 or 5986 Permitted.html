@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinRM Inbound — WFP Port 5985 or 5986 Permitted</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">WinRM Inbound — WFP Port 5985 or 5986 Permitted</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Execution | Lateral Movement | Command and Control</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">command_and_control</span> <span class="tag-pill">t1021.006</span> <span class="tag-pill">t1059.001</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> WinRM Inbound — WFP Port 5985/5986 Permitted
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>WinRM Inbound — WFP Port 5985/5986 Permitted</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1021.006</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Execution, Lateral Movement, Command and Control</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>5156</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>lateral_movement, execution, command_and_control, t1021.006, t1059.001</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+An adversary runs attacker-controlled code on the target system by exploiting Remote Services: Windows Remote Management. Windows Security Event 5156 (The Windows Filtering Platform has permitted a connection) provides the primary detection signal when properly audited and monitored in a SIEM.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Execution  </li>
+</ul><br>
+  <strong>Technique</strong>       : Remote Services: Windows Remote Management (T1021.006)<br>
+<ul>
+  <li><strong>Tactic</strong>          : Lateral Movement  </li>
+</ul><br>
+  <strong>Technique</strong>       : Command and Scripting Interpreter: PowerShell (T1059.001)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker obtains credentials with WinRM access (default: local admin, domain admin, or members of Remote Management Users group).</li>
+  <li>Attacker establishes a PowerShell Remoting session using <code>Enter-PSSession</code>, <code>Invoke-Command</code>, or evil-winrm.</li>
+  <li>WinRM creates an HTTP/HTTPS session on port 5985/5986, generating a network logon Event 4624 with LogonType 3.</li>
+  <li>Commands are executed in a remote PowerShell runspace; process creation events (4688) show PowerShell children under wsmprovhost.exe.</li>
+  <li>The attacker may load in-memory modules (Mimikatz, PowerView) via the remoting session to avoid disk artefacts.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>evil-winrm</li>
+  <li>PowerShell <code>Invoke-Command</code> / <code>Enter-PSSession</code></li>
+  <li>CobaltStrike WinRM jump</li>
+  <li>Impacket</li>
+  <li>Metasploit windows/manage/powershell/exec</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-5156-the-windows-filtering-platform-has-permitted-a-connection">4. Key Windows Security Event Indicators (Event ID 5156 (The Windows Filtering Platform has permitted a connection))</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>5156</strong> (The Windows Filtering Platform has permitted a connection)
+
+<strong>Critical fields to monitor / correlate (Required attributes):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>ProcessID</strong></td><td>Unexpected or anomalous values in this field context</td><td>Provides essential context for understanding the ProcessID involved in this event</td></tr>
+<tr><td><strong>Application</strong></td><td>LSASS.exe, winlogon.exe, or svchost.exe making network connections; any process making connections to unexpected destinations</td><td>The process initiating the network connection; system processes should have limited, predictable network behaviour</td></tr>
+<tr><td><strong>Direction</strong></td><td>Inbound on non-standard ports; outbound from LSASS, svchost, or winlogon to external IPs</td><td>Network connection direction; outbound from credential processes to external hosts indicates exfiltration</td></tr>
+<tr><td><strong>SourceAddress</strong></td><td>External or unauthorized source IPs for management traffic; spoofed source addresses in internal traffic</td><td>Source IP for the connection; links network activity to a specific host for isolation and investigation</td></tr>
+<tr><td><strong>SourcePort</strong></td><td>High-numbered ephemeral ports from persistent long-running connections may indicate C2 keepalive</td><td>Source port; unusual persistence of a specific source port over time indicates a sustained connection</td></tr>
+<tr><td><strong>DestAddress</strong></td><td>Internal Domain Controllers, sensitive servers, or external IPs from unexpected processes (e.g., LSASS making outbound connections)</td><td>Destination IP; LSASS or system processes connecting to external IPs indicate credential exfiltration</td></tr>
+<tr><td><strong>DestPort</strong></td><td>445 (SMB), 389/636 (LDAP), 88 (Kerberos), 3389 (RDP), 5985/5986 (WinRM) from unexpected sources; non-standard ports from system processes</td><td>Destination port reveals the intended protocol; protocol-anomaly detection (e.g., Kerberos from non-DC) is powerful</td></tr>
+<tr><td><strong>Protocol</strong></td><td>Protocol 6 (TCP) or 17 (UDP); non-standard protocols (1=ICMP, 47=GRE) from system processes may indicate tunnelling</td><td>Network protocol identifier; protocol anomalies combined with suspicious applications reveal covert channels</td></tr>
+<tr><td><strong>LayerRTID</strong></td><td>Specific WFP filter layer IDs reveal what enforcement point triggered the event (transport, network, stream layers)</td><td>WFP layer identifier; helps correlate with the specific firewall rule and understand what traffic was affected</td></tr>
+</tbody></table>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Alert on Event ID 5156 matching the highest-fidelity field combination shown above</li>
+  <li>Apply thresholds appropriate to the environment: a single event may be sufficient for critical-level detections; volume thresholds apply for medium/low</li>
+  <li>Correlate with Event 4624 (successful logon) using SubjectLogonId to establish the session context and identify the source IP and workstation</li>
+</ul>
+
+<strong>Highest-Fidelity Correlation (SIEM Query Logic):</strong>
+<pre><code>EventID = 5156
+</code></pre>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Correlate 5156 events where SubjectLogonId links to a Type 3 (network) or Type 10 (remote interactive) logon from an external IP address</li>
+  <li>Alert on 5156 events from accounts in privileged groups (Domain Admins, Enterprise Admins) outside approved maintenance windows</li>
+  <li>Hunt for 5156 events followed within 60 seconds by lateral movement indicators (5140, 4624 to other hosts) from the same SubjectLogonId</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate administrative activity during change management windows may generate similar events</li>
+  <li>Automated enterprise management platforms (SCCM, Ansible, Puppet) perform similar operations as part of configuration management</li>
+  <li>Security scanning and vulnerability assessment tools may trigger events matching this pattern</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Apply the Principle of Least Privilege: restrict the ability to perform this action to explicitly approved accounts</li>
+  <li>Enable advanced auditing via Group Policy (Advanced Audit Policy Configuration) to ensure all relevant events are captured</li>
+  <li>Deploy a SIEM with behavioral analytics to baseline normal activity and alert on deviations</li>
+  <li>Implement privileged access management (PAM) to control and audit use of privileged credentials</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the affected host from the network immediately if active exploitation or lateral movement is confirmed.</li>
+  <li>Identify the initiating account (SubjectUserName/SubjectLogonId) and disable it pending investigation.</li>
+  <li>Preserve all relevant Windows Security Event logs from the affected host(s) before any remediation.</li>
+  <li>Correlate the triggering event with Event 4624 logon records to identify the source IP, workstation, and session that performed the action.</li>
+  <li>Identify all systems the attacker accessed from the compromised host by reviewing outbound connection logs and Event 5140/4624 entries.</li>
+  <li>Reset credentials for all accounts used for lateral movement; review and revoke any new accounts or group memberships created.</li>
+  <li>Scan all reached hosts for persistence mechanisms (registry, scheduled tasks, services, WMI subscriptions).</li>
+  <li>Implement network segmentation controls to prevent unrestricted lateral movement on the same detection path.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

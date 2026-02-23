@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMB Enumeration Across Many Hosts — Lateral Movement Recon</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">SMB Enumeration Across Many Hosts — Lateral Movement Recon</h1>
+  <div class="page-meta">
+    <span class="badge badge-medium">Medium</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Discovery | Lateral Movement</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">discovery</span> <span class="tag-pill">lateral_movement</span> <span class="tag-pill">t1135</span> <span class="tag-pill">t1018</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> SMB Enumeration Across Many Hosts — Lateral Movement Recon
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>SMB Enumeration Across Many Hosts — Lateral Movement Recon</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1135</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Discovery, Lateral Movement</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>Medium</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>5140</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>discovery, lateral_movement, t1135, t1018</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+An adversary enumerates the target environment to identify assets and attack paths by exploiting Network Share Discovery. Windows Security Event 5140 (A network share object was accessed) provides the primary detection signal when properly audited and monitored in a SIEM.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Discovery  </li>
+</ul><br>
+  <strong>Technique</strong>       : Network Share Discovery (T1135)<br>
+<ul>
+  <li><strong>Tactic</strong>          : Lateral Movement  </li>
+</ul><br>
+  <strong>Technique</strong>       : Remote System Discovery (T1018)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker obtains domain or local administrator credentials through prior compromise.</li>
+  <li>Attacker connects to administrative shares (ADMIN$, C$, IPC$) on target hosts using net use, SMBClient, or built-in Windows SMB.</li>
+  <li>Files are copied to the remote host (malware staging) or commands are executed via the share connection.</li>
+  <li>Event 5140 logs each share access with source IP and account; Event 5145 logs specific file/directory access attempts.</li>
+  <li>Repeated access across multiple targets in short succession indicates automated lateral movement or ransomware staging.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>CobaltStrike SMB lateral movement</li>
+  <li>Impacket smbclient.py / smbexec.py</li>
+  <li>PsExec (uses ADMIN$)</li>
+  <li>Net.exe (native Windows)</li>
+  <li>Metasploit smb_relay / psexec</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-5140-a-network-share-object-was-accessed">4. Key Windows Security Event Indicators (Event ID 5140 (A network share object was accessed))</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>5140</strong> (A network share object was accessed)
+
+<strong>Critical fields to monitor / correlate (Required attributes):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>SubjectUserSid</strong></td><td>Non-SYSTEM SID from an interactive user or service account not normally performing this action</td><td>Uniquely identifies the security principal; unexpected SIDs performing sensitive operations are high-priority IOCs</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Unexpected user accounts, machine accounts in human context, or recently created/renamed accounts</td><td>Human-readable identity of the actor; enables cross-event correlation and user-behaviour analysis</td></tr>
+<tr><td><strong>SubjectDomainName</strong></td><td>Workgroup name, external/untrusted domain, or NT AUTHORITY when privileged account is expected</td><td>Confirms account origin; cross-domain or workgroup operations in AD environments indicate lateral movement</td></tr>
+<tr><td><strong>SubjectLogonId</strong></td><td>Correlate with Event 4624 to reveal logon type (3=network, 10=remote interactive), source IP, and workstation</td><td>Links this event to a specific authenticated session; essential for timeline and pivot-path reconstruction</td></tr>
+<tr><td><strong>ShareName</strong></td><td>ADMIN$, C$, IPC$ access from non-administrative accounts or external IP addresses</td><td>Administrative shares accessed remotely indicate lateral movement preparation or ransomware deployment</td></tr>
+<tr><td><strong>IpAddress</strong></td><td>Non-RFC1918 addresses, Tor exit nodes, cloud infrastructure IPs, or addresses not in the corporate IP inventory</td><td>Reveals the source of the connection; external or untrusted source IPs immediately elevate severity</td></tr>
+<tr><td><strong>IpPort</strong></td><td>Non-standard high-numbered ports from management processes; ephemeral ports from persistent connections suggest C2</td><td>Source port number; combined with IpAddress reveals the full network socket for threat intelligence correlation</td></tr>
+<tr><td><strong>ObjectType</strong></td><td>Unexpected object types (Key for registry, File, Directory) being accessed by unusual processes</td><td>Clarifies what kind of resource is involved; sensitive types accessed by unexpected processes are IOCs</td></tr>
+</tbody></table>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (Medium Confidence)</strong>
+<ul>
+  <li>Alert on Event ID 5140 matching the highest-fidelity field combination shown above</li>
+  <li>Apply thresholds appropriate to the environment: a single event may be sufficient for critical-level detections; volume thresholds apply for medium/low</li>
+  <li>Correlate with Event 4624 (successful logon) using SubjectLogonId to establish the session context and identify the source IP and workstation</li>
+</ul>
+
+<strong>Highest-Fidelity Correlation (SIEM Query Logic):</strong>
+<pre><code>EventID = 5140
+AND SubjectUserName NOT IN &lt;approved_admin_accounts&gt;
+AND IpAddress NOT IN &lt;trusted_ip_ranges&gt;
+</code></pre>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Correlate 5140 events where SubjectLogonId links to a Type 3 (network) or Type 10 (remote interactive) logon from an external IP address</li>
+  <li>Alert on 5140 events from accounts in privileged groups (Domain Admins, Enterprise Admins) outside approved maintenance windows</li>
+  <li>Hunt for 5140 events followed within 60 seconds by lateral movement indicators (5140, 4624 to other hosts) from the same SubjectLogonId</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>File servers serving high volumes of legitimate requests will generate many 5140/5145 events</li>
+  <li>Backup systems accessing administrative shares (ADMIN$, C$) for agent deployment</li>
+  <li>IT automation platforms using SMB for software distribution</li>
+  <li>Domain controller replication and SYSVOL access generates 5140 events from all domain-joined machines</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Disable SMBv1 across the entire environment (critical for preventing relay attacks and EternalBlue exploitation)</li>
+  <li>Enable SMB signing to prevent relay attacks that don&#x27;t require cracked credentials</li>
+  <li>Block direct SMB (445) at the network perimeter and between network segments where SMB is not required</li>
+  <li>Apply firewall rules restricting ADMIN$ and C$ access to management VLAN IP ranges only</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Isolate the affected host from the network immediately if active exploitation or lateral movement is confirmed.</li>
+  <li>Identify the initiating account (SubjectUserName/SubjectLogonId) and disable it pending investigation.</li>
+  <li>Preserve all relevant Windows Security Event logs from the affected host(s) before any remediation.</li>
+  <li>Correlate the triggering event with Event 4624 logon records to identify the source IP, workstation, and session that performed the action.</li>
+  <li>Identify all systems the attacker accessed from the compromised host by reviewing outbound connection logs and Event 5140/4624 entries.</li>
+  <li>Reset credentials for all accounts used for lateral movement; review and revoke any new accounts or group memberships created.</li>
+  <li>Scan all reached hosts for persistence mechanisms (registry, scheduled tasks, services, WMI subscriptions).</li>
+  <li>Implement network segmentation controls to prevent unrestricted lateral movement on the same detection path.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>

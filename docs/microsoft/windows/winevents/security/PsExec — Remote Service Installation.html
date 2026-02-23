@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PsExec — Remote Service Installation</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="index.html" class="nav-back">&#8592; Back to Index</a>
+  <span class="nav-title">Windows Security SOP</span>
+</nav>
+<div class="page-header">
+  <h1 class="page-title">PsExec — Remote Service Installation</h1>
+  <div class="page-meta">
+    <span class="badge badge-high">High</span>
+    <span class="meta-item"><strong>Event IDs:</strong> </span>
+    <span class="meta-item"><strong>Tactics:</strong> Execution | Lateral Movement</span>
+  </div>
+  <div class="page-tags"><span class="tag-pill">lateral_movement</span> <span class="tag-pill">execution</span> <span class="tag-pill">t1569.002</span></div>
+</div>
+<main class="content">
+<hr>
+
+<strong>Microsoft Windows Security Event Detection – Attack Technique Profile</strong>
+
+<strong>Document Version:</strong> 1.0
+<strong>Date:</strong> February 2026
+<strong>Usecase ID / Name:</strong> PsExec — Remote Service Installation
+
+<h3 id="1-technique-summary">1. Technique Summary</h3>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Value</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Usecase Name</strong></td><td>PsExec — Remote Service Installation</td></tr>
+<tr><td><strong>MITRE ATT&amp;CK Technique ID</strong></td><td>T1569.002</td></tr>
+<tr><td><strong>MITRE Tactic(s)</strong></td><td>Execution, Lateral Movement</td></tr>
+<tr><td><strong>Detection Level</strong></td><td>High</td></tr>
+<tr><td><strong>Primary Event ID</strong></td><td>7045, 4697</td></tr>
+<tr><td><strong>Log Source</strong></td><td>Windows Security Event Log</td></tr>
+<tr><td><strong>Logsource Service Type</strong></td><td>security</td></tr>
+<tr><td><strong>Tags</strong></td><td>lateral_movement, execution, t1569.002</td></tr>
+</tbody></table>
+
+<strong>Short Description</strong>
+PsExec and its variants (PAExec, RemCom, CSExec) achieve remote code execution by creating a temporary Windows service on the target host. Event IDs 7045 (System log: new service installed) and 4697 (Security log: service installed) capture this service creation, including the executable path which often reveals PsExec artifacts such as <code>PSEXESVC.exe</code> or randomly named binaries dropped in <code>ADMIN$</code>.
+
+<h3 id="2-mitre-attck-mapping">2. MITRE ATT&amp;CK Mapping</h3>
+
+<p><ul>
+  <li><strong>Tactic</strong>          : Execution, Lateral Movement</li>
+</ul><br>
+  <strong>Technique</strong>       : System Services: Service Execution (T1569.002)</p>
+
+<h3 id="3-how-the-attack-typically-works-procedure">3. How the Attack Typically Works (Procedure)</h3>
+
+<ol>
+  <li>Attacker authenticates to the target system using valid credentials or pass-the-hash over SMB (TCP 445).</li>
+  <li>Attacker copies the service binary (e.g., <code>PSEXESVC.exe</code>) to the <code>ADMIN$</code> share (C:\Windows\) on the remote host.</li>
+  <li>A new Windows service is registered on the target using the Service Control Manager (SCM) via the <code>\PIPE\svcctl</code> named pipe.</li>
+  <li>The service is started, executing the attacker&#x27;s payload (shell, reverse shell, or specific command) with SYSTEM privileges.</li>
+  <li>Upon completion, PsExec deletes the service and binary to clean up, though event logs retain the evidence.</li>
+</ol>
+
+<strong>Most common tools observed in 2024–2026:</strong>
+<ul>
+  <li>Sysinternals PsExec (PSEXESVC.exe)</li>
+  <li>Impacket psexec.py (random service names)</li>
+  <li>PAExec (paexec.exe — open-source PsExec alternative)</li>
+  <li>RemCom (remcom.exe — open-source PsExec clone)</li>
+  <li>CrackMapExec (CME with --exec-method smbexec)</li>
+  <li>Cobalt Strike jump psexec module</li>
+</ul>
+
+<h3 id="4-key-windows-security-event-indicators-event-id-7045-4697">4. Key Windows Security Event Indicators (Event ID 7045, 4697)</h3>
+
+<strong>Primary Detection Event:</strong> Security Event ID <strong>4697</strong> (A service was installed in the system) and System Event ID <strong>7045</strong> (A new service was installed)
+
+<strong>Critical fields to monitor / correlate (Required attributes from your CSV):</strong>
+
+<table>
+<thead>
+<tr><th>Field</th><th>Typical malicious / suspicious value(s) / pattern</th><th>Why it matters</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>SubjectUserSid</strong></td><td>Non-SYSTEM SID; unexpected admin account SID</td><td>Identifies who installed the service; SYSTEM is expected for legitimate installs, user accounts indicate remote installation</td></tr>
+<tr><td><strong>SubjectUserName</strong></td><td>Service accounts, domain admin accounts used remotely; random or default tool usernames</td><td>Reveals which account was used for the attack; unexpected accounts are high-risk</td></tr>
+<tr><td><strong>SubjectDomainName</strong></td><td>External domain or unexpected domain name</td><td>Cross-domain service installation is rarely legitimate</td></tr>
+<tr><td><strong>SubjectLogonId</strong></td><td>Correlate with Event 4624 LogonType=3 (Network) to identify source IP</td><td>Links the service installation to the originating network logon session</td></tr>
+<tr><td><strong>ServiceName</strong></td><td><code>PSEXESVC</code>, <code>PAExec</code>, random 7-character strings, <code>remcomsvc</code></td><td>PsExec and clones use predictable or random service names; matching known patterns is high confidence</td></tr>
+<tr><td><strong>ServiceFileName</strong></td><td><code>%SystemRoot%\PSEXESVC.exe</code>, <code>%SystemRoot%\[random].exe</code>, <code>%TEMP%\*.exe</code>, cmd.exe with /c flags, PowerShell.exe encoded commands</td><td>Service binary path; temp or Windows root paths with random names, or interpreters (cmd/PowerShell) as the binary are strong IOCs</td></tr>
+<tr><td><strong>ServiceType</strong></td><td><code>0x10</code> (Win32OwnProcess) — most common for PsExec</td><td>PsExec services run as standalone Win32 processes</td></tr>
+<tr><td><strong>ServiceStartType</strong></td><td><code>0x3</code> (Demand Start) — transient services started and stopped immediately</td><td>On-demand start type combined with rapid deletion indicates automated remote execution</td></tr>
+</tbody></table>
+
+<strong>Highest-fidelity combination:</strong>
+<pre><code>EventID IN (4697, 7045)
+AND ServiceName IN (&quot;PSEXESVC&quot;, &quot;PAExec&quot;, &quot;remcomsvc&quot;)
+OR ServiceFileName MATCHES &quot;%SystemRoot%\[A-Za-z0-9]{4,8}\.exe&quot;
+OR ServiceFileName CONTAINS &quot;cmd.exe /c&quot;
+OR ServiceFileName CONTAINS &quot;powershell&quot; AND ServiceFileName CONTAINS &quot;-enc&quot;
+AND SubjectUserName NOT IN [known_admin_service_accounts]
+</code></pre>
+
+<h3 id="5-detection-hunting-recommendations">5. Detection / Hunting Recommendations</h3>
+
+<strong>Strong / Classic Signature Rule (High Confidence)</strong>
+<ul>
+  <li>Alert on Event 4697 or 7045 where ServiceName equals <code>PSEXESVC</code>, <code>PAExec</code>, or <code>remcomsvc</code>.</li>
+  <li>Alert on Event 4697 or 7045 where ServiceFileName contains <code>cmd.exe /c</code>, <code>powershell.exe -enc</code>, or <code>wscript.exe</code> — services using interpreters to execute payloads.</li>
+  <li>Alert on services installed with ServiceFileName pointing to <code>%TEMP%</code>, <code>%APPDATA%</code>, or <code>%PUBLIC%</code> directories.</li>
+</ul>
+
+<strong>Contextual / Behavioral Hunting Queries (SIEM / EDR)</strong>
+<ul>
+  <li>Hunt for Event 4697 or 7045 where the service binary is located in <code>C:\Windows\</code> with a random 6-8 character name (regex: <code>C:\\Windows\\[A-Za-z0-9]{6,8}\.exe</code>).</li>
+  <li>Correlate Event 4697 (service install) with Event 5145 (IPC$ <code>\PIPE\svcctl</code> access) and Event 4624 (network logon) on the same host within a 60-second window.</li>
+  <li>Hunt for short-lived services: service installation (4697) followed by service deletion (7036 stopped, then no corresponding start event) within minutes.</li>
+  <li>Baseline all service installations per host and alert on any new service not matching the approved software list.</li>
+</ul>
+
+<strong>False Positive Considerations</strong>
+<ul>
+  <li>Legitimate IT administration using PsExec for remote management (establish approved use policy).</li>
+  <li>Software deployment tools (SCCM, Ansible, Puppet) may install services as part of deployment.</li>
+  <li>Vulnerability scanners and EDR tools may register services during scanning operations.</li>
+  <li>Windows Update and system components occasionally register new services legitimately.</li>
+</ul>
+
+<strong>Recommended Hardening (Prevention &amp; Impact Reduction)</strong>
+<ul>
+  <li>Block PsExec and known hashes via application control (AppLocker, Windows Defender Application Control).</li>
+  <li>Disable the ADMIN$ and C$ administrative shares on workstations via Group Policy if not required.</li>
+  <li>Restrict service creation to authorized accounts only using security descriptors on the SCM.</li>
+  <li>Enable and monitor Windows Defender Credential Guard to prevent pass-the-hash attacks that precede PsExec use.</li>
+  <li>Deploy privileged access workstations (PAWs) for all administrative activities.</li>
+</ul>
+
+<h3 id="6-recommended-response-actions">6. Recommended Response Actions</h3>
+
+<ul>
+  <li>Contain the target host immediately if an unauthorized service was installed — isolate from network.</li>
+  <li>Retrieve the service binary before deletion (check <code>C:\Windows\PSEXESVC.exe</code> or the ServiceFileName path) for forensic analysis.</li>
+  <li>Determine the SubjectLogonId and correlate with Event 4624 to identify the source IP and authentication method used.</li>
+  <li>Review Event 5145 logs on the target for IPC$ <code>\PIPE\svcctl</code> access in the minutes preceding the service installation.</li>
+  <li>Check for additional lateral movement from the source IP to other hosts using the same credentials.</li>
+  <li>Reset the compromised account&#x27;s credentials and revoke all active sessions.</li>
+  <li>Preserve event logs from both source and target systems for forensic investigation.</li>
+  <li>Conduct a full sweep of all hosts the source account or IP communicated with during the attack window.</li>
+</ul>
+
+<hr>
+</main>
+<footer class="page-footer">
+  <a href="index.html">&#8592; Back to Index</a>
+</footer>
+</body>
+</html>
