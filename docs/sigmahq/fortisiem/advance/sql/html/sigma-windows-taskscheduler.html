@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Windows Taskscheduler</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Windows Taskscheduler</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">3 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="medium" data-title="Scheduled Task Executed From A Suspicious Location">
+  <h2>Scheduled Task Executed From A Suspicious Location</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, persistence, T1053.005</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the execution of Scheduled Tasks where the Program being run is located in a suspicious location or it's an unusale program to be run from a Scheduled Task</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/taskscheduler/win_taskscheduler_execution_from_susp_locations.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Scheduled Task Executed From A Suspicious Location
+-- Sigma ID:     424273ea-7cf8-43a6-b712-375f925e481f
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution, persistence | T1053.005
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-12-05
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/taskscheduler/win_taskscheduler_execution_from_susp_locations.yml
+-- Unmapped:     Path
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: Path
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-TaskScheduler-129')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (winEventId = '129'
+    AND (rawEventMsg LIKE '%C:\\Windows\\Temp\\%' OR rawEventMsg LIKE '%\\AppData\\Local\\Temp\\%' OR rawEventMsg LIKE '%\\Desktop\\%' OR rawEventMsg LIKE '%\\Downloads\\%' OR rawEventMsg LIKE '%\\Users\\Public\\%' OR rawEventMsg LIKE '%C:\\Temp\\%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Scheduled Task Executed Uncommon LOLBIN">
+  <h2>Scheduled Task Executed Uncommon LOLBIN</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, persistence, T1053.005</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the execution of Scheduled Tasks where the program being run is located in a suspicious location or where it is an unusual program to be run from a Scheduled Task</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/taskscheduler/win_taskscheduler_lolbin_execution_via_task_scheduler.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Scheduled Task Executed Uncommon LOLBIN
+-- Sigma ID:     f0767f15-0fb3-44b9-851e-e8d9a6d0005d
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution, persistence | T1053.005
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-12-05
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/taskscheduler/win_taskscheduler_lolbin_execution_via_task_scheduler.yml
+-- Unmapped:     Path
+-- False Pos:    False positives may occur with some of the selected binaries if you have tasks using them (which could be very common in your environment). Exclude all the specific trusted tasks before using this rule
+-- ============================================================
+-- UNMAPPED_FIELD: Path
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-TaskScheduler-129')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (winEventId = '129'
+    AND (rawEventMsg LIKE '%\\calc.exe' OR rawEventMsg LIKE '%\\cscript.exe' OR rawEventMsg LIKE '%\\mshta.exe' OR rawEventMsg LIKE '%\\mspaint.exe' OR rawEventMsg LIKE '%\\notepad.exe' OR rawEventMsg LIKE '%\\regsvr32.exe' OR rawEventMsg LIKE '%\\wscript.exe'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> False positives may occur with some of the selected binaries if you have tasks using them (which could be very common in your environment). Exclude all the specific trusted tasks before using this rule</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Important Scheduled Task Deleted">
+  <h2>Important Scheduled Task Deleted</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: impact, T1489</span>
+    <span>Author: frack113</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects when adversaries try to stop system services or processes by deleting their respective scheduled tasks in order to conduct data destructive activities
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/taskscheduler/win_taskscheduler_susp_schtasks_delete.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Important Scheduled Task Deleted
+-- Sigma ID:     9e3cb244-bdb8-4632-8c90-6079c8f4f16d
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        impact | T1489
+-- Author:       frack113
+-- Date:         2023-01-13
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/taskscheduler/win_taskscheduler_susp_schtasks_delete.yml
+-- Unmapped:     TaskName, UserName
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: TaskName
+-- UNMAPPED_FIELD: UserName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-TaskScheduler-141')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND ((winEventId = '141'
+    AND (rawEventMsg LIKE '%\\Windows\\SystemRestore\\SR%' OR rawEventMsg LIKE '%\\Windows\\Windows Defender\\%' OR rawEventMsg LIKE '%\\Windows\\BitLocker%' OR rawEventMsg LIKE '%\\Windows\\WindowsBackup\\%' OR rawEventMsg LIKE '%\\Windows\\WindowsUpdate\\%' OR rawEventMsg LIKE '%\\Windows\\UpdateOrchestrator\\%' OR rawEventMsg LIKE '%\\Windows\\ExploitGuard%'))
+  AND NOT ((rawEventMsg LIKE '%AUTHORI%' OR rawEventMsg LIKE '%AUTORI%')))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

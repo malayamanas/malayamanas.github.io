@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Azure Pim</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Azure Pim</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">7 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="high" data-title="Stale Accounts In A Privileged Role">
+  <h2>Stale Accounts In A Privileged Role</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Identifies when an account hasn't signed in during the past n number of days.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_account_stale.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Stale Accounts In A Privileged Role
+-- Sigma ID:     e402c26a-267a-45bd-9615-bd9ceda6da85
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-14
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_account_stale.yml
+-- Unmapped:     riskEventType
+-- False Pos:    Investigate if potential generic account that cannot be removed.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/pim
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'staleSignInAlertIncident'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Investigate if potential generic account that cannot be removed.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Invalid PIM License">
+  <h2>Invalid PIM License</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Identifies when an organization doesn't have the proper license for PIM and is out of compliance.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_invalid_license.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Invalid PIM License
+-- Sigma ID:     58af08eb-f9e1-43c8-9805-3ad9b0482bd8
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-14
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_invalid_license.yml
+-- Unmapped:     riskEventType
+-- False Pos:    Investigate if licenses have expired.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/pim
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'invalidLicenseAlertIncident'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Investigate if licenses have expired.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Roles Assigned Outside PIM">
+  <h2>Roles Assigned Outside PIM</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Identifies when a privilege role assignment has taken place outside of PIM and may indicate an attack.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_role_assigned_outside_of_pim.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Roles Assigned Outside PIM
+-- Sigma ID:     b1bc08d1-8224-4758-a0e6-fbcfc98c73bb
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-14
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_role_assigned_outside_of_pim.yml
+-- Unmapped:     riskEventType
+-- False Pos:    Investigate where users are being assigned privileged roles outside of Privileged Identity Management and prohibit future assignments from there.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/pim
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'rolesAssignedOutsidePrivilegedIdentityManagementAlertConfiguration'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Investigate where users are being assigned privileged roles outside of Privileged Identity Management and prohibit future assignments from there.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Roles Activated Too Frequently">
+  <h2>Roles Activated Too Frequently</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Identifies when the same privilege role has multiple activations by the same user.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_role_frequent_activation.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Roles Activated Too Frequently
+-- Sigma ID:     645fd80d-6c07-435b-9e06-7bc1b5656cba
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-14
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_role_frequent_activation.yml
+-- Unmapped:     riskEventType
+-- False Pos:    Investigate where if active time period for a role is set too short.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/pim
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'sequentialActivationRenewalsAlertIncident'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Investigate where if active time period for a role is set too short.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Roles Activation Doesn't Require MFA">
+  <h2>Roles Activation Doesn't Require MFA</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Identifies when a privilege role can be activated without performing mfa.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_role_no_mfa_required.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Roles Activation Doesn't Require MFA
+-- Sigma ID:     94a66f46-5b64-46ce-80b2-75dcbe627cc0
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-14
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_role_no_mfa_required.yml
+-- Unmapped:     riskEventType
+-- False Pos:    Investigate if user is performing MFA at sign-in.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/pim
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'noMfaOnRoleActivationAlertIncident'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Investigate if user is performing MFA at sign-in.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Roles Are Not Being Used">
+  <h2>Roles Are Not Being Used</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Identifies when a user has been assigned a privilege role and are not using that role.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_role_not_used.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Roles Are Not Being Used
+-- Sigma ID:     8c6ec464-4ae4-43ac-936a-291da66ed13d
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-14
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_role_not_used.yml
+-- Unmapped:     riskEventType
+-- False Pos:    Investigate if potential generic account that cannot be removed.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/pim
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'redundantAssignmentAlertIncident'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Investigate if potential generic account that cannot be removed.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Too Many Global Admins">
+  <h2>Too Many Global Admins</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Identifies an event where there are there are too many accounts assigned the Global Administrator role.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_too_many_global_admins.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Too Many Global Admins
+-- Sigma ID:     7bbc309f-e2b1-4eb1-8369-131a367d67d3
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-14
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/privileged_identity_management/azure_pim_too_many_global_admins.yml
+-- Unmapped:     riskEventType
+-- False Pos:    Investigate if threshold setting in PIM is too low.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/pim
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'tooManyGlobalAdminsAssignedToTenantAlertIncident'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Investigate if threshold setting in PIM is too low.</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

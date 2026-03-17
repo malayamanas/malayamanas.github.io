@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Gcp Google Workspace.Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Gcp Google Workspace.Admin</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">7 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="medium" data-title="Google Workspace Application Access Level Modified">
+  <h2>Google Workspace Application Access Level Modified</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: persistence, T1098.003</span>
+    <span>Author: Bryan Lim</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects when an access level is changed for a Google workspace application.
+An access level is part of BeyondCorp Enterprise which is Google Workspace's way of enforcing Zero Trust model.
+An adversary would be able to remove access levels to gain easier access to Google workspace resources.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_application_access_levels_modified.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Google Workspace Application Access Level Modified
+-- Sigma ID:     22f2fb54-5312-435d-852f-7c74f81684ca
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        persistence | T1098.003
+-- Author:       Bryan Lim
+-- Date:         2024-01-12
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_application_access_levels_modified.yml
+-- Unmapped:     eventService, eventName, setting_name
+-- False Pos:    Legitimate administrative activities changing the access levels for an application
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: gcp/google_workspace.admin
+-- UNMAPPED_FIELD: eventService
+-- UNMAPPED_FIELD: eventName
+-- UNMAPPED_FIELD: setting_name
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'admin.googleapis.com'
+    AND rawEventMsg = 'CHANGE_APPLICATION_SETTING'
+    AND rawEventMsg LIKE 'ContextAwareAccess%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate administrative activities changing the access levels for an application</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Google Workspace Application Removed">
+  <h2>Google Workspace Application Removed</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: impact</span>
+    <span>Author: Austin Songer</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects when an an application is removed from Google Workspace.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_application_removed.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Google Workspace Application Removed
+-- Sigma ID:     ee2803f0-71c8-4831-b48b-a1fc57601ee4
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        impact
+-- Author:       Austin Songer
+-- Date:         2021-08-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_application_removed.yml
+-- Unmapped:     eventService, eventName
+-- False Pos:    Application being removed may be performed by a System Administrator.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: gcp/google_workspace.admin
+-- UNMAPPED_FIELD: eventService
+-- UNMAPPED_FIELD: eventName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'admin.googleapis.com'
+    AND rawEventMsg IN ('REMOVE_APPLICATION', 'REMOVE_APPLICATION_FROM_WHITELIST'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Application being removed may be performed by a System Administrator.</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Google Workspace Granted Domain API Access">
+  <h2>Google Workspace Granted Domain API Access</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: persistence, T1098</span>
+    <span>Author: Austin Songer</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects when an API access service account is granted domain authority.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_granted_domain_api_access.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Google Workspace Granted Domain API Access
+-- Sigma ID:     04e2a23a-9b29-4a5c-be3a-3542e3f982ba
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        persistence | T1098
+-- Author:       Austin Songer
+-- Date:         2021-08-23
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_granted_domain_api_access.yml
+-- Unmapped:     eventService, eventName
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: gcp/google_workspace.admin
+-- UNMAPPED_FIELD: eventService
+-- UNMAPPED_FIELD: eventName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'admin.googleapis.com'
+    AND rawEventMsg = 'AUTHORIZE_API_CLIENT_ACCESS')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Google Workspace MFA Disabled">
+  <h2>Google Workspace MFA Disabled</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: impact</span>
+    <span>Author: Austin Songer</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects when multi-factor authentication (MFA) is disabled.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_mfa_disabled.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Google Workspace MFA Disabled
+-- Sigma ID:     780601d1-6376-4f2a-884e-b8d45599f78c
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        impact
+-- Author:       Austin Songer
+-- Date:         2021-08-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_mfa_disabled.yml
+-- Unmapped:     eventService, eventName, new_value
+-- False Pos:    MFA may be disabled and performed by a system administrator.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: gcp/google_workspace.admin
+-- UNMAPPED_FIELD: eventService
+-- UNMAPPED_FIELD: eventName
+-- UNMAPPED_FIELD: new_value
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND ((rawEventMsg = 'admin.googleapis.com'
+    AND rawEventMsg IN ('ENFORCE_STRONG_AUTHENTICATION', 'ALLOW_STRONG_AUTHENTICATION'))
+  AND rawEventMsg = 'false')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> MFA may be disabled and performed by a system administrator.</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Google Workspace Role Modified or Deleted">
+  <h2>Google Workspace Role Modified or Deleted</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: impact</span>
+    <span>Author: Austin Songer</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects when an a role is modified or deleted in Google Workspace.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_role_modified_or_deleted.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Google Workspace Role Modified or Deleted
+-- Sigma ID:     6aef64e3-60c6-4782-8db3-8448759c714e
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        impact
+-- Author:       Austin Songer
+-- Date:         2021-08-24
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_role_modified_or_deleted.yml
+-- Unmapped:     eventService, eventName
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: gcp/google_workspace.admin
+-- UNMAPPED_FIELD: eventService
+-- UNMAPPED_FIELD: eventName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'admin.googleapis.com'
+    AND rawEventMsg IN ('DELETE_ROLE', 'RENAME_ROLE', 'UPDATE_ROLE'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Google Workspace Role Privilege Deleted">
+  <h2>Google Workspace Role Privilege Deleted</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: impact</span>
+    <span>Author: Austin Songer</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects when an a role privilege is deleted in Google Workspace.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_role_privilege_deleted.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Google Workspace Role Privilege Deleted
+-- Sigma ID:     bf638ef7-4d2d-44bb-a1dc-a238252e6267
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        impact
+-- Author:       Austin Songer
+-- Date:         2021-08-24
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_role_privilege_deleted.yml
+-- Unmapped:     eventService, eventName
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: gcp/google_workspace.admin
+-- UNMAPPED_FIELD: eventService
+-- UNMAPPED_FIELD: eventName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'admin.googleapis.com'
+    AND rawEventMsg = 'REMOVE_PRIVILEGE')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Google Workspace User Granted Admin Privileges">
+  <h2>Google Workspace User Granted Admin Privileges</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: persistence, T1098</span>
+    <span>Author: Austin Songer</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects when an Google Workspace user is granted admin privileges.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_user_granted_admin_privileges.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Google Workspace User Granted Admin Privileges
+-- Sigma ID:     2d1b83e4-17c6-4896-a37b-29140b40a788
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        persistence | T1098
+-- Author:       Austin Songer
+-- Date:         2021-08-23
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/gcp/gworkspace/gcp_gworkspace_user_granted_admin_privileges.yml
+-- Unmapped:     eventService, eventName
+-- False Pos:    Google Workspace admin role privileges, may be modified by system administrators.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: gcp/google_workspace.admin
+-- UNMAPPED_FIELD: eventService
+-- UNMAPPED_FIELD: eventName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'admin.googleapis.com'
+    AND rawEventMsg IN ('GRANT_DELEGATED_ADMIN_PRIVILEGES', 'GRANT_ADMIN_PRIVILEGE'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Google Workspace admin role privileges, may be modified by system administrators.</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

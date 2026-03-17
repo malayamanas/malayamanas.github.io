@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Windows Dns-Client</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Windows Dns-Client</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">6 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="high" data-title="DNS Query for Anonfiles.com Domain - DNS Client">
+  <h2>DNS Query for Anonfiles.com Domain - DNS Client</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: exfiltration, T1567.002</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects DNS queries for anonfiles.com, which is an anonymous file upload platform often used for malicious purposes</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/dns_client/win_dns_client_anonymfiles_com.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        DNS Query for Anonfiles.com Domain - DNS Client
+-- Sigma ID:     29f171d7-aa47-42c7-9c7b-3c87938164d9
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        exfiltration | T1567.002
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-01-16
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/dns_client/win_dns_client_anonymfiles_com.yml
+-- Unmapped:     QueryName
+-- False Pos:    Rare legitimate access to anonfiles.com
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/dns-client
+-- UNMAPPED_FIELD: QueryName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (winEventId = '3008'
+    AND rawEventMsg LIKE '%.anonfiles.com%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Rare legitimate access to anonfiles.com</div>
+</div>
+<div class="rule-card" data-level="critical" data-title="Suspicious Cobalt Strike DNS Beaconing - DNS Client">
+  <h2>Suspicious Cobalt Strike DNS Beaconing - DNS Client</h2>
+  <div class="rule-meta">
+    <span class="badge badge-critical">critical</span>
+    <span>FSM Severity: 9</span>
+    <span>MITRE: T1071.004</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects a program that invoked suspicious DNS queries known from Cobalt Strike beacons</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/dns_client/win_dns_client_mal_cobaltstrike.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Suspicious Cobalt Strike DNS Beaconing - DNS Client
+-- Sigma ID:     0d18728b-f5bf-4381-9dcf-915539fff6c2
+-- Level:        critical  |  FSM Severity: 9
+-- Status:       test
+-- MITRE:        T1071.004
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-01-16
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/dns_client/win_dns_client_mal_cobaltstrike.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/dns-client
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND winEventId = '3008'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="DNS Query To MEGA Hosting Website - DNS Client">
+  <h2>DNS Query To MEGA Hosting Website - DNS Client</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: exfiltration, T1567.002</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects DNS queries for subdomains related to MEGA sharing website</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/dns_client/win_dns_client_mega_nz.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        DNS Query To MEGA Hosting Website - DNS Client
+-- Sigma ID:     66474410-b883-415f-9f8d-75345a0a66a6
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        exfiltration | T1567.002
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-01-16
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/dns_client/win_dns_client_mega_nz.yml
+-- Unmapped:     QueryName
+-- False Pos:    Legitimate DNS queries and usage of Mega
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/dns-client
+-- UNMAPPED_FIELD: QueryName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (winEventId = '3008'
+    AND rawEventMsg LIKE '%userstorage.mega.co.nz%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate DNS queries and usage of Mega</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="DNS Query To Put.io - DNS Client">
+  <h2>DNS Query To Put.io - DNS Client</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    
+    <span>Author: Omar Khaled (@beacon_exe)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects DNS queries for subdomains related to &quot;Put.io&quot; sharing website.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/dns_client/win_dns_client_put_io.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        DNS Query To Put.io - DNS Client
+-- Sigma ID:     8b69fd42-9dad-4674-abef-7fdef43ef92a
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        (none)
+-- Author:       Omar Khaled (@beacon_exe)
+-- Date:         2024-08-23
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/dns_client/win_dns_client_put_io.yml
+-- Unmapped:     QueryName
+-- False Pos:    Legitimate DNS queries and usage of Put.io
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/dns-client
+-- UNMAPPED_FIELD: QueryName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (winEventId = '3008'
+    AND (rawEventMsg LIKE '%api.put.io%' OR rawEventMsg LIKE '%upload.put.io%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate DNS queries and usage of Put.io</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Query Tor Onion Address - DNS Client">
+  <h2>Query Tor Onion Address - DNS Client</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1090.003</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects DNS resolution of an .onion address related to Tor routing networks</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/dns_client/win_dns_client_tor_onion.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Query Tor Onion Address - DNS Client
+-- Sigma ID:     8384bd26-bde6-4da9-8e5d-4174a7a47ca2
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1090.003
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-02-20
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/dns_client/win_dns_client_tor_onion.yml
+-- Unmapped:     QueryName
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/dns-client
+-- UNMAPPED_FIELD: QueryName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (winEventId = '3008'
+    AND (rawEventMsg LIKE '%.hiddenservice.net' OR rawEventMsg LIKE '%.onion.ca' OR rawEventMsg LIKE '%.onion.cab' OR rawEventMsg LIKE '%.onion.casa' OR rawEventMsg LIKE '%.onion.city' OR rawEventMsg LIKE '%.onion.direct' OR rawEventMsg LIKE '%.onion.dog' OR rawEventMsg LIKE '%.onion.glass' OR rawEventMsg LIKE '%.onion.gq' OR rawEventMsg LIKE '%.onion.guide' OR rawEventMsg LIKE '%.onion.in.net' OR rawEventMsg LIKE '%.onion.ink' OR rawEventMsg LIKE '%.onion.it' OR rawEventMsg LIKE '%.onion.link' OR rawEventMsg LIKE '%.onion.lt' OR rawEventMsg LIKE '%.onion.lu' OR rawEventMsg LIKE '%.onion.ly' OR rawEventMsg LIKE '%.onion.mn' OR rawEventMsg LIKE '%.onion.network' OR rawEventMsg LIKE '%.onion.nu' OR rawEventMsg LIKE '%.onion.pet' OR rawEventMsg LIKE '%.onion.plus' OR rawEventMsg LIKE '%.onion.pt' OR rawEventMsg LIKE '%.onion.pw' OR rawEventMsg LIKE '%.onion.rip' OR rawEventMsg LIKE '%.onion.sh' OR rawEventMsg LIKE '%.onion.si' OR rawEventMsg LIKE '%.onion.to' OR rawEventMsg LIKE '%.onion.top' OR rawEventMsg LIKE '%.onion.ws' OR rawEventMsg LIKE '%.onion' OR rawEventMsg LIKE '%.s1.tor-gateways.de' OR rawEventMsg LIKE '%.s2.tor-gateways.de' OR rawEventMsg LIKE '%.s3.tor-gateways.de' OR rawEventMsg LIKE '%.s4.tor-gateways.de' OR rawEventMsg LIKE '%.s5.tor-gateways.de' OR rawEventMsg LIKE '%.t2w.pw' OR rawEventMsg LIKE '%.tor2web.ae.org' OR rawEventMsg LIKE '%.tor2web.blutmagie.de' OR rawEventMsg LIKE '%.tor2web.com' OR rawEventMsg LIKE '%.tor2web.fi' OR rawEventMsg LIKE '%.tor2web.io' OR rawEventMsg LIKE '%.tor2web.org' OR rawEventMsg LIKE '%.tor2web.xyz' OR rawEventMsg LIKE '%.torlink.co'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="low" data-title="DNS Query To Ufile.io - DNS Client">
+  <h2>DNS Query To Ufile.io - DNS Client</h2>
+  <div class="rule-meta">
+    <span class="badge badge-low">low</span>
+    <span>FSM Severity: 3</span>
+    <span>MITRE: exfiltration, T1567.002</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects DNS queries to &quot;ufile.io&quot;, which was seen abused by malware and threat actors as a method for data exfiltration</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/dns_client/win_dns_client_ufile_io.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        DNS Query To Ufile.io - DNS Client
+-- Sigma ID:     090ffaad-c01a-4879-850c-6d57da98452d
+-- Level:        low  |  FSM Severity: 3
+-- Status:       test
+-- MITRE:        exfiltration | T1567.002
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-01-16
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/dns_client/win_dns_client_ufile_io.yml
+-- Unmapped:     QueryName
+-- False Pos:    DNS queries for &quot;ufile&quot; are not malicious by nature necessarily. Investigate the source to determine the necessary actions to take
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/dns-client
+-- UNMAPPED_FIELD: QueryName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (winEventId = '3008'
+    AND rawEventMsg LIKE '%ufile.io%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> DNS queries for &quot;ufile&quot; are not malicious by nature necessarily. Investigate the source to determine the necessary actions to take</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

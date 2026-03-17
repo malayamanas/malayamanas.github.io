@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Windows Powershell-Classic</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Windows Powershell-Classic</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">3 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="high" data-title="Potential RemoteFXvGPUDisablement.EXE Abuse">
+  <h2>Potential RemoteFXvGPUDisablement.EXE Abuse</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1218</span>
+    <span>Author: frack113, Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects PowerShell module creation where the module Contents are set to &quot;function Get-VMRemoteFXPhysicalVideoAdapter&quot;. This could be a sign of potential abuse of  the &quot;RemoteFXvGPUDisablement.exe&quot; binary which is known to be vulnerable to module load-order hijacking.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/powershell/powershell_classic/posh_pc_remotefxvgpudisablement_abuse.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Potential RemoteFXvGPUDisablement.EXE Abuse
+-- Sigma ID:     f65e22f9-819e-4f96-9c7b-498364ae7a25
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1218
+-- Author:       frack113, Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2021-07-13
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/powershell/powershell_classic/posh_pc_remotefxvgpudisablement_abuse.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/powershell-classic
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg LIKE '%ModuleContents=function Get-VMRemoteFXPhysicalVideoAdapter {%'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Zip A Folder With PowerShell For Staging In Temp - PowerShell">
+  <h2>Zip A Folder With PowerShell For Staging In Temp - PowerShell</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: collection, T1074.001</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems), frack113</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects PowerShell scripts that make use of the &quot;Compress-Archive&quot; Cmdlet in order to compress folders and files where the output is stored in a potentially suspicious location that is used often by malware for exfiltration.
+An adversary might compress data (e.g., sensitive documents) that is collected prior to exfiltration in order to make it portable and minimize the amount of data sent over the network.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/powershell/powershell_classic/posh_pc_susp_zip_compress.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Zip A Folder With PowerShell For Staging In Temp - PowerShell
+-- Sigma ID:     71ff406e-b633-4989-96ec-bc49d825a412
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        collection | T1074.001
+-- Author:       Nasreddine Bencherchali (Nextron Systems), frack113
+-- Date:         2021-07-20
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/powershell/powershell_classic/posh_pc_susp_zip_compress.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/powershell-classic
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%Compress-Archive -Path*-DestinationPath $env:TEMP%' OR rawEventMsg LIKE '%Compress-Archive -Path*-DestinationPath*\\AppData\\Local\\Temp\\%' OR rawEventMsg LIKE '%Compress-Archive -Path*-DestinationPath*:\\Windows\\Temp\\%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Suspicious Non PowerShell WSMAN COM Provider">
+  <h2>Suspicious Non PowerShell WSMAN COM Provider</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, T1059.001, T1021.003</span>
+    <span>Author: Roberto Rodriguez (Cyb3rWard0g), OTR (Open Threat Research)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects suspicious use of the WSMAN provider without PowerShell.exe as the host application.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/powershell/powershell_classic/posh_pc_wsman_com_provider_no_powershell.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Suspicious Non PowerShell WSMAN COM Provider
+-- Sigma ID:     df9a0e0e-fedb-4d6c-8668-d765dfc92aa7
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution | T1059.001, T1021.003
+-- Author:       Roberto Rodriguez (Cyb3rWard0g), OTR (Open Threat Research)
+-- Date:         2020-06-24
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/powershell/powershell_classic/posh_pc_wsman_com_provider_no_powershell.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/powershell-classic
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg LIKE '%ProviderName=WSMan%'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

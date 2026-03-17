@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Zeek Smb Files</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Zeek Smb Files</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">7 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="medium" data-title="SMB Spoolss Name Piped Usage">
+  <h2>SMB Spoolss Name Piped Usage</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: T1021.002</span>
+    <span>Author: OTR (Open Threat Research), @neu5ron</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the use of the spoolss named pipe over SMB. This can be used to trigger the authentication via NTLM of any machine that has the spoolservice enabled.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_dce_rpc_smb_spoolss_named_pipe.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        SMB Spoolss Name Piped Usage
+-- Sigma ID:     bae2865c-5565-470d-b505-9496c87d0c30
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        T1021.002
+-- Author:       OTR (Open Threat Research), @neu5ron
+-- Date:         2018-11-28
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_dce_rpc_smb_spoolss_named_pipe.yml
+-- Unmapped:     path, name
+-- False Pos:    Domain Controllers that are sometimes, commonly although should not be, acting as printer servers too
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: zeek/smb_files
+-- UNMAPPED_FIELD: path
+-- UNMAPPED_FIELD: name
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%IPC$'
+    AND rawEventMsg = 'spoolss')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Domain Controllers that are sometimes, commonly although should not be, acting as printer servers too</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Remote Task Creation via ATSVC Named Pipe - Zeek">
+  <h2>Remote Task Creation via ATSVC Named Pipe - Zeek</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, persistence, T1053.002</span>
+    <span>Author: Samir Bousseaden, @neu5rn</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects remote task creation via at.exe or API interacting with ATSVC namedpipe</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_smb_converted_win_atsvc_task.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Remote Task Creation via ATSVC Named Pipe - Zeek
+-- Sigma ID:     dde85b37-40cd-4a94-b00c-0b8794f956b5
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution, persistence | T1053.002
+-- Author:       Samir Bousseaden, @neu5rn
+-- Date:         2020-04-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_smb_converted_win_atsvc_task.yml
+-- Unmapped:     path, name
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: zeek/smb_files
+-- UNMAPPED_FIELD: path
+-- UNMAPPED_FIELD: name
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = '\\\*\IPC$'
+    AND rawEventMsg = 'atsvc')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Possible Impacket SecretDump Remote Activity - Zeek">
+  <h2>Possible Impacket SecretDump Remote Activity - Zeek</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1003.002, T1003.004, T1003.003</span>
+    <span>Author: Samir Bousseaden, @neu5ron</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detect AD credential dumping using impacket secretdump HKTL. Based on the SIGMA rules/windows/builtin/win_impacket_secretdump.yml</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_smb_converted_win_impacket_secretdump.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Possible Impacket SecretDump Remote Activity - Zeek
+-- Sigma ID:     92dae1ed-1c9d-4eff-a567-33acbd95b00e
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1003.002, T1003.004, T1003.003
+-- Author:       Samir Bousseaden, @neu5ron
+-- Date:         2020-03-19
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_smb_converted_win_impacket_secretdump.yml
+-- Unmapped:     path, name
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: zeek/smb_files
+-- UNMAPPED_FIELD: path
+-- UNMAPPED_FIELD: name
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\%' AND rawEventMsg LIKE '%ADMIN$%'
+    AND rawEventMsg LIKE '%SYSTEM32\\%'
+    AND rawEventMsg LIKE '%.tmp')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="First Time Seen Remote Named Pipe - Zeek">
+  <h2>First Time Seen Remote Named Pipe - Zeek</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1021.002</span>
+    <span>Author: Samir Bousseaden, @neu5ron, Tim Shelton</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">This detection excludes known namped pipes accessible remotely and notify on newly observed ones, may help to detect lateral movement and remote exec using named pipes</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_smb_converted_win_lm_namedpipe.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        First Time Seen Remote Named Pipe - Zeek
+-- Sigma ID:     021310d9-30a6-480a-84b7-eaa69aeb92bb
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1021.002
+-- Author:       Samir Bousseaden, @neu5ron, Tim Shelton
+-- Date:         2020-04-02
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_smb_converted_win_lm_namedpipe.yml
+-- Unmapped:     path
+-- False Pos:    Update the excluded named pipe to filter out any newly observed legit named pipe
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: zeek/smb_files
+-- UNMAPPED_FIELD: path
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = '\\\\\*\\IPC$'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Update the excluded named pipe to filter out any newly observed legit named pipe</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Suspicious PsExec Execution - Zeek">
+  <h2>Suspicious PsExec Execution - Zeek</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1021.002</span>
+    <span>Author: Samir Bousseaden, @neu5ron, Tim Shelton</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">detects execution of psexec or paexec with renamed service name, this rule helps to filter out the noise if psexec is used for legit purposes or if attacker uses a different psexec client other than sysinternal one</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_smb_converted_win_susp_psexec.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Suspicious PsExec Execution - Zeek
+-- Sigma ID:     f1b3a22a-45e6-4004-afb5-4291f9c21166
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1021.002
+-- Author:       Samir Bousseaden, @neu5ron, Tim Shelton
+-- Date:         2020-04-02
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_smb_converted_win_susp_psexec.yml
+-- Unmapped:     path, name
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: zeek/smb_files
+-- UNMAPPED_FIELD: path
+-- UNMAPPED_FIELD: name
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND ((rawEventMsg LIKE '%\\\\%' AND rawEventMsg LIKE '%\\IPC$%'
+    AND (rawEventMsg LIKE '%-stdin' OR rawEventMsg LIKE '%-stdout' OR rawEventMsg LIKE '%-stderr'))
+  AND NOT (rawEventMsg LIKE 'PSEXESVC%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Suspicious Access to Sensitive File Extensions - Zeek">
+  <h2>Suspicious Access to Sensitive File Extensions - Zeek</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: collection</span>
+    <span>Author: Samir Bousseaden, @neu5ron</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects known sensitive file extensions via Zeek</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_smb_converted_win_susp_raccess_sensitive_fext.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Suspicious Access to Sensitive File Extensions - Zeek
+-- Sigma ID:     286b47ed-f6fe-40b3-b3a8-35129acd43bc
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        collection
+-- Author:       Samir Bousseaden, @neu5ron
+-- Date:         2020-04-02
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_smb_converted_win_susp_raccess_sensitive_fext.yml
+-- Unmapped:     name
+-- False Pos:    Help Desk operator doing backup or re-imaging end user machine or backup software; Users working with these data types or exchanging message files
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: zeek/smb_files
+-- UNMAPPED_FIELD: name
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%.pst' OR rawEventMsg LIKE '%.ost' OR rawEventMsg LIKE '%.msg' OR rawEventMsg LIKE '%.nst' OR rawEventMsg LIKE '%.oab' OR rawEventMsg LIKE '%.edb' OR rawEventMsg LIKE '%.nsf' OR rawEventMsg LIKE '%.bak' OR rawEventMsg LIKE '%.dmp' OR rawEventMsg LIKE '%.kirbi' OR rawEventMsg LIKE '%.rdp')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Help Desk operator doing backup or re-imaging end user machine or backup software; Users working with these data types or exchanging message files</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Transferring Files with Credential Data via Network Shares - Zeek">
+  <h2>Transferring Files with Credential Data via Network Shares - Zeek</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: T1003.002, T1003.001, T1003.003</span>
+    <span>Author: @neu5ron, Teymur Kheirkhabarov, oscd.community</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Transferring files with well-known filenames (sensitive files with credential data) using network shares</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_smb_converted_win_transferring_files_with_credential_data.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Transferring Files with Credential Data via Network Shares - Zeek
+-- Sigma ID:     2e69f167-47b5-4ae7-a390-47764529eff5
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        T1003.002, T1003.001, T1003.003
+-- Author:       @neu5ron, Teymur Kheirkhabarov, oscd.community
+-- Date:         2020-04-02
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_smb_converted_win_transferring_files_with_credential_data.yml
+-- Unmapped:     name
+-- False Pos:    Transferring sensitive files for legitimate administration work by legitimate administrator
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: zeek/smb_files
+-- UNMAPPED_FIELD: name
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg IN ('\mimidrv', '\lsass', '\windows\minidump\', '\hiberfil', '\sqldmpr', '\sam', '\ntds.dit', '\security')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Transferring sensitive files for legitimate administration work by legitimate administrator</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

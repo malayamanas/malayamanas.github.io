@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Kubernetes Application</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Kubernetes Application</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">10 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="low" data-title="Deployment Deleted From Kubernetes Cluster">
+  <h2>Deployment Deleted From Kubernetes Cluster</h2>
+  <div class="rule-meta">
+    <span class="badge badge-low">low</span>
+    <span>FSM Severity: 3</span>
+    <span>MITRE: impact, T1498</span>
+    <span>Author: Leo Tsaousis (@laripping)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the removal of a deployment from a Kubernetes cluster.
+This could indicate disruptive activity aiming to impact business operations.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_deployment_deleted.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Deployment Deleted From Kubernetes Cluster
+-- Sigma ID:     40967487-139b-4811-81d9-c9767a92aa5a
+-- Level:        low  |  FSM Severity: 3
+-- Status:       test
+-- MITRE:        impact | T1498
+-- Author:       Leo Tsaousis (@laripping)
+-- Date:         2024-03-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_deployment_deleted.yml
+-- Unmapped:     verb, objectRef.resource
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: kubernetes/application
+-- UNMAPPED_FIELD: verb
+-- UNMAPPED_FIELD: objectRef.resource
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'delete'
+    AND rawEventMsg = 'deployments')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Kubernetes Events Deleted">
+  <h2>Kubernetes Events Deleted</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: T1070</span>
+    <span>Author: Leo Tsaousis (@laripping)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects when events are deleted in Kubernetes.
+An adversary may delete Kubernetes events in an attempt to evade detection.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_events_deleted.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Kubernetes Events Deleted
+-- Sigma ID:     3132570d-cab2-4561-9ea6-1743644b2290
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        T1070
+-- Author:       Leo Tsaousis (@laripping)
+-- Date:         2024-03-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_events_deleted.yml
+-- Unmapped:     verb, objectRef.resource
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: kubernetes/application
+-- UNMAPPED_FIELD: verb
+-- UNMAPPED_FIELD: objectRef.resource
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'delete'
+    AND rawEventMsg = 'events')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Potential Remote Command Execution In Pod Container">
+  <h2>Potential Remote Command Execution In Pod Container</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, T1609</span>
+    <span>Author: Leo Tsaousis (@laripping)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects attempts to execute remote commands, within a Pod's container using e.g. the &quot;kubectl exec&quot; command.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_exec_into_container.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Potential Remote Command Execution In Pod Container
+-- Sigma ID:     a1b0ca4e-7835-413e-8471-3ff2b8a66be6
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution | T1609
+-- Author:       Leo Tsaousis (@laripping)
+-- Date:         2024-03-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_exec_into_container.yml
+-- Unmapped:     verb, objectRef.resource, objectRef.subresource
+-- False Pos:    Legitimate debugging activity. Investigate the identity performing the requests and their authorization.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: kubernetes/application
+-- UNMAPPED_FIELD: verb
+-- UNMAPPED_FIELD: objectRef.resource
+-- UNMAPPED_FIELD: objectRef.subresource
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'create'
+    AND rawEventMsg = 'pods'
+    AND rawEventMsg = 'exec')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate debugging activity. Investigate the identity performing the requests and their authorization.</div>
+</div>
+<div class="rule-card" data-level="low" data-title="Container With A hostPath Mount Created">
+  <h2>Container With A hostPath Mount Created</h2>
+  <div class="rule-meta">
+    <span class="badge badge-low">low</span>
+    <span>FSM Severity: 3</span>
+    <span>MITRE: T1611</span>
+    <span>Author: Leo Tsaousis (@laripping)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects creation of a container with a hostPath mount.
+A hostPath volume mounts a directory or a file from the node to the container.
+Attackers who have permissions to create a new pod in the cluster may create one with a writable hostPath volume and chroot to escape to the underlying node.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_hostpath_mount.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Container With A hostPath Mount Created
+-- Sigma ID:     402b955c-8fe0-4a8c-b635-622b4ac5f902
+-- Level:        low  |  FSM Severity: 3
+-- Status:       test
+-- MITRE:        T1611
+-- Author:       Leo Tsaousis (@laripping)
+-- Date:         2024-03-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_hostpath_mount.yml
+-- Unmapped:     verb, objectRef.resource, hostPath
+-- False Pos:    The DaemonSet controller creates pods with hostPath volumes within the kube-system namespace.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: kubernetes/application
+-- UNMAPPED_FIELD: verb
+-- UNMAPPED_FIELD: objectRef.resource
+-- UNMAPPED_FIELD: hostPath
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'create'
+    AND rawEventMsg = 'pods'
+    AND rawEventMsg = '*')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> The DaemonSet controller creates pods with hostPath volumes within the kube-system namespace.</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Creation Of Pod In System Namespace">
+  <h2>Creation Of Pod In System Namespace</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: T1036.005</span>
+    <span>Author: Leo Tsaousis (@laripping)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects deployments of pods within the kube-system namespace, which could be intended to imitate system pods.
+System pods, created by controllers such as Deployments or DaemonSets have random suffixes in their names.
+Attackers can use this fact and name their backdoor pods as if they were created by these controllers to avoid detection.
+Deployment of such a backdoor container e.g. named kube-proxy-bv61v, could be attempted in the kube-system namespace alongside the other administrative containers.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_pod_in_system_namespace.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Creation Of Pod In System Namespace
+-- Sigma ID:     a80d927d-ac6e-443f-a867-e8d6e3897318
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        T1036.005
+-- Author:       Leo Tsaousis (@laripping)
+-- Date:         2024-03-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_pod_in_system_namespace.yml
+-- Unmapped:     verb, objectRef.resource, objectRef.namespace
+-- False Pos:    System components such as daemon-set-controller and kube-scheduler also create pods in the kube-system namespace
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: kubernetes/application
+-- UNMAPPED_FIELD: verb
+-- UNMAPPED_FIELD: objectRef.resource
+-- UNMAPPED_FIELD: objectRef.namespace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'create'
+    AND rawEventMsg = 'pods'
+    AND rawEventMsg = 'kube-system')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> System components such as daemon-set-controller and kube-scheduler also create pods in the kube-system namespace</div>
+</div>
+<div class="rule-card" data-level="low" data-title="Privileged Container Deployed">
+  <h2>Privileged Container Deployed</h2>
+  <div class="rule-meta">
+    <span class="badge badge-low">low</span>
+    <span>FSM Severity: 3</span>
+    <span>MITRE: T1611</span>
+    <span>Author: Leo Tsaousis (@laripping)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the creation of a &quot;privileged&quot; container, an action which could be indicative of a threat actor mounting a container breakout attacks.
+A privileged container is a container that can access the host with all of the root capabilities of the host machine. This allows it to view, interact and modify processes, network operations, IPC calls, the file system, mount points, SELinux configurations etc. as the root user on the host.
+Various versions of &quot;privileged&quot; containers can be specified, e.g. by setting the securityContext.privileged flag in the resource specification, setting non-standard Linux capabilities, or configuring the hostNetwork/hostPID fields
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_privileged_pod_creation.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Privileged Container Deployed
+-- Sigma ID:     c5cd1b20-36bb-488d-8c05-486be3d0cb97
+-- Level:        low  |  FSM Severity: 3
+-- Status:       test
+-- MITRE:        T1611
+-- Author:       Leo Tsaousis (@laripping)
+-- Date:         2024-03-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_privileged_pod_creation.yml
+-- Unmapped:     verb, objectRef.resource, capabilities
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: kubernetes/application
+-- UNMAPPED_FIELD: verb
+-- UNMAPPED_FIELD: objectRef.resource
+-- UNMAPPED_FIELD: capabilities
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'create'
+    AND rawEventMsg = 'pods'
+    AND rawEventMsg = '*')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="low" data-title="RBAC Permission Enumeration Attempt">
+  <h2>RBAC Permission Enumeration Attempt</h2>
+  <div class="rule-meta">
+    <span class="badge badge-low">low</span>
+    <span>FSM Severity: 3</span>
+    <span>MITRE: discovery, T1069.003, T1087.004</span>
+    <span>Author: Leo Tsaousis (@laripping)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects identities attempting to enumerate their Kubernetes RBAC permissions.
+In the early stages of a breach, attackers will aim to list the permissions they have within the compromised environment.
+In a Kubernetes cluster, this can be achieved by interacting with the API server, and querying the SelfSubjectAccessReview API via e.g. a &quot;kubectl auth can-i --list&quot; command.
+This will enumerate the Role-Based Access Controls (RBAC) rules defining the compromised user's authorization.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_rbac_permisions_listing.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        RBAC Permission Enumeration Attempt
+-- Sigma ID:     84b777bd-c946-4d17-aa2e-c39f5a454325
+-- Level:        low  |  FSM Severity: 3
+-- Status:       test
+-- MITRE:        discovery | T1069.003, T1087.004
+-- Author:       Leo Tsaousis (@laripping)
+-- Date:         2024-03-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_rbac_permisions_listing.yml
+-- Unmapped:     verb, apiGroup, objectRef.resource
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: kubernetes/application
+-- UNMAPPED_FIELD: verb
+-- UNMAPPED_FIELD: apiGroup
+-- UNMAPPED_FIELD: objectRef.resource
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'create'
+    AND rawEventMsg = 'authorization.k8s.io'
+    AND rawEventMsg = 'selfsubjectrulesreviews')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="low" data-title="Kubernetes Secrets Enumeration">
+  <h2>Kubernetes Secrets Enumeration</h2>
+  <div class="rule-meta">
+    <span class="badge badge-low">low</span>
+    <span>FSM Severity: 3</span>
+    <span>MITRE: T1552.007</span>
+    <span>Author: Leo Tsaousis (@laripping)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects enumeration of Kubernetes secrets.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_secrets_enumeration.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Kubernetes Secrets Enumeration
+-- Sigma ID:     eeb3e9e1-b685-44e4-9232-6bb701f925b5
+-- Level:        low  |  FSM Severity: 3
+-- Status:       test
+-- MITRE:        T1552.007
+-- Author:       Leo Tsaousis (@laripping)
+-- Date:         2024-03-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_secrets_enumeration.yml
+-- Unmapped:     verb, objectRef.resource
+-- False Pos:    The Kubernetes dashboard occasionally accesses the kubernetes-dashboard-key-holder secret
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: kubernetes/application
+-- UNMAPPED_FIELD: verb
+-- UNMAPPED_FIELD: objectRef.resource
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'list'
+    AND rawEventMsg = 'secrets')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> The Kubernetes dashboard occasionally accesses the kubernetes-dashboard-key-holder secret</div>
+</div>
+<div class="rule-card" data-level="low" data-title="New Kubernetes Service Account Created">
+  <h2>New Kubernetes Service Account Created</h2>
+  <div class="rule-meta">
+    <span class="badge badge-low">low</span>
+    <span>FSM Severity: 3</span>
+    <span>MITRE: persistence, T1136</span>
+    <span>Author: Leo Tsaousis (@laripping)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects creation of new Kubernetes service account, which could indicate an attacker's attempt to persist within a cluster.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_serviceaccount_creation.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        New Kubernetes Service Account Created
+-- Sigma ID:     e31bae15-83ed-473e-bf31-faf4f8a17d36
+-- Level:        low  |  FSM Severity: 3
+-- Status:       test
+-- MITRE:        persistence | T1136
+-- Author:       Leo Tsaousis (@laripping)
+-- Date:         2024-03-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_serviceaccount_creation.yml
+-- Unmapped:     verb, objectRef.resource
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: kubernetes/application
+-- UNMAPPED_FIELD: verb
+-- UNMAPPED_FIELD: objectRef.resource
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'create'
+    AND rawEventMsg = 'serviceaccounts')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Potential Sidecar Injection Into Running Deployment">
+  <h2>Potential Sidecar Injection Into Running Deployment</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, T1609</span>
+    <span>Author: Leo Tsaousis (@laripping)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects attempts to inject a sidecar container into a running deployment.
+A sidecar container is an additional container within a pod, that resides alongside the main container.
+One way to add containers to running resources like Deployments/DeamonSets/StatefulSets, is via a &quot;kubectl patch&quot; operation.
+By injecting a new container within a legitimate pod, an attacker can run their code and hide their activity, instead of running their own separated pod in the cluster.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_sidecar_injection.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Potential Sidecar Injection Into Running Deployment
+-- Sigma ID:     ad9012a6-e518-4432-9890-f3b82b8fc71f
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution | T1609
+-- Author:       Leo Tsaousis (@laripping)
+-- Date:         2024-03-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/application/kubernetes/audit/kubernetes_audit_sidecar_injection.yml
+-- Unmapped:     verb, apiGroup, objectRef.resource
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: kubernetes/application
+-- UNMAPPED_FIELD: verb
+-- UNMAPPED_FIELD: apiGroup
+-- UNMAPPED_FIELD: objectRef.resource
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg = 'patch'
+    AND rawEventMsg = 'apps'
+    AND rawEventMsg = 'deployments')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM:  Antivirus</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM:  Antivirus</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">6 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="critical" data-title="Antivirus Exploitation Framework Detection">
+  <h2>Antivirus Exploitation Framework Detection</h2>
+  <div class="rule-meta">
+    <span class="badge badge-critical">critical</span>
+    <span>FSM Severity: 9</span>
+    <span>MITRE: execution, T1203, T1219.002</span>
+    <span>Author: Florian Roth (Nextron Systems), Arnim Rupp</span>
+    <span>Status: stable</span>
+  </div>
+  <div class="description">Detects a highly relevant Antivirus alert that reports an exploitation framework.
+This event must not be ignored just because the AV has blocked the malware but investigate, how it came there in the first place.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/category/antivirus/av_exploiting.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Antivirus Exploitation Framework Detection
+-- Sigma ID:     238527ad-3c2c-4e4f-a1f6-92fd63adb864
+-- Level:        critical  |  FSM Severity: 9
+-- Status:       stable
+-- MITRE:        execution | T1203, T1219.002
+-- Author:       Florian Roth (Nextron Systems), Arnim Rupp
+-- Date:         2018-09-09
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/category/antivirus/av_exploiting.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: antivirus
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'signature')] AS signature,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (indexOf(metrics_string.name, 'signature') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Backdoor.Cobalt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Brutel%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%BruteR%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%CobaltStr%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%CobaltStrike%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%COBEACON%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Cometer%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Exploit.Script.CVE%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%IISExchgSpawnCMD%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Metasploit%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Meterpreter%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%MeteTool%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Mpreter%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%MsfShell%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PowerSploit%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Razy%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Rozena%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Sbelt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Seatbelt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Sliver%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Swrort%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Antivirus Hacktool Detection">
+  <h2>Antivirus Hacktool Detection</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: execution, T1204</span>
+    <span>Author: Florian Roth (Nextron Systems), Arnim Rupp</span>
+    <span>Status: stable</span>
+  </div>
+  <div class="description">Detects a highly relevant Antivirus alert that reports a hack tool or other attack tool.
+This event must not be ignored just because the AV has blocked the malware but investigate, how it came there in the first place.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/category/antivirus/av_hacktool.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Antivirus Hacktool Detection
+-- Sigma ID:     fa0c05b6-8ad3-468d-8231-c1cbccb64fba
+-- Level:        high  |  FSM Severity: 7
+-- Status:       stable
+-- MITRE:        execution | T1204
+-- Author:       Florian Roth (Nextron Systems), Arnim Rupp
+-- Date:         2021-08-16
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/category/antivirus/av_hacktool.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: antivirus
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'signature')] AS signature,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND ((indexOf(metrics_string.name, 'signature') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'ATK/%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'Exploit.Script.CVE%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'HKTL%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'HTOOL%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'PWS.%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'PWSX%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'SecurityTool%')))
+  OR ((indexOf(metrics_string.name, 'signature') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Adfind%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Brutel%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%BruteR%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Cobalt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%COBEACON%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Cometer%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%DumpCreds%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%FastReverseProxy%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Hacktool%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Havoc%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Impacket%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Keylogger%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Koadic%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Mimikatz%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Nighthawk%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PentestPowerShell%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Potato%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PowerSploit%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PowerSSH%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PshlSpy%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PSWTool%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PWCrack%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PWDump%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Rozena%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Rusthound%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Sbelt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Seatbelt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%SecurityTool%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%SharpDump%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%SharpHound%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Shellcode%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Sliver%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Snaffler%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%SOAPHound%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Splinter%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Swrort%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%TurtleLoader%')))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="critical" data-title="Antivirus Password Dumper Detection">
+  <h2>Antivirus Password Dumper Detection</h2>
+  <div class="rule-meta">
+    <span class="badge badge-critical">critical</span>
+    <span>FSM Severity: 9</span>
+    <span>MITRE: T1003, T1558, T1003.001, T1003.002</span>
+    <span>Author: Florian Roth (Nextron Systems), Arnim Rupp</span>
+    <span>Status: stable</span>
+  </div>
+  <div class="description">Detects a highly relevant Antivirus alert that reports a password dumper.
+This event must not be ignored just because the AV has blocked the malware but investigate, how it came there in the first place.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/category/antivirus/av_password_dumper.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Antivirus Password Dumper Detection
+-- Sigma ID:     78cc2dd2-7d20-4d32-93ff-057084c38b93
+-- Level:        critical  |  FSM Severity: 9
+-- Status:       stable
+-- MITRE:        T1003, T1558, T1003.001, T1003.002
+-- Author:       Florian Roth (Nextron Systems), Arnim Rupp
+-- Date:         2018-09-09
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/category/antivirus/av_password_dumper.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: antivirus
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'signature')] AS signature,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (indexOf(metrics_string.name, 'signature') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'PWS%'))
+  OR ((indexOf(metrics_string.name, 'signature') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Certify%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%DCSync%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%DumpCreds%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%DumpLsass%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%DumpPert%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%HTool/WCE%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Kekeo%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Lazagne%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%LsassDump%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Mimikatz%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%MultiDump%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Nanodump%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%NativeDump%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Outflank%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PShlSpy%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PSWTool%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PWCrack%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PWDump%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PWS.%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PWSX%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%pypykatz%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Rubeus%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%SafetyKatz%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%SecurityTool%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%SharpChrome%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%SharpDPAPI%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%SharpDump%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%SharpKatz%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%SharpS.%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%ShpKatz%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%TrickDump%')))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="critical" data-title="Antivirus Ransomware Detection">
+  <h2>Antivirus Ransomware Detection</h2>
+  <div class="rule-meta">
+    <span class="badge badge-critical">critical</span>
+    <span>FSM Severity: 9</span>
+    <span>MITRE: impact, T1486</span>
+    <span>Author: Florian Roth (Nextron Systems), Arnim Rupp</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects a highly relevant Antivirus alert that reports ransomware.
+This event must not be ignored just because the AV has blocked the malware but investigate, how it came there in the first place.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/category/antivirus/av_ransomware.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Antivirus Ransomware Detection
+-- Sigma ID:     4c6ca276-d4d0-4a8c-9e4c-d69832f8671f
+-- Level:        critical  |  FSM Severity: 9
+-- Status:       test
+-- MITRE:        impact | T1486
+-- Author:       Florian Roth (Nextron Systems), Arnim Rupp
+-- Date:         2022-05-12
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/category/antivirus/av_ransomware.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: antivirus
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'signature')] AS signature,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (indexOf(metrics_string.name, 'signature') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%BlackWorm%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Chaos%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Cobra%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%ContiCrypt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Crypter%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%CRYPTES%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Cryptor%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%CylanCrypt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%DelShad%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Destructor%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Filecoder%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%GandCrab%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%GrandCrab%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Haperlock%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Hiddentear%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%HydraCrypt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Krypt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Lockbit%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Locker%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Mallox%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Phobos%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Ransom%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Ryuk%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Ryzerlo%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Stopcrypt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Tescrypt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%TeslaCrypt%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%WannaCry%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Xorist%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Antivirus Relevant File Paths Alerts">
+  <h2>Antivirus Relevant File Paths Alerts</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1588</span>
+    <span>Author: Florian Roth (Nextron Systems), Arnim Rupp</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects an Antivirus alert in a highly relevant file path or with a relevant file name.
+This event must not be ignored just because the AV has blocked the malware but investigate, how it came there in the first place.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/category/antivirus/av_relevant_files.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Antivirus Relevant File Paths Alerts
+-- Sigma ID:     c9a88268-0047-4824-ba6e-4d81ce0b907c
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1588
+-- Author:       Florian Roth (Nextron Systems), Arnim Rupp
+-- Date:         2018-09-09
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/category/antivirus/av_relevant_files.yml
+-- Unmapped:     Filename
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: antivirus
+-- UNMAPPED_FIELD: Filename
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%.asax' OR rawEventMsg LIKE '%.ashx' OR rawEventMsg LIKE '%.asmx' OR rawEventMsg LIKE '%.asp' OR rawEventMsg LIKE '%.aspx' OR rawEventMsg LIKE '%.bat' OR rawEventMsg LIKE '%.cfm' OR rawEventMsg LIKE '%.cgi' OR rawEventMsg LIKE '%.chm' OR rawEventMsg LIKE '%.cmd' OR rawEventMsg LIKE '%.dat' OR rawEventMsg LIKE '%.ear' OR rawEventMsg LIKE '%.gif' OR rawEventMsg LIKE '%.hta' OR rawEventMsg LIKE '%.jpeg' OR rawEventMsg LIKE '%.jpg' OR rawEventMsg LIKE '%.jsp' OR rawEventMsg LIKE '%.jspx' OR rawEventMsg LIKE '%.lnk' OR rawEventMsg LIKE '%.msc' OR rawEventMsg LIKE '%.php' OR rawEventMsg LIKE '%.pl' OR rawEventMsg LIKE '%.png' OR rawEventMsg LIKE '%.ps1' OR rawEventMsg LIKE '%.psm1' OR rawEventMsg LIKE '%.py' OR rawEventMsg LIKE '%.pyc' OR rawEventMsg LIKE '%.rb' OR rawEventMsg LIKE '%.scf' OR rawEventMsg LIKE '%.sct' OR rawEventMsg LIKE '%.sh' OR rawEventMsg LIKE '%.svg' OR rawEventMsg LIKE '%.txt' OR rawEventMsg LIKE '%.vbe' OR rawEventMsg LIKE '%.vbs' OR rawEventMsg LIKE '%.war' OR rawEventMsg LIKE '%.wll' OR rawEventMsg LIKE '%.wsf' OR rawEventMsg LIKE '%.wsh' OR rawEventMsg LIKE '%.xll' OR rawEventMsg LIKE '%.xml')
+  OR (rawEventMsg LIKE '%:\\PerfLogs\\%' OR rawEventMsg LIKE '%:\\Temp\\%' OR rawEventMsg LIKE '%:\\Users\\Default\\%' OR rawEventMsg LIKE '%:\\Users\\Public\\%' OR rawEventMsg LIKE '%:\\Windows\\%' OR rawEventMsg LIKE '%/www/%' OR rawEventMsg LIKE '%\\inetpub\\%' OR rawEventMsg LIKE '%\\tsclient\\%' OR rawEventMsg LIKE '%apache%' OR rawEventMsg LIKE '%nginx%' OR rawEventMsg LIKE '%tomcat%' OR rawEventMsg LIKE '%weblogic%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Antivirus Web Shell Detection">
+  <h2>Antivirus Web Shell Detection</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1505.003</span>
+    <span>Author: Florian Roth (Nextron Systems), Arnim Rupp</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects a highly relevant Antivirus alert that reports a web shell.
+It's highly recommended to tune this rule to the specific strings used by your anti virus solution by downloading a big WebShell repository from e.g. github and checking the matches.
+This event must not be ignored just because the AV has blocked the malware but investigate, how it came there in the first place.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/category/antivirus/av_webshell.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Antivirus Web Shell Detection
+-- Sigma ID:     fdf135a2-9241-4f96-a114-bb404948f736
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1505.003
+-- Author:       Florian Roth (Nextron Systems), Arnim Rupp
+-- Date:         2018-09-09
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/category/antivirus/av_webshell.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: antivirus
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'signature')] AS signature,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND ((indexOf(metrics_string.name, 'signature') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'ASP.%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'IIS/BackDoor%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'JAVA/Backdoor%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'JSP.%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'Perl.%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'PHP.%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'Troj/ASP%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'Troj/JSP%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'Troj/PHP%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE 'VBS/Uxor%')))
+  OR ((indexOf(metrics_string.name, 'signature') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%ASP\_%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%ASP:%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%ASP.Agent%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%ASP/%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Aspdoor%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%ASPXSpy%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Backdoor.ASP%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Backdoor.Java%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Backdoor.JSP%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Backdoor.PHP%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Backdoor.VBS%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Backdoor/ASP%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Backdoor/Java%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Backdoor/JSP%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Backdoor/PHP%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Backdoor/VBS%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%C99shell%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Chopper%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%filebrowser%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%JSP\_%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%JSP:%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%JSP.Agent%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%JSP/%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Perl:%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Perl/%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PHP\_%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PHP:%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PHP.Agent%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PHP/%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PHPShell%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%PShlSpy%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%SinoChoper%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Trojan.ASP%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Trojan.JSP%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Trojan.PHP%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Trojan.VBS%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%VBS.Agent%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%VBS/Agent%' OR metrics_string.value[indexOf(metrics_string.name,'signature')] LIKE '%Webshell%')))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

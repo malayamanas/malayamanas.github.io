@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Windows Pipe Created</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Windows Pipe Created</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">17 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="medium" data-title="ADFS Database Named Pipe Connection By Uncommon Tool">
+  <h2>ADFS Database Named Pipe Connection By Uncommon Tool</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: collection, T1005</span>
+    <span>Author: Roberto Rodriguez @Cyb3rWard0g</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects suspicious local connections via a named pipe to the AD FS configuration database (Windows Internal Database).
+Used to access information such as the AD FS configuration settings which contains sensitive information used to sign SAML tokens.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_adfs_namedpipe_connection_uncommon_tool.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        ADFS Database Named Pipe Connection By Uncommon Tool
+-- Sigma ID:     1ea13e8c-03ea-409b-877d-ce5c3d2c1cb3
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        collection | T1005
+-- Author:       Roberto Rodriguez @Cyb3rWard0g
+-- Date:         2021-10-08
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_adfs_namedpipe_connection_uncommon_tool.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] = '\MICROSOFT##WID\tsql\query')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="critical" data-title="CobaltStrike Named Pipe">
+  <h2>CobaltStrike Named Pipe</h2>
+  <div class="rule-meta">
+    <span class="badge badge-critical">critical</span>
+    <span>FSM Severity: 9</span>
+    <span>MITRE: T1055</span>
+    <span>Author: Florian Roth (Nextron Systems), Wojciech Lesicki</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the creation of a named pipe as used by CobaltStrike</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_cobaltstrike.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CobaltStrike Named Pipe
+-- Sigma ID:     d5601f8c-b26f-4ab0-9035-69e11a8d4ad2
+-- Level:        critical  |  FSM Severity: 9
+-- Status:       test
+-- MITRE:        T1055
+-- Author:       Florian Roth (Nextron Systems), Wojciech Lesicki
+-- Date:         2021-05-25
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_cobaltstrike.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%\\MSSE-%' AND metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%-server%')
+  OR indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\interprocess\_%')
+  OR indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\lsarpc\_%')
+  OR indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\mojo\_%')
+  OR indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\msagent\_%')
+  OR indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\netlogon\_%')
+  OR indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\postex\_%')
+  OR indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\samr\_%')
+  OR indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\srvsvc\_%')
+  OR indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\status\_%')
+  OR indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\wkssvc\_%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="critical" data-title="CobaltStrike Named Pipe Pattern Regex">
+  <h2>CobaltStrike Named Pipe Pattern Regex</h2>
+  <div class="rule-meta">
+    <span class="badge badge-critical">critical</span>
+    <span>FSM Severity: 9</span>
+    <span>MITRE: T1055</span>
+    <span>Author: Florian Roth (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the creation of a named pipe matching a pattern used by CobaltStrike Malleable C2 profiles</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_cobaltstrike_re.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CobaltStrike Named Pipe Pattern Regex
+-- Sigma ID:     0e7163d4-9e19-4fa7-9be6-000c61aad77a
+-- Level:        critical  |  FSM Severity: 9
+-- Status:       test
+-- MITRE:        T1055
+-- Author:       Florian Roth (Nextron Systems)
+-- Date:         2021-07-30
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_cobaltstrike_re.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\mojo\.5688\.8052\.(?:183894939787088877|35780273329370473)[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\wkssvc_?[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\ntsvcs[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\DserNamePipe[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\SearchTextHarvester[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\mypipe-(?:f|h)[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\windows\.update\.manager[0-9a-f]{2,3}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\ntsvcs_[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\scerpc_?[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\PGMessagePipe[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\MsFteWds[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\f4c3[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\fullduplex_[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\msrpc_[0-9a-f]{4}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\win\\msrpc_[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\f53f[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\rpc_[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\spoolss_[0-9a-f]{2}')))
+  OR (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (match(metrics_string.value[indexOf(metrics_string.name,'pipeName')], '\\Winsock2\\CatalogChangeListener-[0-9a-f]{3}-0,')))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="CobaltStrike Named Pipe Patterns">
+  <h2>CobaltStrike Named Pipe Patterns</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1055</span>
+    <span>Author: Florian Roth (Nextron Systems), Christian Burkard (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the creation of a named pipe with a pattern found in CobaltStrike malleable C2 profiles</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_cobaltstrike_susp_pipe_patterns.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CobaltStrike Named Pipe Patterns
+-- Sigma ID:     85adeb13-4fc9-4e68-8a4a-c7cb2c336eb7
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1055
+-- Author:       Florian Roth (Nextron Systems), Christian Burkard (Nextron Systems)
+-- Date:         2021-07-30
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_cobaltstrike_susp_pipe_patterns.yml
+-- Unmapped:     (none)
+-- False Pos:    Chrome instances using the exact same pipe name &quot;mojo.xxx&quot;; Websense Endpoint using the pipe name &quot;DserNamePipe(R|W)\d{1,5}&quot;
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND 1=1
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Chrome instances using the exact same pipe name &quot;mojo.xxx&quot;; Websense Endpoint using the pipe name &quot;DserNamePipe(R|W)\d{1,5}&quot;</div>
+</div>
+<div class="rule-card" data-level="high" data-title="HackTool - CoercedPotato Named Pipe Creation">
+  <h2>HackTool - CoercedPotato Named Pipe Creation</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1055</span>
+    <span>Author: Florian Roth (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the pattern of a pipe name as used by the hack tool CoercedPotato</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_coercedpotato.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        HackTool - CoercedPotato Named Pipe Creation
+-- Sigma ID:     4d0083b3-580b-40da-9bba-626c19fe4033
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1055
+-- Author:       Florian Roth (Nextron Systems)
+-- Date:         2023-10-11
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_coercedpotato.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%\\coerced\\%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="critical" data-title="HackTool - DiagTrackEoP Default Named Pipe">
+  <h2>HackTool - DiagTrackEoP Default Named Pipe</h2>
+  <div class="rule-meta">
+    <span class="badge badge-critical">critical</span>
+    <span>FSM Severity: 9</span>
+    
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects creation of default named pipe used by the DiagTrackEoP POC, a tool that abuses &quot;SeImpersonate&quot; privilege.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_diagtrack_eop.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        HackTool - DiagTrackEoP Default Named Pipe
+-- Sigma ID:     1f7025a6-e747-4130-aac4-961eb47015f1
+-- Level:        critical  |  FSM Severity: 9
+-- Status:       test
+-- MITRE:        (none)
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-08-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_diagtrack_eop.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%thisispipe%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="HackTool - EfsPotato Named Pipe Creation">
+  <h2>HackTool - EfsPotato Named Pipe Creation</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1055</span>
+    <span>Author: Florian Roth (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the pattern of a pipe name as used by the hack tool EfsPotato</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_efspotato.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        HackTool - EfsPotato Named Pipe Creation
+-- Sigma ID:     637f689e-b4a5-4a86-be0e-0100a0a33ba2
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1055
+-- Author:       Florian Roth (Nextron Systems)
+-- Date:         2021-08-23
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_efspotato.yml
+-- Unmapped:     (none)
+-- False Pos:    \pipe\LOCAL\Monitorian
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%\\pipe\\%' OR metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%\\pipe\\srvsvc%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> \pipe\LOCAL\Monitorian</div>
+</div>
+<div class="rule-card" data-level="critical" data-title="HackTool - Credential Dumping Tools Named Pipe Created">
+  <h2>HackTool - Credential Dumping Tools Named Pipe Created</h2>
+  <div class="rule-meta">
+    <span class="badge badge-critical">critical</span>
+    <span>FSM Severity: 9</span>
+    <span>MITRE: T1003.001, T1003.002, T1003.004, T1003.005</span>
+    <span>Author: Teymur Kheirkhabarov, oscd.community</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects well-known credential dumping tools execution via specific named pipe creation</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_generic_cred_dump_tools_pipes.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        HackTool - Credential Dumping Tools Named Pipe Created
+-- Sigma ID:     961d0ba2-3eea-4303-a930-2cf78bbfcc5e
+-- Level:        critical  |  FSM Severity: 9
+-- Status:       test
+-- MITRE:        T1003.001, T1003.002, T1003.004, T1003.005
+-- Author:       Teymur Kheirkhabarov, oscd.community
+-- Date:         2019-11-01
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_generic_cred_dump_tools_pipes.yml
+-- Unmapped:     (none)
+-- False Pos:    Legitimate Administrator using tool for password recovery
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%\\cachedump%' OR metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%\\lsadump%' OR metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%\\wceservicepipe%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate Administrator using tool for password recovery</div>
+</div>
+<div class="rule-card" data-level="critical" data-title="HackTool - Koh Default Named Pipe">
+  <h2>HackTool - Koh Default Named Pipe</h2>
+  <div class="rule-meta">
+    <span class="badge badge-critical">critical</span>
+    <span>FSM Severity: 9</span>
+    <span>MITRE: T1528, T1134.001</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects creation of default named pipes used by the Koh tool</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_koh_default_pipe.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        HackTool - Koh Default Named Pipe
+-- Sigma ID:     0adc67e0-a68f-4ffd-9c43-28905aad5d6a
+-- Level:        critical  |  FSM Severity: 9
+-- Status:       test
+-- MITRE:        T1528, T1134.001
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-07-08
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_hktl_koh_default_pipe.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%\\imposecost%' OR metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%\\imposingcost%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Alternate PowerShell Hosts Pipe">
+  <h2>Alternate PowerShell Hosts Pipe</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, T1059.001</span>
+    <span>Author: Roberto Rodriguez @Cyb3rWard0g, Tim Shelton</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects alternate PowerShell hosts potentially bypassing detections looking for powershell.exe</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_powershell_alternate_host_pipe.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Alternate PowerShell Hosts Pipe
+-- Sigma ID:     58cb02d5-78ce-4692-b3e1-dce850aae41a
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution | T1059.001
+-- Author:       Roberto Rodriguez @Cyb3rWard0g, Tim Shelton
+-- Date:         2019-09-12
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_powershell_alternate_host_pipe.yml
+-- Unmapped:     (none)
+-- False Pos:    Programs using PowerShell directly without invocation of a dedicated interpreter.
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\PSHost%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Programs using PowerShell directly without invocation of a dedicated interpreter.</div>
+</div>
+<div class="rule-card" data-level="informational" data-title="New PowerShell Instance Created">
+  <h2>New PowerShell Instance Created</h2>
+  <div class="rule-meta">
+    <span class="badge badge-default">informational</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, T1059.001</span>
+    <span>Author: Roberto Rodriguez (Cyb3rWard0g), OTR (Open Threat Research)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the execution of PowerShell via the creation of a named pipe starting with PSHost</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_powershell_execution_pipe.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        New PowerShell Instance Created
+-- Sigma ID:     ac7102b4-9e1e-4802-9b4f-17c5524c015c
+-- Level:        informational  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution | T1059.001
+-- Author:       Roberto Rodriguez (Cyb3rWard0g), OTR (Open Threat Research)
+-- Date:         2019-09-12
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_powershell_execution_pipe.yml
+-- Unmapped:     (none)
+-- False Pos:    Likely
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\PSHost%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Likely</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="PUA - CSExec Default Named Pipe">
+  <h2>PUA - CSExec Default Named Pipe</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, T1021.002, T1569.002</span>
+    <span>Author: Nikita Nazarov, oscd.community, Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects default CSExec pipe creation</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_pua_csexec_default_pipe.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        PUA - CSExec Default Named Pipe
+-- Sigma ID:     f318b911-ea88-43f4-9281-0de23ede628e
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution | T1021.002, T1569.002
+-- Author:       Nikita Nazarov, oscd.community, Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-08-07
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_pua_csexec_default_pipe.yml
+-- Unmapped:     (none)
+-- False Pos:    Legitimate Administrator activity
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%\\csexecsvc%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate Administrator activity</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="PUA - PAExec Default Named Pipe">
+  <h2>PUA - PAExec Default Named Pipe</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, T1569.002</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects PAExec default named pipe</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_pua_paexec_default_pipe.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        PUA - PAExec Default Named Pipe
+-- Sigma ID:     f6451de4-df0a-41fa-8d72-b39f54a08db5
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution | T1569.002
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-10-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_pua_paexec_default_pipe.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '\\PAExec%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="PUA - RemCom Default Named Pipe">
+  <h2>PUA - RemCom Default Named Pipe</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, T1021.002, T1569.002</span>
+    <span>Author: Nikita Nazarov, oscd.community, Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects default RemCom pipe creation</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_pua_remcom_default_pipe.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        PUA - RemCom Default Named Pipe
+-- Sigma ID:     d36f87ea-c403-44d2-aa79-1a0ac7c24456
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution | T1021.002, T1569.002
+-- Author:       Nikita Nazarov, oscd.community, Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-08-07
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_pua_remcom_default_pipe.yml
+-- Unmapped:     (none)
+-- False Pos:    Legitimate Administrator activity
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] LIKE '%\\RemCom%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate Administrator activity</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="WMI Event Consumer Created Named Pipe">
+  <h2>WMI Event Consumer Created Named Pipe</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, T1047</span>
+    <span>Author: Florian Roth (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the WMI Event Consumer service scrcons.exe creating a named pipe</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_scrcons_wmi_consumer_namedpipe.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        WMI Event Consumer Created Named Pipe
+-- Sigma ID:     493fb4ab-cdcc-4c4f-818c-0e363bd1e4bb
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution | T1047
+-- Author:       Florian Roth (Nextron Systems)
+-- Date:         2021-09-01
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_scrcons_wmi_consumer_namedpipe.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  procName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND procName LIKE '%\\scrcons.exe'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="critical" data-title="Malicious Named Pipe Created">
+  <h2>Malicious Named Pipe Created</h2>
+  <div class="rule-meta">
+    <span class="badge badge-critical">critical</span>
+    <span>FSM Severity: 9</span>
+    <span>MITRE: T1055</span>
+    <span>Author: Florian Roth (Nextron Systems), blueteam0ps, elhoim</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the creation of a named pipe seen used by known APTs or malware.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_susp_malicious_namedpipes.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Malicious Named Pipe Created
+-- Sigma ID:     fe3ac066-98bb-432a-b1e7-a5229cb39d4a
+-- Level:        critical  |  FSM Severity: 9
+-- Status:       test
+-- MITRE:        T1055
+-- Author:       Florian Roth (Nextron Systems), blueteam0ps, elhoim
+-- Date:         2017-11-06
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_susp_malicious_namedpipes.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] IN ('\46a676ab7f179e511e30dd2dc41bd388', '\583da945-62af-10e8-4902-a8f205c72b2e', '\6e7645c4-32c5-4fe3-aabf-e94c2f4370e7', '\9f81f59bc58452127884ce513865ed20', '\adschemerpc', '\ahexec', '\AnonymousPipe', '\bc31a7', '\bc367', '\bizkaz', '\csexecsvc', '\dce_3d', '\e710f28d59aa529d6792ca6ff0ca1b34', '\gruntsvc', '\isapi_dg', '\isapi_dg2', '\isapi_http', '\jaccdpqnvbrrxlaf', '\lsassw', '\NamePipe_MoreWindows', '\pcheap_reuse', '\Posh*', '\rpchlp_3', '\sdlrpc', '\svcctl', '\testPipe', '\winsession'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="PsExec Tool Execution From Suspicious Locations - PipeName">
+  <h2>PsExec Tool Execution From Suspicious Locations - PipeName</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, T1569.002</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects PsExec default pipe creation where the image executed is located in a suspicious location. Which could indicate that the tool is being used in an attack</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_sysinternals_psexec_default_pipe_susp_location.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        PsExec Tool Execution From Suspicious Locations - PipeName
+-- Sigma ID:     41504465-5e3a-4a5b-a5b4-2a0baadd4463
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution | T1569.002
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-08-04
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/pipe_created/pipe_created_sysinternals_psexec_default_pipe_susp_location.yml
+-- Unmapped:     (none)
+-- False Pos:    Rare legitimate use of psexec from the locations mentioned above. This will require initial tuning based on your environment.
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  procName,
+  metrics_string.value[indexOf(metrics_string.name,'pipeName')] AS pipeName,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-17-Pipe-Created')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (indexOf(metrics_string.name, 'pipeName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'pipeName')] = '\PSEXESVC')
+    AND (procName LIKE '%:\\Users\\Public\\%' OR procName LIKE '%:\\Windows\\Temp\\%' OR procName LIKE '%\\AppData\\Local\\Temp\\%' OR procName LIKE '%\\Desktop\\%' OR procName LIKE '%\\Downloads\\%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Rare legitimate use of psexec from the locations mentioned above. This will require initial tuning based on your environment.</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

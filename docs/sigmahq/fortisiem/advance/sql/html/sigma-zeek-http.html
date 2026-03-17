@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Zeek Http</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Zeek Http</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">3 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="medium" data-title="Executable from Webdav">
+  <h2>Executable from Webdav</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: T1105</span>
+    <span>Author: SOC Prime, Adam Swan</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects executable access via webdav6. Can be seen in APT 29 such as from the emulated APT 29 hackathon https://github.com/OTRF/detection-hackathon-apt29/</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_http_executable_download_from_webdav.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Executable from Webdav
+-- Sigma ID:     aac2fd97-bcba-491b-ad66-a6edf89c71bf
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        T1105
+-- Author:       SOC Prime, Adam Swan
+-- Date:         2020-05-01
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_http_executable_download_from_webdav.yml
+-- Unmapped:     c-useragent, c-uri, resp_mime_types
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: zeek/http
+-- UNMAPPED_FIELD: c-useragent
+-- UNMAPPED_FIELD: c-uri
+-- UNMAPPED_FIELD: resp_mime_types
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND ((rawEventMsg LIKE '%WebDAV%')
+  OR (rawEventMsg LIKE '%webdav%')
+  AND (rawEventMsg LIKE '%dosexec%')
+  OR (rawEventMsg LIKE '%.exe'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="HTTP Request to Low Reputation TLD or Suspicious File Extension">
+  <h2>HTTP Request to Low Reputation TLD or Suspicious File Extension</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    
+    <span>Author: @signalblur, Corelight</span>
+    <span>Status: experimental</span>
+  </div>
+  <div class="description">Detects HTTP requests to low reputation TLDs (e.g. .xyz, .top, .ru) or ending in suspicious file extensions (.exe, .dll, .hta), which may indicate malicious activity.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_http_susp_file_ext_from_susp_tld.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        HTTP Request to Low Reputation TLD or Suspicious File Extension
+-- Sigma ID:     68c2c604-92ad-468b-bf4a-aac49adad08c
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       experimental
+-- MITRE:        (none)
+-- Author:       @signalblur, Corelight
+-- Date:         2025-02-26
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_http_susp_file_ext_from_susp_tld.yml
+-- Unmapped:     host
+-- False Pos:    Rare legitimate software downloads from low quality TLDs
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: zeek/http
+-- UNMAPPED_FIELD: host
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%.bid' OR rawEventMsg LIKE '%.by' OR rawEventMsg LIKE '%.cf' OR rawEventMsg LIKE '%.click' OR rawEventMsg LIKE '%.cm' OR rawEventMsg LIKE '%.ga' OR rawEventMsg LIKE '%.gq' OR rawEventMsg LIKE '%.ir' OR rawEventMsg LIKE '%.kp' OR rawEventMsg LIKE '%.loan' OR rawEventMsg LIKE '%.ml' OR rawEventMsg LIKE '%.mm' OR rawEventMsg LIKE '%.party' OR rawEventMsg LIKE '%.pw' OR rawEventMsg LIKE '%.ru' OR rawEventMsg LIKE '%.su' OR rawEventMsg LIKE '%.sy' OR rawEventMsg LIKE '%.tk' OR rawEventMsg LIKE '%.top' OR rawEventMsg LIKE '%.tv' OR rawEventMsg LIKE '%.ve' OR rawEventMsg LIKE '%.work' OR rawEventMsg LIKE '%.xyz')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Rare legitimate software downloads from low quality TLDs</div>
+</div>
+<div class="rule-card" data-level="low" data-title="WebDav Put Request">
+  <h2>WebDav Put Request</h2>
+  <div class="rule-meta">
+    <span class="badge badge-low">low</span>
+    <span>FSM Severity: 3</span>
+    <span>MITRE: exfiltration, T1048.003</span>
+    <span>Author: Roberto Rodriguez (Cyb3rWard0g), OTR (Open Threat Research)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">A General detection for WebDav user-agent being used to PUT files on a WebDav network share. This could be an indicator of exfiltration.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_http_webdav_put_request.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        WebDav Put Request
+-- Sigma ID:     705072a5-bb6f-4ced-95b6-ecfa6602090b
+-- Level:        low  |  FSM Severity: 3
+-- Status:       test
+-- MITRE:        exfiltration | T1048.003
+-- Author:       Roberto Rodriguez (Cyb3rWard0g), OTR (Open Threat Research)
+-- Date:         2020-05-02
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/network/zeek/zeek_http_webdav_put_request.yml
+-- Unmapped:     user_agent, method, id.resp_h
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: zeek/http
+-- UNMAPPED_FIELD: user_agent
+-- UNMAPPED_FIELD: method
+-- UNMAPPED_FIELD: id.resp_h
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND ((rawEventMsg LIKE '%WebDAV%'
+    AND rawEventMsg = 'PUT')
+  AND NOT ((isIPAddressInRange(toString(rawEventMsg), '10.0.0.0/8') OR isIPAddressInRange(toString(rawEventMsg), '127.0.0.0/8') OR isIPAddressInRange(toString(rawEventMsg), '172.16.0.0/12') OR isIPAddressInRange(toString(rawEventMsg), '192.168.0.0/16') OR isIPAddressInRange(toString(rawEventMsg), '169.254.0.0/16'))))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>
