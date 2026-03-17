@@ -1,0 +1,1779 @@
+Name30 Day // RC4 TGS Requestor Accounts
+Description30 Day // RC4 TGS Requestor Accounts - 04:32:02 PM Feb 19 2026
+Result TypeQuery
+SQL QuerySELECT
+    metrics_string.value[indexOf(metrics_string.name, 'user')]          AS requesting_user,
+    metrics_string.value[indexOf(metrics_string.name, 'serviceName')]   AS service_name,
+    COUNT(*)                                                             AS request_count,
+    COUNT(DISTINCT toDate(phRecvTime))                                  AS active_days,
+    MIN(phRecvTime)                                                      AS first_seen,
+    MAX(phRecvTime)                                                      AS last_seen,
+    groupUniqArray(10)(
+        metrics_string.value[indexOf(metrics_string.name, 'reptDevName')]
+    )                                                                    AS domain_controllers
+FROM fsiem.events
+WHERE eventType = 'Win-Security-4769-success'
+  AND phRecvTime >= now() - INTERVAL 30 DAY
+  AND metrics_string.value[indexOf(metrics_string.name, 'encryptAlgo')] IN ('0x17', '0x3')
+  AND metrics_string.value[indexOf(metrics_string.name, 'user')] != ''
+GROUP BY requesting_user, service_name
+ORDER BY request_count DESC
+LIMIT 200;
+
+Nameali-external-ip2
+Descriptionali-external-ip2 - 00:21:40 AM Jan 17 2026
+Result TypeQuery
+SQL QuerySELECT 
+  toString(srcIpAddr) as src_ip,
+  COUNT(*) as hits,
+  groupArray(5)(user) as sample_users
+FROM fsiem.events
+WHERE phRecvTime > (now() - 86400)
+  AND eventType = 'Win-Security-4624'
+  AND winLogonType = 3
+  AND NOT (
+    toString(srcIpAddr) LIKE '10.%' 
+    OR toString(srcIpAddr) LIKE '172.16.%' OR toString(srcIpAddr) LIKE '172.17.%' 
+    OR toString(srcIpAddr) LIKE '172.18.%' OR toString(srcIpAddr) LIKE '172.19.%' 
+    OR toString(srcIpAddr) LIKE '172.2_.%' OR toString(srcIpAddr) LIKE '172.30.%' 
+    OR toString(srcIpAddr) LIKE '172.31.%'
+    OR toString(srcIpAddr) LIKE '192.168.%'
+    OR toString(srcIpAddr) LIKE '192.234.%'
+    OR toString(srcIpAddr) LIKE '127.%'
+    OR toString(srcIpAddr) LIKE 'fe80::%'
+    OR toString(srcIpAddr) LIKE '::ffff:10.%'
+    OR toString(srcIpAddr) LIKE '::ffff:172.%'
+    OR toString(srcIpAddr) LIKE '::ffff:192.168.%'
+    OR toString(srcIpAddr) LIKE '::ffff:192.234.%'
+  )
+  AND srcIpAddr IS NOT NULL
+GROUP BY srcIpAddr
+ORDER BY hits DESC
+LIMIT 50
+
+NameA sample raw message for each reporting device and event type
+DescriptionCollect a sample raw message for each reporting device and event type that are seen over the last 1 hour. This report shows the use of ANY SQL function.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+SELECT
+    reptDevIpAddrV4 AS reptIp,
+    eventType,
+    any(rawEventMsg) AS rawEventMsg,
+    max(phRecvTime) AS last_seen
+FROM fsiem.events
+WHERE phRecvTime > (now() - 3600)
+GROUP BY ALL
+ORDER BY reptIp
+
+
+NameChris's ADM User Locked Out
+DescriptionThis query: 1. First it narrows the entire event table down to only account lockout events by calling the event type 4740. 2. Next it filters further to only lockouts involving admcsantana by calling the metrics string array (cuz Fortinet parser bug) 3. I set this to last 24 hours but feel free to widen the scope if needed Also I set it to distinct machine entries so you don't have to look at duplicates.
+Result TypeQuery
+SQL QuerySELECT DISTINCT
+  metrics_string.value[indexOf(metrics_string.name, 'targetDomain')] AS workstation_with_cachedcreds
+FROM fsiem.events_all
+WHERE eventType = 'Win-Security-4740'
+  AND indexOf(metrics_string.name, 'user') > 0
+  AND metrics_string.value[indexOf(metrics_string.name, 'user')] = 'admcsantana'
+  AND phRecvTime > now() - INTERVAL 1 DAY
+
+NameClickHouse Storage Usage per Device Group
+DescriptionProvides storage used by each Top level CMDB Device Group, e.g. Network, Servers etc
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+WITH
+    total_disk_size AS
+    (
+        SELECT
+            hostName() AS host,
+            sum(bytes_on_disk) AS total_bytes
+        FROM cluster('fsiem_cluster', system.parts)
+        WHERE (table = 'events_replicated') AND active
+        GROUP BY ALL
+    ),
+    perGroup AS
+    (
+        SELECT
+            host,
+            device_group,
+            message_bytes_one_group,
+            sum(message_bytes_one_group) OVER (PARTITION BY host) AS total_message_bytes,
+            event_count
+        FROM
+        (
+            SELECT
+                hostName() AS host,
+                multiIf(dictHas('fsiem.dict_cmdb_group', (phCustId, if(position(reptDevIpAddr, ':') = 0, concat('::ffff:', reptDevIpAddr), reptDevIpAddr), 'PH_SYS_DEVICE_Network:IntfIP')), 'Network', dictHas('fsiem.dict_cmdb_group', (phCustId, if(position(reptDevIpAddr, ':') = 0, concat('::ffff:', reptDevIpAddr), reptDevIpAddr), 'PH_SYS_DEVICE_Server:IntfIP')), 'Server', dictHas('fsiem.dict_cmdb_group', (phCustId, if(position(reptDevIpAddr, ':') = 0, concat('::ffff:', reptDevIpAddr), reptDevIpAddr), 'PH_SYS_DEVICE_CLOUD_SERVICE:IntfIP')), 'Cloud Service', 'Others') AS device_group,
+                sumMerge(`SUM(rawEventSize)`) AS message_bytes_one_group,
+                countMerge(`COUNT(*)`) AS event_count
+            FROM cluster('fsiem_cluster', fsiem.mv_events)
+            GROUP BY ALL
+        )
+    )
+SELECT
+    device_group,
+    toUInt64(SUM((message_bytes_one_group / total_message_bytes) * total_bytes)) AS bytes_on_disk,
+    sum(event_count) AS total_events
+FROM perGroup
+INNER JOIN total_disk_size USING (host)
+GROUP BY ALL
+ORDER BY bytes_on_disk DESC
+
+
+NameClickHouse Storage Usage per Retention Policy
+DescriptionCalculates total ClickHouse storage used for each event retention bucket
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+WITH disks AS
+    (
+        SELECT
+            hostName() AS host,
+            name
+        FROM cluster('fsiem_cluster', system.disks)
+        WHERE is_remote = 0
+        GROUP BY ALL
+    )
+SELECT
+    extract(partition, '\\((\\d+),\\d+\\)') AS retention_policy,
+    sum(bytes_on_disk) AS total_bytes
+FROM cluster('fsiem_cluster', system.parts)
+WHERE (table = 'events_replicated') AND active AND ((hostName(), disk_name) GLOBAL IN (
+    SELECT *
+    FROM disks
+))
+GROUP BY ALL
+ORDER BY retention_policy ASC
+	
+
+NameClickHouse Storage Usage Trend per Retention Policy
+DescriptionProvides per day trend of ClickHouse storage used for each retention policy bucket
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+WITH disks AS
+    (
+        SELECT
+            hostName() AS host,
+            name
+        FROM cluster('fsiem_cluster', system.disks)
+        WHERE is_remote = 0
+        GROUP BY ALL
+    )
+SELECT
+    toStartOfDay(min_time) AS date,
+    extract(partition, '\\((\\d+),\\d+\\)') AS retention_policy,
+    sum(bytes_on_disk) AS total_bytes
+FROM cluster('fsiem_cluster', system.parts)
+WHERE (table = 'events_replicated') AND active AND ((hostName(), disk_name) GLOBAL IN (
+    SELECT *
+    FROM disks
+))
+GROUP BY ALL
+ORDER BY
+    date ASC,
+    retention_policy ASC
+	
+      
+NameClickHouse Total and Used Online Storage
+DescriptionCalculates Total and Used storage in ClickHouse event database
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+SELECT
+    sum(total_space) AS total_online_storage,
+    total_online_storage - sum(free_space) AS used_online_storage
+FROM cluster('fsiem_cluster', system.disks)
+WHERE is_remote = 0
+GROUP BY ALL
+
+NameDecline in events from a reporting device
+DescriptionIdentify all devices that have reported 50% less events in the past hour compared to the average of the previous four hours. Devices that send less than 10 events in the hour are excluded.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+SELECT * EXCEPT hour
+FROM
+(
+    SELECT
+        reptDevName,
+        reptDevIpAddrV4 as reptDevIP,
+        reptVendor,
+        reptModel,
+        toStartOfHour(phRecvTime) AS hour,
+        count() AS count,
+        round(avg(count) OVER (PARTITION BY (reptDevName,reptDevIP,reptVendor,reptModel) ORDER BY hour ASC ROWS BETWEEN 4 PRECEDING AND 1 PRECEDING)) AS avg_count_prev_4_hours,
+        round(count / avg_count_prev_4_hours, 2) AS ratio
+    FROM fsiem.events
+    WHERE (phRecvTime >= toStartOfHour(now() - (5 * 3600))) AND (phRecvTime < toStartOfHour(now()))
+    GROUP BY
+        reptDevName,
+        reptDevIP,
+        reptVendor,
+        reptModel,
+        hour
+)
+WHERE (hour >= toStartOfHour(now() - 3600)) AND (ratio < 0.5) AND (count > 10)
+ORDER BY ratio DESC
+      
+
+NameDominating Firewalls Today
+DescriptionIdentifies Firewalls that send 50% more events today than the average of all other Firewalls
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+SELECT
+    reptDevName,
+    reptDevIpAddrV4,
+    reptVendor,
+    reptModel,
+    count,
+    avg_count_others,
+    round(count / avg_count_others, 2) AS ratio
+FROM
+(
+    SELECT
+        reptDevName,
+        reptDevIpAddrV4,
+        reptVendor,
+        reptModel,
+        count() AS count,
+        sum(count) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) AS devices_before,
+        sum(count) OVER (ROWS BETWEEN 1 FOLLOWING AND UNBOUNDED FOLLOWING) AS devices_after,
+        round((devices_before + devices_after) / (device_count - 1), 2) AS avg_count_others,
+        count() OVER () AS device_count
+    FROM fsiem.events
+    WHERE   (dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.reptDevIpAddr),'PH_SYS_DEVICE_FIREWALL')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.reptDevIpAddr),'PH_SYS_DEVICE_FIREWALL')) OR dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.reptDevIpAddr),'PH_SYS_DEVICE_FIREWALL:IntfIP')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.reptDevIpAddr),'PH_SYS_DEVICE_FIREWALL:IntfIP'))) AND phEventCategory IN (0,4,6) AND (phRecvTime >= toStartOfDay(now()))
+    GROUP BY ALL
+)
+WHERE ratio > 1.5
+ORDER BY ratio DESC
+
+NameDominating Windows Servers today
+DescriptionIdentifies Windows Servers that send 50% more events today than the average of all other Windows Servers
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+SELECT
+    reptDevName,
+    reptDevIpAddrV4,
+    reptVendor,
+    reptModel,
+    count,
+    avg_count_others,
+    round(count / avg_count_others, 2) AS ratio
+FROM
+(
+    SELECT
+        reptDevName,
+        reptDevIpAddrV4,
+        reptVendor,
+        reptModel,
+        count() AS count,
+        sum(count) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) AS devices_before,
+        sum(count) OVER (ROWS BETWEEN 1 FOLLOWING AND UNBOUNDED FOLLOWING) AS devices_after,
+        round((devices_before + devices_after) / (device_count - 1), 2) AS avg_count_others,
+        count() OVER () AS device_count
+    FROM fsiem.events
+    WHERE (dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.reptDevIpAddr), 'PH_SYS_DEVICE_WINDOWS_SERVER')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.reptDevIpAddr), 'PH_SYS_DEVICE_WINDOWS_SERVER')) OR dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.reptDevIpAddr), 'PH_SYS_DEVICE_WINDOWS_SERVER:IntfIP')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.reptDevIpAddr), 'PH_SYS_DEVICE_WINDOWS_SERVER:IntfIP'))) AND phEventCategory IN (0,4,6) AND (phRecvTime >= toStartOfDay(now()))
+    GROUP BY ALL
+)
+WHERE ratio > 1.5
+ORDER BY ratio DESC
+
+NameEvents on epicbackupmhtc in last 24
+DescriptionFind all events from session 25141 on epicbackupmhtc in the last 24 hours
+Result TypeQuery
+SQL QuerySELECT phRecvTime, eventType, rawEventMsg
+FROM fsiem.events
+WHERE phRecvTime > (now() - 86400)
+  AND rawEventMsg LIKE '%epicbackupmhtc%'
+  AND rawEventMsg LIKE '%ses=25141%'
+ORDER BY phRecvTime ASC
+LIMIT 100
+
+NameExisting Devices not reporting today
+DescriptionIdentify all devices that reported in last 1 week but are not reporting today.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+WITH reporting_devices_today AS
+    (
+        SELECT DISTINCT reptDevName
+        FROM fsiem.events
+        WHERE (phRecvTime >= toStartOfDay(now())) AND (phEventCategory IN (0,4,6))
+    )
+SELECT
+    reptDevName,
+    reptVendor,
+    reptModel,
+    any(rawEventMsg) AS raw_event,
+    max(phRecvTime) AS last_seen
+FROM fsiem.events
+WHERE (phRecvTime >= toStartOfDay(now() - (7 * 86400))) AND (phRecvTime < toStartOfDay(now())) AND (phEventCategory IN (0,4,6)) AND (reptDevName GLOBAL NOT IN (
+    SELECT reptDevName
+    FROM reporting_devices_today
+))
+GROUP BY ALL
+ORDER BY reptDevName ASC  SETTINGS transform_null_in = 1
+      
+
+NameFortiADC: WAF Signature Events with URL containing Base64 encoded characters
+DescriptionDetects that a FortiADC WAF Signature log contains an URL that has encoded characters.
+Data SourceFortiADC via Syslog
+Result TypeQuery
+SQL Query
+        
+SELECT
+    phRecvTime,
+    reptDevName,
+    srcIpAddrV4,
+    destIpAddrV4,
+    metrics_string.value[indexOf(metrics_string.name, 'infoURL')] as "infoURL",
+    countSubstrings(infoURL, '%') AS encoded_chars,
+    decodeURLComponent(infoURL) AS decoded_url
+FROM fsiem.events
+WHERE
+    eventType = 'FortiADC-Security-WAF-Signature'
+    AND phRecvTime >= now() - INTERVAL 7 DAY
+    AND countSubstrings(metrics_string.value[indexOf(metrics_string.name, 'infoURL')], '%') > 0
+	
+
+NameFortiADC: WAF Signature Events with URL containing GTFOBins
+DescriptionDetects that a FortiADC WAF Signature log contains an URL referring to a a GTFOBin process. GTFOBin (https://gtfobins.github.io/) is a curated list of trusted Unix binaries that can be used to bypass local security restrictions in misconfigured systems. This query requires that you import data into the GTFOBin Lookup Table by creating CSV file from https://gtfobins.github.io/ and also import into the (already created) LOLBAS Lookup Table in FortiSIEM.
+Data SourceFortiADC via Syslog
+Result TypeQuery
+SQL Query
+        
+WITH
+    arrayDistinct(arrayFlatten(groupArray(arrayDistinct(splitByChar(';', dict.functions))))) AS unique_functions
+SELECT
+    e.phRecvTime,
+    e.reptDevIpAddrV4,
+    e.reptDevName,
+    e.eventType,
+    e.infoURL,
+    e.decoded_url,
+    arrayStringConcat(unique_functions, '; ') AS functions,
+    arrayStringConcat(arrayDistinct(groupArray(dict.lolbin)), ', ') AS matched_command
+FROM
+(
+    SELECT
+        phRecvTime,
+        reptDevIpAddrV4,
+        reptDevName,
+        eventType,
+        metrics_string.value[indexOf(metrics_string.name, 'infoURL')] AS infoURL,
+        decodeURLComponent(metrics_string.value[indexOf(metrics_string.name, 'infoURL')]) AS decoded_url
+    FROM fsiem.events
+    WHERE
+        indexOf(metrics_string.name, 'infoURL') > 0
+        AND eventType = 'FortiADC-Security-WAF-Signature'
+        AND phRecvTime > now() - INTERVAL 7 DAY
+) AS e
+CROSS JOIN fsiem.GTFOBin_0 AS dict
+WHERE
+    match(lower(e.decoded_url), CONCAT('(^|\\s)', lower(dict.lolbin), '(\\s|$)'))
+    OR match(lower(e.infoURL), CONCAT('(^|\\s)', lower(dict.lolbin), '(\\s|$)'))
+GROUP BY
+    e.phRecvTime,
+    e.reptDevIpAddrV4,
+    e.reptDevName,
+    e.eventType,
+    e.infoURL,
+    e.decoded_url;
+	
+      
+
+NameHow many logon events have source IPs
+DescriptionHow many logon events have source IPs - 04:55:29 PM Jan 17 2026
+Result TypeQuery
+SQL QuerySELECT 
+  COUNT(*) AS total,
+  countIf(srcIpAddr IS NOT NULL AND toString(srcIpAddr) != '' AND toString(srcIpAddr) != '::') AS has_srcIP,
+  countIf(user NOT LIKE '%$') AS human_users,
+  round(countIf(srcIpAddr IS NOT NULL AND toString(srcIpAddr) != '::') * 100.0 / COUNT(*), 2) as srcIP_pct
+FROM fsiem.events
+WHERE phRecvTime > (now() - 3600)
+  AND eventType = 'Win-Security-4624'
+
+NameLinux: GTFOBin Process Created
+DescriptionDetects Linux processes that exactly match the process names specified in the GTFOBin project (https://gtfobins.github.io/). This is a curated list of trusted Unix binaries that can be used to bypass local security restrictions in misconfigured systems. This query requires that you import data into the GTFOBin Lookup Table by creating CSV file from https://gtfobins.github.io/ and also import into the (already created) LOLBAS Lookup Table in FortiSIEM.
+Data SourceLinux via FortiSIEM Agent
+Result TypeQuery
+SQL Query
+        
+WITH
+    arrayDistinct(arrayFlatten(groupArray(arrayDistinct(splitByChar(';', dict.functions))))) AS unique_functions
+SELECT
+    phRecvTime,
+    reptDevName,
+    eventType,
+    user,
+    metrics_string.value[indexOf(metrics_string.name, 'command')] AS command,
+    arrayStringConcat(unique_functions, '; ') AS functions,
+    arrayStringConcat(arrayDistinct(groupArray(dict.lolbin)), ', ') AS matched_command
+FROM fsiem.events
+CROSS JOIN fsiem.GTFOBin_0 AS dict
+WHERE
+    indexOf(metrics_string.name, 'command') > 0
+    AND eventType = 'LINUX_PROCESS_EXEC'
+    AND match(metrics_string.value[indexOf(metrics_string.name, 'command')], CONCAT('(^|\\s)', dict.lolbin, '(\\s|$)'))
+    AND phRecvTime > now() - INTERVAL 1 DAY
+GROUP BY
+    phRecvTime,
+    reptDevIpAddrV4,
+    reptDevName,
+    eventType,
+    user,
+    command
+	
+      
+
+NameMost Frequent Reporting Device and Event Types today
+DescriptionCalculates Top 10 Reporting Device and their Event Types for today. This returns approximately most frequent values using the TOP K function. TOP K provides a faster way to compute Top values, compared to doing an group by aggregation and sorting.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+  SELECT arrayJoin(topK(10)(concat(reptDevName,'-',eventType))) AS ReportingDeviceEventType
+  FROM fsiem.events
+  WHERE phEventCategory IN (0,4,6) AND (phRecvTime >= toStartOfDay(now()))
+
+NameMost Frequent Sources with DNS activity today
+DescriptionCalculates Top 10 Sources with DNS activity today. This returns approximately most frequent values using the TOP K function. Event filters include DNS Server events as well as Firewall DNS traffic events. You may want to remove Firewall DNS traffic events if DNS Server events are present to avoid double counting.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+  SELECT topK(10)(srcIpAddrV4) AS SourceIP
+  FROM fsiem.events
+  WHERE (((dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType),'PH_SYS_EVENT_CommonDNSTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType),'PH_SYS_EVENT_CommonDNSTraffic')) OR dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType),'PH_SYS_EVENT_UncommonDNSTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType),'PH_SYS_EVENT_UncommonDNSTraffic')) OR dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType),'PH_SYS_EVENT_ZoneTransferTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType),'PH_SYS_EVENT_ZoneTransferTraffic')))) OR
+     (((dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType),'PH_SYS_EVENT_PermitNetTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType),'PH_SYS_EVENT_PermitNetTraffic')) OR dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType),'PH_SYS_EVENT_BiNetflowTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType),'PH_SYS_EVENT_BiNetflowTraffic')) OR dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType),'PH_SYS_EVENT_NetflowTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType),'PH_SYS_EVENT_NetflowTraffic')))) AND (destIpPort = 53))) AND (phRecvTime >= toStartOfDay(now()))
+        
+      
+
+NameNew device reporting today
+DescriptionIdentify all new devices reporting today but never seen before in last 7 days
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+WITH reporting_devices_last_7_days AS
+    (
+        SELECT DISTINCT reptDevName
+        FROM fsiem.events
+        WHERE (phRecvTime >= toStartOfDay(now() - (7 * 86400))) AND (phRecvTime < toStartOfDay(now())) AND (phEventCategory IN (0,4,6))
+    )
+SELECT
+    reptDevName,
+    reptDevIpAddrV4,
+    reptVendor,
+    reptModel,
+    any(rawEventMsg) AS raw_event,
+    max(phRecvTime) AS last_seen
+FROM fsiem.events
+WHERE (phRecvTime >= toStartOfDay(now())) AND (phEventCategory IN (0,4,6)) AND (reptDevName GLOBAL NOT IN (
+    SELECT reptDevName
+    FROM reporting_devices_last_7_days
+))
+GROUP BY ALL
+ORDER BY reptDevName ASC  SETTINGS transform_null_in = 1
+      
+
+NameNew FortiSIEM Audit Event today
+DescriptionNew FortiSIEM Audit event seen today but never seen before in last 7 days. This query should not be run on the first day after install.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+WITH ph_audit_event_last_7_days AS
+    (
+        SELECT DISTINCT eventType
+        FROM fsiem.events
+        WHERE (phEventCategory = 2) AND (eventType LIKE 'PH_AUDIT%') AND (phRecvTime >= toStartOfDay(now() - (7 * 86400))) AND (phRecvTime < toStartOfDay(now()))
+    )
+SELECT
+    phRecvTime,
+    eventType,
+    procName,
+    user,
+    srcIpAddrV4,
+    rawEventMsg
+FROM fsiem.events
+WHERE (phEventCategory = 2) AND (eventType LIKE 'PH_AUDIT%') AND (phRecvTime >= toStartOfDay(now())) AND (eventType GLOBAL NOT IN (
+    SELECT eventType
+    FROM ph_audit_event_last_7_days
+))
+      
+
+NameNew FortiSIEM Operational error today
+DescriptionNew FortiSIEM Operational message seen today but never seen before in last 7 days
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+WITH ph_fsm_error_last_7_days AS
+    (
+        SELECT DISTINCT
+            eventType,
+            procName,
+            fileName,
+            lineNumber
+        FROM fsiem.events
+        WHERE (phEventCategory = 3) AND (rawEventMsg LIKE '%PHL_ERROR%') AND (rawEventMsg NOT LIKE '%PH_DISCOV%') AND (phRecvTime >= toStartOfDay(now() - (7 * 86400))) AND (phRecvTime < toStartOfDay(now()))
+    )
+SELECT
+    phRecvTime,
+    eventType,
+    procName,
+    fileName,
+    lineNumber,
+    rawEventMsg
+FROM fsiem.events
+WHERE (phEventCategory = 3) AND (rawEventMsg LIKE '%PHL_ERROR%') AND (rawEventMsg NOT LIKE '%PH_DISCOV%') AND (phRecvTime >= toStartOfDay(now())) AND ((eventType, procName, fileName, lineNumber) GLOBAL NOT IN (
+    SELECT (eventType, procName, fileName, lineNumber)
+    FROM ph_fsm_error_last_7_days
+))   SETTINGS transform_null_in = 1
+      
+
+DescriptionDetects traffic to an inbound port but never seen before in last 7 days. This requires scheduling the OS Query "Windows processes and listening ports via osquery" to be run at least once every hour.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+WITH open_ports_last_7_days AS
+    (
+        SELECT DISTINCT
+            hostName,
+            destIpPort
+        FROM fsiem.events
+        WHERE (eventType = 'PH_OSQUERY_WIN_PROCESS_PORT') AND (phRecvTime >= toStartOfDay(now() - (7 * 86400))) AND (phRecvTime < toStartOfDay(now()))
+    )
+SELECT DISTINCT
+    hostName,
+    hostIpAddrV4,
+    procName,
+    destIpPort
+FROM fsiem.events
+WHERE (eventType = 'PH_OSQUERY_WIN_PROCESS_PORT') AND (phRecvTime >= toStartOfDay(now())) AND ((hostName, destIpPort) GLOBAL NOT IN (
+    SELECT
+        hostName,
+        destIpPort
+    FROM open_ports_last_7_days
+))
+ORDER BY hostName ASC  SETTINGS transform_null_in = 1
+      
+
+NameNew incident today
+DescriptionNew incident involving a device, or a user seen today but never seen before in last 7 days
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+WITH incidents_last_7_days AS
+    (
+        SELECT DISTINCT
+            eventType,
+            incidentSrc,
+            incidentTarget
+        FROM fsiem.events
+        WHERE (phEventCategory = 1) AND (phRecvTime >= toStartOfDay(now() - (7 * 86400))) AND (phRecvTime < toStartOfDay(now()))
+    )
+SELECT DISTINCT
+    eventType,
+    incidentSrc,
+    incidentTarget
+FROM fsiem.events
+WHERE (phEventCategory = 1) AND (phRecvTime >= toStartOfDay(now())) AND ((eventType, incidentSrc, incidentTarget) GLOBAL NOT IN (
+    SELECT
+        eventType,
+        incidentSrc,
+        incidentTarget
+    FROM incidents_last_7_days
+)) SETTINGS transform_null_in = 1
+      
+
+NameSample of Unknown Events per Reporting IP
+DescriptionProvides 10 most recent occurrences of unparsed events for each unique Reporting IP for the last 7 days.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+WITH RankedEvents AS (
+    SELECT
+        reptDevIpAddrV4 AS reptIp,
+        eventType,
+        rawEventMsg,
+        phRecvTime AS last_seen,
+        ROW_NUMBER() OVER (PARTITION BY reptDevIpAddrV4 ORDER BY phRecvTime DESC) AS event_rank
+    FROM
+        fsiem.events
+    WHERE
+        eventType = 'Unknown_EventType'
+        AND phRecvTime > now() - INTERVAL 7 DAY
+)
+SELECT
+    last_seen,
+    reptIp,
+    eventType,
+    rawEventMsg
+
+FROM
+    RankedEvents
+WHERE
+    event_rank <= 10
+ORDER BY
+    reptIp ASC, last_seen DESC;
+
+NameSpike in daily new incidents
+DescriptionList the dates from last week where the number of incidents surpasses 50% of the corresponding weekdays' incident count from the preceding four weeks
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+SELECT *
+FROM
+(
+    SELECT
+        toStartOfDay(phRecvTime) AS date,
+        toDayOfWeek(phRecvTime) AS day_of_week,
+        count() AS count,
+        round(avg(count) OVER (PARTITION BY day_of_week ORDER BY date ASC ROWS BETWEEN 4 PRECEDING AND 1 PRECEDING)) AS avg_count_prev_4_weeks,
+        round(count/avg_count_prev_4_weeks, 2) as ratio
+    FROM fsiem.events
+    WHERE (phRecvTime >= toStartOfWeek(now() - (35 * 86400), 1)) AND (phRecvTime < toStartOfWeek(now(), 1)) and phEventCategory = 1
+    GROUP BY
+        date,
+        day_of_week
+)
+WHERE (date >= toStartOfWeek(now() - (7 * 86400), 1)) AND ratio > 1.5
+ORDER BY date ASC
+      
+
+NameSpike in events from a reporting device
+DescriptionIdentify all devices that have reported over 50% more events in the past hour compared to the average of the previous four hours.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+SELECT * EXCEPT hour
+FROM
+(
+    SELECT
+        reptDevName,
+        reptDevIpAddrV4 AS reptDevIP,
+        reptVendor,
+        reptModel,
+        toStartOfHour(phRecvTime) AS hour,
+        count() AS count,
+        round(avg(count) OVER (PARTITION BY (reptDevName,reptDevIP,reptVendor,reptModel) ORDER BY hour ASC ROWS BETWEEN 4 PRECEDING AND 1 PRECEDING)) AS avg_count_prev_4_hours,
+        round(count / avg_count_prev_4_hours, 2) AS ratio
+    FROM fsiem.events
+    WHERE (phRecvTime >= toStartOfHour(now() - (5 * 3600))) AND (phRecvTime < toStartOfHour(now()))
+    GROUP BY
+        reptDevName,
+        reptDevIP,
+        reptVendor,
+        reptModel,
+        hour
+)
+WHERE (hour >= toStartOfHour(now() - 3600)) AND (ratio > 1.5)
+ORDER BY ratio DESC
+      
+
+DescriptionIdentify all event types from devices that occur 50% more times in the past hour compared to the average of the previous four hours
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+SELECT * EXCEPT hour
+FROM
+(
+    SELECT
+        reptDevName,
+        reptDevIpAddrV4 as reptDevIP,
+        eventType,
+        toStartOfHour(phRecvTime) AS hour,
+        count() AS count,
+        round(avg(count) OVER (PARTITION BY (reptDevName,reptDevIP,eventType) ORDER BY hour ASC ROWS BETWEEN 4 PRECEDING AND 1 PRECEDING)) AS avg_count_prev_4_hours,
+        round(count / avg_count_prev_4_hours, 2) AS ratio
+    FROM fsiem.events
+    WHERE (phRecvTime >= toStartOfHour(now() - (5 * 3600))) AND (phRecvTime < toStartOfHour(now()))
+    GROUP BY
+        reptDevName,
+        reptDevIP,
+        eventType,
+        hour
+)
+WHERE (hour >= toStartOfHour(now() - 3600)) AND (ratio > 1.50)
+ORDER BY ratio DESC
+      
+
+NameSpike in inbound denied network traffic to a destination host
+DescriptionDetects a destination denied 50% more times than the average over last 7 days
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+SELECT * EXCEPT day
+FROM
+(
+    SELECT
+        destIpAddrV4 AS destIp,
+        toStartOfDay(phRecvTime) AS day,
+        count() AS count,
+        round(avg(count) OVER (PARTITION BY destIp ORDER BY day ASC ROWS BETWEEN 7 PRECEDING AND 1 PRECEDING)) AS avg_count_prev_7_days,
+        round(count / avg_count_prev_7_days, 2) AS ratio
+    FROM fsiem.events
+    WHERE (dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType), 'PH_SYS_EVENT_DenyTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType), 'PH_SYS_EVENT_DenyTraffic'))) AND (phRecvTime >= toStartOfDay(now() - (7 * 86400))) AND (phRecvTime < toStartOfDay(now()))
+    GROUP BY
+        destIp,
+        day
+)
+WHERE (day >= toStartOfDay(now() - 86400)) AND (ratio > 1.5)
+ORDER BY ratio DESC
+
+NameSpike in network traffic from a source
+DescriptionDetects a source sending 50% more network traffic today compared to the average over last 7 days
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+SELECT * EXCEPT day
+FROM
+(
+    SELECT
+        srcIpAddrV4 as srcIp,
+        toStartOfDay(phRecvTime) AS day,
+        count() AS count,
+        round(avg(count) OVER (PARTITION BY srcIp ORDER BY day ASC ROWS BETWEEN 7 PRECEDING AND 1 PRECEDING)) AS avg_count_prev_7_days,
+        round(count / avg_count_prev_7_days, 2) AS ratio
+    FROM fsiem.events
+    WHERE (dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType), 'PH_SYS_EVENT_PermitNetTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType), 'PH_SYS_EVENT_PermitNetTraffic')) OR dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType), 'PH_SYS_EVENT_BiNetflowTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType), 'PH_SYS_EVENT_BiNetflowTraffic'))) AND (phRecvTime >= toStartOfDay(now() - (7 * 86400))) AND (phRecvTime < toStartOfDay(now()))
+    GROUP BY
+        srcIp,
+        day
+)
+WHERE (day >= toStartOfDay(now() - 86400)) AND (ratio > 1.5)
+ORDER BY ratio DESC
+
+NameSpike in outbound denied network traffic from a source
+DescriptionDetects a source denied 50% more times today than the average over last 7 days
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+SELECT * EXCEPT day
+FROM
+(
+    SELECT
+        srcIpAddrV4 AS srcIp,
+        toStartOfDay(phRecvTime) AS day,
+        count() AS count,
+        round(avg(count) OVER (PARTITION BY srcIp ORDER BY day ASC ROWS BETWEEN 7 PRECEDING AND 1 PRECEDING)) AS avg_count_prev_7_days,
+        round(count / avg_count_prev_7_days, 2) AS ratio
+    FROM fsiem.events
+    WHERE  (dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType),'PH_SYS_EVENT_DenyTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType),'PH_SYS_EVENT_DenyTraffic'))) AND (phRecvTime >= toStartOfDay(now() - (7 * 86400))) AND (phRecvTime < toStartOfDay(now()))
+    GROUP BY
+        srcIp,
+        day
+)
+WHERE (day >= toStartOfDay(now() - 86400)) AND (ratio > 1.5)
+ORDER BY ratio DESC
+      
+
+NameSpike in outbound network activity to one destination country
+DescriptionDetects 50% increase in traffic to a destination country than the average over last 7 days
+Data SourceFortiSIEM
+Result TypeQuery
+SQL QuerySELECT * EXCEPT day
+FROM
+(
+    SELECT
+        destGeoCountry AS destCountry,
+        toStartOfDay(phRecvTime) AS day,
+        count() AS count,
+        round(avg(count) OVER (PARTITION BY destCountry ORDER BY day ASC ROWS BETWEEN 7 PRECEDING AND 1 PRECEDING)) AS avg_count_prev_7_days,
+        round(count / avg_count_prev_7_days, 2) AS ratio
+    FROM fsiem.events
+    WHERE (dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType), 'PH_SYS_EVENT_DenyTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType), 'PH_SYS_EVENT_DenyTraffic'))) AND (phRecvTime >= toStartOfDay(now() - (7 * 86400))) AND (phRecvTime < toStartOfDay(now()))
+    GROUP BY
+        destCountry,
+        day
+)
+WHERE (day >= toStartOfDay(now() - 86400)) AND (ratio > 1.5)
+ORDER BY ratio DESC
+
+
+
+NameSpike in SMB Connection from a source
+DescriptionDetects a source sending 50% more Windows SMB traffic today compared to the average over last 7 days
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+SELECT * EXCEPT day
+FROM
+(
+    SELECT
+        srcIpAddrV4 AS srcIp,
+        toStartOfDay(phRecvTime) AS day,
+        count() AS count,
+        round(avg(count) OVER (PARTITION BY srcIp ORDER BY day ASC ROWS BETWEEN 7 PRECEDING AND 1 PRECEDING)) AS avg_count_prev_7_days,
+        round(count / avg_count_prev_7_days, 2) AS ratio
+    FROM fsiem.events
+    WHERE (dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType), 'PH_SYS_EVENT_PermitNetTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType), 'PH_SYS_EVENT_PermitNetTraffic')) OR dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType), 'PH_SYS_EVENT_BiNetflowTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType), 'PH_SYS_EVENT_BiNetflowTraffic'))) AND (destIpPort IN (139, 445)) AND (phRecvTime >= toStartOfDay(now() - (7 * 86400))) AND (phRecvTime < toStartOfDay(now()))
+    GROUP BY
+        srcIp,
+        day
+)
+WHERE (day >= toStartOfDay(now() - 86400)) AND (ratio > 1.5)
+ORDER BY ratio DESC
+
+      
+
+
+NameSVC Creds Changed
+DescriptionService account password resets. Coordinate changes or stuff breaks. C-ALI 2026-01-18
+Result TypeQuery
+SQL QuerySELECT 
+    phRecvTime as reset_time,
+    metrics_string.value[indexOf(metrics_string.name, 'subjectUsername')] as reset_by,
+    metrics_string.value[indexOf(metrics_string.name, 'targetUser')] as account_reset,
+    metrics_string.value[indexOf(metrics_string.name, 'targetDomain')] as domain,
+    reptDevName as dc
+FROM fsiem.events
+WHERE phRecvTime > (now() - 604800)
+    AND eventType = 'Win-Security-4724'
+    AND (
+        lower(metrics_string.value[indexOf(metrics_string.name, 'targetUser')]) LIKE '%svc%'
+        OR lower(metrics_string.value[indexOf(metrics_string.name, 'targetUser')]) LIKE '%service%'
+    )
+ORDER BY phRecvTime DESC
+LIMIT 25
+
+
+NameTop 10 Event Types by count and their proportions
+DescriptionCalculates Top 10 Event Types and their percentage contributions in last 10min. Note that this query does not involve any filter and can be slow.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+SELECT
+    eventType,
+    COUNT(*) AS event_count,
+    round((COUNT(*) * 100.0) / SUM(COUNT(*)) OVER (), 2) AS pct
+FROM
+    fsiem.events
+WHERE
+    phRecvTime > (now() - 600)
+GROUP BY
+    eventType
+ORDER BY pct desc
+LIMIT 10
+
+
+NameTop 10 Incidents and actors by event count and their proportion
+DescriptionCalculates Top 10 Incidents and their actors by count and their percentage contributions in last 1 day.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+SELECT
+    eventType,
+    eventSeverityCat,
+    srcIpAddrV4,
+    destIpAddrV4,
+    user,
+    sum(count) AS incident_count,
+    round((incident_count * 100.0) / SUM(incident_count) OVER (), 2) AS pct
+FROM fsiem.events
+WHERE (phEventCategory IN (1, 100)) AND (phRecvTime > (now() - 86400))
+GROUP BY
+    eventType,
+    eventSeverityCat,
+    srcIpAddrV4,
+    destIpAddrV4,
+    user
+ORDER BY pct DESC
+LIMIT 10
+
+
+
+NameTop 10 Reporting devices by event count and their proportions
+DescriptionCalculates Top 10 Reporting Devices by external event count and their percentage contributions in last 10min. phEventCategory 0 means external event and 4 means flow events. Performance monitoring events are excluded. To include them, remove the filter phEventCategory IN (0,4) from WHERE clause. Note that this query does not involve any filter and can be slow.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+SELECT
+    reptDevName, reptDevIpAddrV4,reptVendor,reptModel,
+    COUNT(*) AS event_count,
+    round((COUNT(*) * 100.0) / SUM(COUNT(*)) OVER (), 2) AS pct
+FROM
+    fsiem.events
+WHERE
+    phEventCategory IN (0,4) AND phRecvTime > (now() - 600)
+GROUP BY
+    reptDevName, reptDevIpAddrV4,reptVendor,reptModel
+ORDER BY pct desc
+LIMIT 10
+
+
+NameTop 10 Reporting devices by event size
+DescriptionCalculates Top 10 Reporting Devices by raw event size and their percentage contributions in last 10min. Note that this query does not involve any filter and can be slow.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+SELECT
+    reptDevName, reptDevIpAddrV4,reptVendor,reptModel,
+    round(SUM((rawEventSize)/(1024*1024)),2) AS sizeMB
+FROM
+    fsiem.events
+WHERE
+    phRecvTime > (now() - 600)
+GROUP BY
+    reptDevName, reptDevIpAddrV4,reptVendor,reptModel
+    ORDER BY sizeMB desc
+LIMIT 10
+        
+      
+
+
+NameTop Failed Windows/Linux logins by count
+DescriptionCalculates Top 100 Failed Windows or Linux logins in last 1 day by count.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+SELECT
+    srcIpAddrV4,
+    reptDevName,
+    destIpAddrV4,
+    reptVendor,
+    reptModel,
+    user,
+    count(*) AS `failed_login`
+FROM fsiem.events
+WHERE eventType IN ('Win-Security-4625','Generic_Unix_Failed_SSH_Login') AND (phRecvTime > (now() - 86400))
+GROUP BY
+    srcIpAddrV4,
+    reptDevName,
+    destIpAddrV4,
+    reptVendor,
+    reptModel,
+    user
+ORDER BY failed_login DESC
+        
+      
+
+
+NameTop Inbound Permit Destinations
+DescriptionCalculates Top Inbound permit traffic (source country,destination Ip and TCP/UDP port) by count in last 1 hour. Inbound is determined by source not in private network CMDB group and destination inside private networks CMDB group.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+SELECT
+    srcGeoCountry,
+    destIpAddrV4,
+    destIpPort,
+    count(*) AS permit_conn
+FROM fsiem.events
+WHERE (dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType), 'PH_SYS_EVENT_PermitTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType), 'PH_SYS_EVENT_PermitTraffic'))) AND  ((metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] < toIPv6('FC00::') OR metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] > toIPv6('fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] < toIPv6('::ffff:10.0.0.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] > toIPv6('::ffff:10.255.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] < toIPv6('FF00::') OR metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] > toIPv6('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] < toIPv6('::ffff:224.0.0.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] > toIPv6('::ffff:239.255.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] < toIPv6('::ffff:172.16.0.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] > toIPv6('::ffff:172.31.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] < toIPv6('::ffff:169.254.1.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] > toIPv6('::ffff:169.254.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] < toIPv6('::1') OR metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] > toIPv6('::1')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] < toIPv6('::ffff:127.0.0.1') OR metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] > toIPv6('::ffff:127.0.0.1')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] < toIPv6('::ffff:192.168.0.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] > toIPv6('::ffff:192.168.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] < toIPv6('FE80::') OR metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] > toIPv6('febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff')))  AND  ((metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] >= toIPv6('FC00::') AND metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] <= toIPv6('fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] >= toIPv6('::ffff:10.0.0.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] <= toIPv6('::ffff:10.255.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] >= toIPv6('FF00::') AND metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] <= toIPv6('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] >= toIPv6('::ffff:224.0.0.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] <= toIPv6('::ffff:239.255.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] >= toIPv6('::ffff:172.16.0.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] <= toIPv6('::ffff:172.31.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] >= toIPv6('::ffff:169.254.1.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] <= toIPv6('::ffff:169.254.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] >= toIPv6('::1') AND metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] <= toIPv6('::1')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] >= toIPv6('::ffff:127.0.0.1') AND metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] <= toIPv6('::ffff:127.0.0.1')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] >= toIPv6('::ffff:192.168.0.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] <= toIPv6('::ffff:192.168.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] >= toIPv6('FE80::') AND metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] <= toIPv6('febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff')))  AND (phRecvTime > (now() - 3600))
+GROUP BY
+    srcGeoCountry,
+    destIpAddrV4,
+    destIpPort
+ORDER BY permit_conn DESC
+        
+      
+
+NameTop Outbound Denied Sources
+DescriptionCalculates Top Outbound denied sources (source, destination country and TCP/UDP port) by count in last 1 hour. Outbound is determined by source in private network CMDB group and destination outside private networks CMDB group.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+SELECT
+    srcIpAddrV4,
+    destIpPort,
+    destGeoCountry,
+    count(*) AS deny_conn
+FROM fsiem.events
+WHERE  (dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType),'PH_SYS_EVENT_DenyTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType),'PH_SYS_EVENT_DenyTraffic')))  AND  ((metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('FC00::') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::ffff:10.0.0.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::ffff:10.255.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('FF00::') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::ffff:224.0.0.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::ffff:239.255.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::ffff:172.16.0.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::ffff:172.31.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::ffff:169.254.1.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::ffff:169.254.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::1') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::1')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::ffff:127.0.0.1') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::ffff:127.0.0.1')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::ffff:192.168.0.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::ffff:192.168.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('FE80::') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff')))  AND  ((metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('FC00::') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::ffff:10.0.0.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::ffff:10.255.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('FF00::') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::ffff:224.0.0.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::ffff:239.255.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::ffff:172.16.0.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::ffff:172.31.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::ffff:169.254.1.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::ffff:169.254.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::1') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::1')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::ffff:127.0.0.1') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::ffff:127.0.0.1')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::ffff:192.168.0.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::ffff:192.168.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('FE80::') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff')))  AND (phRecvTime > (now() - 3600))
+GROUP BY
+    srcIpAddrV4,
+    destIpPort,
+    destGeoCountry
+ORDER BY deny_conn DESC
+        
+      
+
+
+NameTop Outbound Permit Traffic
+DescriptionCalculates Top Outbound permit traffic (source, destination Ip and country and TCP/UDP port) by count in last 1 hour. Outbound is determined by source in private network CMDB group and destination outside private networks CMDB group.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+SELECT
+    srcIpAddrV4,
+    destIpAddrV4,
+    destIpPort,
+    destGeoCountry,
+    count(*) AS `permit_conn`
+FROM fsiem.events
+WHERE (dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType), 'PH_SYS_EVENT_PermitTraffic')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType), 'PH_SYS_EVENT_PermitTraffic'))) AND  ((metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('FC00::') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::ffff:10.0.0.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::ffff:10.255.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('FF00::') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::ffff:224.0.0.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::ffff:239.255.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::ffff:172.16.0.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::ffff:172.31.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::ffff:169.254.1.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::ffff:169.254.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::1') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::1')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::ffff:127.0.0.1') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::ffff:127.0.0.1')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('::ffff:192.168.0.0') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('::ffff:192.168.255.255')) OR (metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] >= toIPv6('FE80::') AND metrics_ip.value[indexOf(metrics_ip.name, 'srcIpAddr')] <= toIPv6('febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff')))  AND  ((metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('FC00::') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::ffff:10.0.0.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::ffff:10.255.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('FF00::') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::ffff:224.0.0.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::ffff:239.255.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::ffff:172.16.0.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::ffff:172.31.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::ffff:169.254.1.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::ffff:169.254.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::1') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::1')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::ffff:127.0.0.1') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::ffff:127.0.0.1')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('::ffff:192.168.0.0') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('::ffff:192.168.255.255')) AND (metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] < toIPv6('FE80::') OR metrics_ip.value[indexOf(metrics_ip.name, 'destIpAddr')] > toIPv6('febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff'))) AND (phRecvTime > (now() - 3600))
+GROUP BY
+    srcIpAddrV4,
+    destIpAddrV4,
+    destIpPort,
+    destGeoCountry
+ORDER BY permit_conn DESC
+        
+      
+
+NameTop Successful and Failed Windows/Linux Logins by total count
+DescriptionCalculates successful and failed logins of users in last 1 day in the same report.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+        
+SELECT
+    reptDevName,
+    reptVendor,
+    reptModel,
+    user,
+    SUM(IF(eventType IN ('Win-Security-4624', 'Generic_Unix_Successful_SSH_Login'), 1, 0)) AS successful_login,
+    SUM(IF(eventType IN ('Win-Security-4625', 'Generic_Unix_Failed_SSH_Login'), 1, 0)) AS failed_login
+FROM fsiem.events
+WHERE (eventType IN ('Win-Security-4624', 'Win-Security-4625', 'Generic_Unix_Successful_SSH_Login', 'Generic_Unix_Failed_SSH_Login')) AND (user NOT LIKE '%$') AND (user NOT LIKE 'SYSTEM') AND (user NOT LIKE 'LOCAL SERVICE') AND (user NOT LIKE 'NETWORK SERVICE') AND (user NOT LIKE 'DWM-') AND (user NOT LIKE 'UMDF-') AND (phRecvTime > (now() - 86400))
+GROUP BY
+    reptDevName,
+    reptVendor,
+    reptModel,
+    user
+ORDER BY (successful_login + failed_login) DESC
+        
+      
+
+NameUnusual Device login today
+DescriptionUnusual Device login seen today but never seen before in 2 weeks
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+WITH device_logon_last_2_weeks AS
+    (
+        SELECT DISTINCT
+            srcIpAddrV4,
+            user,
+            reptDevName
+        FROM fsiem.events
+        WHERE (dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType), 'PH_SYS_EVENT_HostLogonSuccess')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType), 'PH_SYS_EVENT_HostLogonSuccess'))) AND (phRecvTime >= toStartOfDay(now() - (14 * 86400))) AND (phRecvTime < toStartOfDay(now()))
+    )
+SELECT
+    phRecvTime,
+    srcIpAddrV4,
+    user,
+    reptDevName,
+    reptDevIpAddrV4
+FROM fsiem.events
+WHERE (dictHas('fsiem.dict_cmdb_group', (phCustId, toString(fsiem.events.eventType), 'PH_SYS_EVENT_HostLogonSuccess')) OR dictHas('fsiem.dict_cmdb_group', (toUInt32(0), toString(fsiem.events.eventType), 'PH_SYS_EVENT_HostLogonSuccess'))) AND (phRecvTime >= toStartOfDay(now())) AND ((srcIpAddrV4, user, reptDevName) GLOBAL NOT IN (
+    SELECT
+        srcIpAddrV4,
+        user,
+        reptDevName
+    FROM device_logon_last_2_weeks
+))  SETTINGS transform_null_in = 1
+      
+
+
+NameUnusual Windows RDP login today
+DescriptionUnusual Windows Remote Desktop Protocol (RDP) or Terminal Service login seen today but never seen before in 2 weeks
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+WITH windows_rdp_seen_last_2_weeks AS
+    (
+        SELECT DISTINCT
+            srcIpAddrV4,
+            user,
+            reptDevName
+        FROM fsiem.events
+        WHERE (eventType = 'Win-Security-4624') AND (winLogonType = 10) AND (phRecvTime >= toStartOfDay(now() - (14 * 86400))) AND (phRecvTime < toStartOfDay(now()))
+    )
+SELECT
+    phRecvTime,
+    srcIpAddrV4,
+    user,
+    reptDevName
+FROM fsiem.events
+WHERE (eventType = 'Win-Security-4624') AND (winLogonType = 10) AND (phRecvTime >= toStartOfDay(now())) AND ((srcIpAddr, user, reptDevName) GLOBAL NOT IN (
+    SELECT
+        srcIpAddrV4,
+        user,
+        reptDevName
+    FROM windows_rdp_seen_last_2_weeks
+))  SETTINGS transform_null_in = 1
+      
+
+
+NameUnusual Windows Service today
+DescriptionUnusual Windows Service launched a different path seen today but never seen before in 14 days. This requires you to schedule PH_OSQUERY_WIN_SERVICES for at least 2 weeks.
+Data SourceFortiSIEM
+Result TypeQuery
+SQL Query
+WITH
+    metrics_string.value[indexOf(metrics_string.name, 'serviceName')] AS serviceName,
+    metrics_string.value[indexOf(metrics_string.name, 'servicePath')] AS servicePath,
+    windows_services_seen_14_days AS
+    (
+        WITH
+            metrics_string.value[indexOf(metrics_string.name, 'serviceName')] AS serviceName,
+            metrics_string.value[indexOf(metrics_string.name, 'servicePath')] AS servicePath
+        SELECT DISTINCT
+            serviceName as name,
+            servicePath as path
+        FROM fsiem.events
+        WHERE (eventType = 'PH_OSQUERY_WIN_SERVICES') AND (phRecvTime >= toStartOfDay(now() - (14 * 86400))) AND (phRecvTime < toStartOfDay(now()))
+    )
+SELECT
+    phRecvTime,
+    hostName,
+    serviceName,
+    servicePath
+FROM fsiem.events
+WHERE (eventType = 'PH_OSQUERY_WIN_SERVICES') AND (phRecvTime >= toStartOfDay(now())) AND ((serviceName, servicePath) GLOBAL NOT IN (
+    SELECT (name, path)
+    FROM windows_services_seen_14_days
+))  SETTINGS transform_null_in = 1
+      
+
+
+
+NameWeak Auth - ALI
+DescriptionWeak Auth - ALI - 02:28:31 PM Jan 19 2026
+Result TypeQuery
+SQL QuerySELECT 
+    extractAll(rawEventMsg, '([^<]+)')[1] as service_account,
+    extractAll(rawEventMsg, '([^<]+)')[1] as domain,
+    extractAll(rawEventMsg, '([^<]+)')[1] as domain_controller,
+    extractAll(rawEventMsg, '([^<]+)')[1] as encryption_type,
+    COUNT(*) as total_requests_7d,
+    COUNT(DISTINCT extractAll(rawEventMsg, '([^<]+)')[1]) as unique_requestors,
+    COUNT(DISTINCT extractAll(rawEventMsg, '([^<]+)')[1]) as unique_source_ips
+FROM fsiem.events_all
+WHERE 
+    eventType = 'Win-Security-4769-success'
+    AND phRecvTime >= now() - INTERVAL 7 DAY
+    AND (
+        rawEventMsg LIKE '%0x17%'
+        OR rawEventMsg LIKE '%0x3%'
+        OR rawEventMsg LIKE '%0x1%'
+    )
+GROUP BY service_account, domain, domain_controller, encryption_type
+ORDER BY total_requests_7d DESC
+LIMIT 50
+
+NameWeak Encryption Auth - Accounts
+DescriptionC-ALI 2026-01-19
+Result TypeQuery
+SQL QuerySELECT 
+    extractAll(rawEventMsg, '([^<]+)')[1] as "Service Account",
+    extractAll(rawEventMsg, '([^<]+)')[1] as "Domain",
+    extractAll(rawEventMsg, '([^<]+)')[1] as "Domain Controller",
+    CASE
+        WHEN rawEventMsg LIKE '%TicketEncryptionType\'>0x17%' THEN 'RC4 (Weak)'
+        WHEN rawEventMsg LIKE '%TicketEncryptionType\'>0x3%' THEN 'DES (Critical)'
+        WHEN rawEventMsg LIKE '%TicketEncryptionType\'>0x1%' THEN 'DES (Critical)'
+    END as "Encryption Type",
+    COUNT(*) as "Total Requests (7 Days)",
+    COUNT(DISTINCT extractAll(rawEventMsg, '([^<]+)')[1]) as "Unique Users/Machines",
+    COUNT(DISTINCT extractAll(rawEventMsg, '([^<]+)')[1]) as "Unique Source IPs"
+FROM fsiem.events_all
+WHERE 
+    eventType = 'Win-Security-4769-success'
+    AND phRecvTime >= now() - INTERVAL 7 DAY
+    AND (
+        rawEventMsg LIKE '%0x17%'
+        OR rawEventMsg LIKE '%0x3%'
+        OR rawEventMsg LIKE '%0x1%'
+    )
+GROUP BY "Service Account", "Domain", "Domain Controller", "Encryption Type"
+ORDER BY "Total Requests (7 Days)" DESC
+LIMIT 50
+
+
+
+NameWhat's Failing
+DescriptionFailed logins by account, source, and reason. Top hitters are usually misconfigured apps. C-ALI 2026-01-18
+Result TypeQuery
+SQL QuerySELECT 
+    metrics_string.value[indexOf(metrics_string.name, 'user')] as failed_account,
+    metrics_string.value[indexOf(metrics_string.name, 'domain')] as domain,
+    metrics_string.value[indexOf(metrics_string.name, 'srcName')] as source_host,
+    metrics_string.value[indexOf(metrics_string.name, 'errReason')] as failure_reason,
+    reptDevName as target_server,
+    COUNT(*) as failure_count
+FROM fsiem.events
+WHERE phRecvTime > (now() - 86400)
+    AND eventType = 'Win-Security-4625'
+GROUP BY failed_account, domain, source_host, failure_reason, target_server
+ORDER BY failure_count DESC
+LIMIT 50
+
+
+NameWho Got Admin
+DescriptionUsers added to privileged groups. Low volume, high signal.
+Result TypeQuery
+SQL QuerySELECT 
+    phRecvTime as change_time,
+    CASE eventType
+        WHEN 'Win-Security-4728' THEN 'Global Group'
+        WHEN 'Win-Security-4732' THEN 'Local Group'
+        WHEN 'Win-Security-4756' THEN 'Universal Group'
+    END as group_type,
+    metrics_string.value[indexOf(metrics_string.name, 'subjectUsername')] as changed_by,
+    metrics_string.value[indexOf(metrics_string.name, 'targetUser')] as user_added,
+    metrics_string.value[indexOf(metrics_string.name, 'targetUserGrp')] as to_group,
+    reptDevName as dc
+FROM fsiem.events
+WHERE phRecvTime > (now() - 604800)
+    AND eventType IN ('Win-Security-4728', 'Win-Security-4732', 'Win-Security-4756')
+    AND (
+        lower(metrics_string.value[indexOf(metrics_string.name, 'targetUserGrp')]) LIKE '%admin%'
+        OR lower(metrics_string.value[indexOf(metrics_string.name, 'targetUserGrp')]) LIKE '%domain admins%'
+        OR lower(metrics_string.value[indexOf(metrics_string.name, 'targetUserGrp')]) LIKE '%enterprise admins%'
+        OR lower(metrics_string.value[indexOf(metrics_string.name, 'targetUserGrp')]) LIKE '%schema admins%'
+        OR lower(metrics_string.value[indexOf(metrics_string.name, 'targetUserGrp')]) LIKE '%backup operators%'
+        OR lower(metrics_string.value[indexOf(metrics_string.name, 'targetUserGrp')]) LIKE '%account operators%'
+    )
+ORDER BY phRecvTime DESC
+LIMIT 50
+
+
+
+NameWho's Getting Locked
+DescriptionAccount lockouts by user, domain, and DC. High counts = stale creds or brute force. C-ALI 2026-01-18
+Result TypeQuery
+SQL QuerySELECT 
+    metrics_string.value[indexOf(metrics_string.name, 'user')] as locked_account,
+    metrics_string.value[indexOf(metrics_string.name, 'targetDomain')] as domain,
+    reptDevName as reporting_dc,
+    COUNT(*) as lockout_count,
+    MAX(phRecvTime) as last_lockout
+FROM fsiem.events
+WHERE phRecvTime > (now() - 86400)
+    AND eventType = 'Win-Security-4740'
+GROUP BY locked_account, domain, reporting_dc
+ORDER BY lockout_count DESC
+LIMIT 30
+
+
+NameWindows: Accounts Created and Deleted within the same Day in last week
+DescriptionDetects Windows accounts created and deleted within the same day. This is not common. The report finds such patterns over last 7 days.
+Data SourceMicrosoft Windows Security Log via OMI or FortiSIEM Agent
+Result TypeQuery
+SQL Query
+        
+WITH (24 * 60) * 60 AS TIME_RANGE -- 1 day in seconds
+SELECT
+    account_created.reptDevName,
+    account_created.targetUser,
+    account_created.creationTime,
+    account_deleted.deletionTime
+FROM
+(
+    SELECT
+        phRecvTime AS creationTime,
+        reptDevName,
+        targetUser
+    FROM fsiem.events
+    WHERE (eventType = 'Win-Security-4720') AND (phRecvTime > (now() - INTERVAL 7 DAY))
+) AS account_created
+INNER JOIN
+(
+    SELECT
+        phRecvTime AS deletionTime,
+        reptDevName,
+        targetUser
+    FROM fsiem.events
+    WHERE (eventType = 'Win-Security-4726') AND (phRecvTime > (now() - INTERVAL 7 DAY))
+) AS account_deleted
+ON
+   (account_created.reptDevName = account_deleted.reptDevName) AND
+   (account_created.targetUser = account_deleted.targetUser)
+WHERE
+   ((account_deleted.deletionTime - account_created.creationTime) < TIME_RANGE) AND
+   (account_deleted.deletionTime > account_created.creationTime)
+	
+      
+
+
+NameWindows: Base64 Encoded Commands
+DescriptionDetects commands with Base64 encoded command line parameters. Adversaries may obfuscate content during command execution to avoid detection.
+Data SourceMicrosoft Windows Sysmon via FortiSIEM Agent
+Result TypeQuery
+SQL Query
+        
+SELECT phRecvTime,
+       reptDevName,
+       reptDevIpAddrV4,
+       metrics_string.value[indexOf(metrics_string.name, 'command')] AS command,
+       base64Decode(regexpExtract(command, '-EncodedCommand\s+(.*)', 1)) AS DecodedCommand
+FROM fsiem.events
+WHERE (command IS NOT NULL)
+    AND (eventType = 'Win-Sysmon-1-Create-Process')
+    AND (command LIKE '%-EncodedCommand%')
+    AND (phRecvTime >= (now() - INTERVAL 7 DAY))
+
+NameWindows: Base64 Encoded PowerShell Commands
+DescriptionDetects PowerShell commands with Base64 encoded parameters. Adversaries may obfuscate content during command execution to avoid detection.
+Data SourceMicrosoft Windows PowerShell Operational Logs via FortiSIEM Agent
+Result TypeQuery
+SQL Query
+        
+SELECT
+ phRecvTime, reptDevIpAddrV4, reptDevName, appName,base64Decode(regexpExtract(appName, '-EncodedCommand\\s+(.*)', 1)) AS DecodedCommand
+FROM
+ fsiem.events
+WHERE
+ appName IS NOT NULL
+ AND eventType LIKE 'Win-PowerShell-%'
+ AND appName LIKE '%-EncodedCommand%'
+ AND phRecvTime >= now() - INTERVAL 7 DAY
+
+
+
+NameWindows: Command Line Obfuscation using escape characters
+DescriptionDetects command line parameter obfuscation by matching for 10 or more occurrences of dots, backslashes, dollar signs, spaces, percentage signs, plus sign or percent signs.
+Data SourceMicrosoft Windows Security Log via OMI or FortiSIEM Agent, Microsoft Windows Sysmon via FortiSIEM Agent
+Result TypeQuery
+SQL Query
+        
+SELECT
+    phRecvTime,
+    reptDevIpAddrV4,
+    reptDevName,
+    eventType,
+    metrics_string.value[indexOf(metrics_string.name, 'parentProcName')] AS parent,
+    procName,
+    metrics_string.value[indexOf(metrics_string.name, 'command')] AS command,
+    (length(command) - length(replaceRegexpAll(command, '[^\\x00-\\x7F]', ''))) > 0 AS hasUnicode,
+countMatches(command, '"[a-zA-Z]"') > 0 AS hasSplitQuoting,
+(length(command) - length(lower(command)) > 0 AND length(command) - length(upper(command)) > 0) AS hasMixedCase,
+countMatches(command, '\\.') > 15 AS excessiveDots,
+countMatches(command, '\\\\') > 10 AS excessiveBackslashes,
+countMatches(command, '\\$') > 11 AS excessiveDollarSigns,
+countMatches(command, '\\%') > 10 AS excessivePercentSigns,
+countMatches(command, '\\^') > 10 AS excessiveCarets,
+countMatches(command, '\\+') > 10 AS excessivePluses,
+countMatches(command, '\\s') > 10 AS excessiveSpaces,
+countMatches(command, '\\"') > 10 AS excessiveQuotes,
+(
+ positionCaseInsensitive(command, 'char') > 0 OR
+ positionCaseInsensitive(command, '[char]') > 0 OR 
+ positionCaseInsensitive(command, 'chr(') > 0 OR
+ positionCaseInsensitive(command, 'fromCharCode') > 0
+) AS containsChar,
+countMatches(command, '''') > 10 AS excessiveSingleQuotes,
+
+(
+  toInt8((length(command) - length(replaceRegexpAll(command, '[^\\x00-\\x7F]', ''))) > 0) * 3 +
+  toInt8(countMatches(command, '"[a-zA-Z]"') > 0) * 3 +
+  toInt8((length(command) - length(lower(command)) > 0 AND length(command) - length(upper(command)) > 0)) * 2 +
+  toInt8(countMatches(command, '\\.') > 15) +
+  toInt8(countMatches(command, '\\\\') > 10) +
+  toInt8(countMatches(command, '\\$') > 11) +
+  toInt8(countMatches(command, '\\%') > 10) +
+  toInt8(countMatches(command, '\\^') > 10) +
+  toInt8(countMatches(command, '\\+') > 10) +
+  toInt8(countMatches(command, '\\s') > 10) +
+  toInt8(countMatches(command, '\\"') > 10) +
+  toInt8(
+    positionCaseInsensitive(command, 'char') > 0 OR
+    positionCaseInsensitive(command, '[char]') > 0 OR 
+    positionCaseInsensitive(command, 'chr(') > 0 OR
+    positionCaseInsensitive(command, 'fromCharCode') > 0
+  ) * 2 +
+  toInt8(countMatches(command, '''') > 10)
+) AS huntScore
+FROM fsiem.events
+WHERE (eventType IN ('Win-Sysmon-1-Create-Process', 'Win-Security-4688')) 
+AND ((metrics_string.value[indexOf(metrics_string.name, 'command')]) IS NOT NULL) 
+AND (command NOT LIKE '%conhost.exe%')
+AND (NOT (command regexp '.*(https|http).*'))
+AND (NOT (parent regexp '(?i)(manage\s?engine|chrome|firefox|edge|adobe|forticlient)'))
+AND (NOT (procName ilike '%searchprotocolhost.exe'))
+AND (phRecvTime >= toStartOfDay(now() - (7 * 86400)))
+GROUP BY
+    phRecvTime,
+    reptDevIpAddrV4,
+    reptDevName,
+    eventType,
+    parent,
+    procName,
+    command
+HAVING huntScore >= 1
+ORDER BY huntScore DESC
+	
+      
+
+
+NameWindows: LOLAD Active Directory Command Match
+DescriptionDetects Windows Active Directory commands that those specified in the LOLAD (Living Off The Land and Exploitation Active Directory) project. Details can be found in https://lolad-project.github.io/. This is a collection of Active Directory techniques, commands, and functions that can be used natively to support offensive security operations and Red Team exercises. This query requires that you import data into the LOLAD Lookup Table by creating CSV file from https://lolad-project.github.io/ and then import into the (already created) LOLAD FortiSIEM Lookup Table.
+Data SourceMicrosoft Windows Security Log via OMI or FortiSIEM Agent, Microsoft Windows Sysmon via FortiSIEM Agent
+Result TypeQuery
+SQL Query
+        
+SELECT
+    phRecvTime,
+    reptDevName,
+    metrics_string.value[indexOf(metrics_string.name, 'command')] AS command,
+    arrayStringConcat(groupArrayDistinct(dict.description), ', ') AS description,
+    arrayStringConcat(groupArrayDistinct(dict.reference), ', ') AS reference,
+    arrayStringConcat(groupArrayDistinct(dict.command), ', ') AS commandMatch
+FROM fsiem.events
+CROSS JOIN fsiem.LOLAD_0 AS dict
+WHERE (indexOf(metrics_string.name, 'command') > 0) AND (eventType IN ('Win-Sysmon-1-Create-Process', 'Win-Security-4688')) AND ((((dict.command ILIKE '%[%]%') OR (dict.command ILIKE '%(%') OR (dict.command ILIKE '%+%')) AND match(metrics_string.value[indexOf(metrics_string.name, 'command')], dict.command)) OR ((NOT ((dict.command ILIKE '%[%]%') OR (dict.command ILIKE '%(%') OR (dict.command ILIKE '%+%'))) AND ((metrics_string.value[indexOf(metrics_string.name, 'command')]) ILIKE CONCAT('%', replaceAll(dict.command, '\\', '\\\\'), '%')))) AND (phRecvTime >= (now() - toIntervalDay(7)))
+GROUP BY
+    phRecvTime,
+    reptDevName,
+    command
+	
+      
+
+
+NameWindows: LOLBIN Process Creation
+DescriptionDetects processes that exactly match the process names specified in the LOLBAS (Living Off The Land Binaries, Scripts and Libraries) project https://lolbas-project.github.io. These processes are trusted system tools and are not malicious themselves, but can be weaponized maliciously by cyber attackers to avoid detection. More details can be found here https://www.fortinet.com/resources/cyberglossary/living-off-the-land-lotl. This query requires that you download the CSV file from https://lolbas-project.github.io/api/ and import into (already created) FortiSIEM LOLBAS Lookup Table.
+Data SourceMicrosoft Windows Security Log via OMI or FortiSIEM Agent, Microsoft Windows Sysmon via FortiSIEM Agent
+Result TypeQuery
+SQL Query
+        
+WITH
+    (SELECT groupArray(lolbin) FROM fsiem.LOLBAS_0)                    AS lolbins,
+    arrayMap(x -> concat('(?i)\\b', x, '\\b'), lolbins)               AS patterns
+
+/* ------------------------------------------------------------------ */
+/* 2.  Pull events for the period, extract the “command” string once  */
+/* ------------------------------------------------------------------ */
+SELECT
+    ev.phRecvTime,
+    ev.reptDevIpAddrV4,
+    ev.reptDevName,
+    ev.eventType,
+    ev.cmd                                               AS command,
+
+    /* tags and matched lolbins, deduplicated & concatenated */
+    arrayStringConcat(groupArrayDistinct(d.tags), ', ')  AS tagName,
+    arrayStringConcat(groupArrayDistinct(match_name), ', ') AS commandMatch
+FROM
+(
+    SELECT
+        phRecvTime,
+        reptDevIpAddrV4,
+        reptDevName,
+        eventType,
+
+        /* one expression to pull the command */
+        metrics_string.value[
+            indexOf(metrics_string.name, 'command')
+        ]                                                AS cmd
+    FROM fsiem.events
+    WHERE  eventType IN ('Win-Sysmon-1-Create-Process', 'Win-Security-4688')
+      AND  phRecvTime >= now() - INTERVAL 7 DAY
+      AND  has(metrics_string.name, 'command')           -- guarantees index > 0
+) AS ev
+
+/* ------------------------------------------------------------------ */
+/* 3.  Explode **only** the patterns that matched this command        */
+/* ------------------------------------------------------------------ */
+ARRAY JOIN
+    arrayMap(i -> lolbins[i],
+             multiMatchAllIndices(ev.cmd, patterns))     AS match_name
+
+/* ------------------------------------------------------------------ */
+/* 4.  Bring in the LOLBAS metadata for each match                    */
+/* ------------------------------------------------------------------ */
+LEFT JOIN fsiem.LOLBAS_0 AS d
+       ON d.lolbin = match_name
+
+GROUP BY
+    ev.phRecvTime,
+    ev.reptDevIpAddrV4,
+    ev.reptDevName,
+    ev.eventType,
+    ev.cmd
+ORDER BY ev.phRecvTime DESC;
+	
+      
+
+
+NameWindows: LOLBIN Process launched from unexpected path
+DescriptionDetects processes that exactly match the process names specified in the LOLBAS (Living Off The Land Binaries, Scripts and Libraries) project is being launched from a location that does not match the definition in the LOLBAS project. LOLBAS project is found here: https://lolbas-project.github.io. These LOLBAS processes (also called LOLBINs) are trusted system tools and are not malicious themselves, but can be weaponized maliciously by cyber attackers to avoid detection. This query requires that you import data into the (already created) FortiSIEM LOLBAS Lookup Table by downloading the CSV file from https://lolbas-project.github.io/api/.
+Data SourceMicrosoft Windows Security Log via OMI or FortiSIEM Agent, Microsoft Windows Sysmon via FortiSIEM Agent
+Result TypeQuery
+SQL Query
+        
+SELECT
+    phRecvTime,
+    reptDevIpAddrV4,
+    reptDevName,
+    eventType,
+    metrics_string.value[indexOf(metrics_string.name, 'command')] AS command,
+    procName,
+    arrayStringConcat(groupArrayDistinct(dict.tags), ', ') AS tagName,
+    arrayStringConcat(groupArrayDistinct(dict.lolbin), ', ') AS matched_command,
+    arrayStringConcat(groupArrayDistinct(dict.paths), ', ') AS expected_paths,
+    if(arrayExists(path -> procName ILIKE CONCAT('%', path, '%'), splitByString(';', arrayStringConcat(groupArrayDistinct(dict.paths), ', '))), 'Path Match', 'Path Mismatch') AS path_match_status
+FROM fsiem.events
+CROSS JOIN fsiem.LOLBAS_0 AS dict
+WHERE
+    indexOf(metrics_string.name, 'command') > 0
+    AND metrics_string.value[indexOf(metrics_string.name, 'command')] ILIKE CONCAT('%', dict.lolbin, '%')
+    AND eventType IN ('Win-Security-4688', 'Win-Sysmon-1-Create-Process')
+    AND phRecvTime > now() - INTERVAL 7 DAY
+GROUP BY phRecvTime, reptDevIpAddrV4, reptDevName, eventType, command, procName
+HAVING path_match_status = 'Path Mismatch'
+	
+
+
+
+NameWindows: LOLBIN Process with command matching LOTS website
+DescriptionDetects processes that exactly match the process names specified in the LOLBAS (Living Off The Land Binaries, Scripts and Libraries) project https://lolbas-project.github.io, and the command line parameters matches the websites defined in the LOTS (Living Off Trusted Sites) Project https://lots-project.com/. These LOLBAS processes (also called LOLBINs) are trusted system tools and are not malicious themselves, but can be weaponized maliciously by cyber attackers to avoid detection. The LOTS project contains popular legitimate domains that are used by attackers to conduct phishing, Command and Control, exfiltration and downloading tools to evade detection. This query has 2 requirements. You need to download the CSV file from LOLBAS website: https://lolbas-project.github.io/api/ and import into the (already created) FortiSIEM LOLBAS Lookup Table. Additionally, you need to create CSV file from LOTS website: https://lots-project.com/ and import into the (already created) FortiSIEM LOTS Lookup Table.
+Data SourceMicrosoft Windows Security Log via OMI or FortiSIEM Agent, Microsoft Windows Sysmon via FortiSIEM Agent
+Result TypeQuery
+SQL Query
+        
+SELECT
+    e.phRecvTime,
+    e.reptDevIpAddrV4,
+    e.reptDevName,
+    e.eventType,
+    e.command AS CommandLine,
+    e.shortProcName,
+    l.lolbin AS LOLBAS_Match,
+    lots.websites AS LOTS_Match
+FROM
+    (
+        SELECT
+            phRecvTime,
+            reptDevIpAddrV4,
+            reptDevName,
+            eventType,
+            metrics_string.value[indexOf(metrics_string.name, 'command')] AS command,
+            shortProcName
+        FROM fsiem.events
+        WHERE
+            eventType IN ('Win-Security-4688', 'Win-Sysmon-1-Create-Process')
+            AND phRecvTime > now() - INTERVAL 7 DAY
+    ) AS e
+CROSS JOIN fsiem.LOLBAS_0 AS l
+CROSS JOIN fsiem.LOTS_0 AS lots
+WHERE
+    (e.shortProcName = lower(l.lolbin) OR e.command ILIKE CONCAT('%', l.lolbin, '%'))
+    AND e.command ILIKE CONCAT('%', lots.websites, '%');
+
+	
+      
+
+NameWindows: LOLBIN Process with outbound network connection to an external non-RFC1918 address
+DescriptionDetects processes that exactly match the process names specified in the LOLBAS (Living Off The Land Binaries, Scripts and Libraries) project https://lolbas-project.github.io, and the command line parameters indicate that the process is making an outbound connection to the Internet. These LOLBAS processes (also called LOLBINs) are trusted system tools and are not malicious themselves, but can be weaponized maliciously by cyber attackers to avoid detection. This query requires that you import data into the (already created) FortiSIEM LOLBAS Lookup Table by downloading the CSV file from https://lolbas-project.github.io/api/.
+Data SourceMicrosoft Windows Sysmon via FortiSIEM Agent
+Result TypeQuery
+SQL Query
+        
+SELECT
+ phRecvTime,
+ reptDevIpAddrV4,
+ reptDevName,
+ eventType,
+ srcIpAddrV4,
+ destIpAddrV4,
+ destIpPort,
+ arrayStringConcat(groupArrayDistinct(dict.tags), ', ') AS tagName,
+ arrayStringConcat(groupArrayDistinct(dict.lolbin), ', ') AS commandMatch
+FROM fsiem.events
+CROSS JOIN fsiem.LOLBAS_0 AS dict
+WHERE
+eventType IN ('Win-Sysmon-3-Network-Connect-IPv4')
+ AND shortProcName ILIKE CONCAT('%', dict.lolbin, '%')
+ AND srcIpAddrV4 != destIpAddrV4
+ AND phRecvTime >= (now() - toIntervalDay(7))
+GROUP BY phRecvTime, reptDevIpAddrV4, reptDevName, eventType, shortProcName, srcIpAddrV4, destIpAddrV4, destIpPort
+	
+
+
+NameWindows: Long Duration Terminal Services Sessions
+DescriptionTracks Windows Terminal Service Sessions that last for more than 1 hour.
+Data SourceMicrosoft Windows Terminal Services LocalSessionManager/Operational logs via FortiSIEM Agent
+Result TypeQuery
+SQL Query
+        
+WITH
+    session_start_events AS (
+        SELECT
+            reptDevIpAddrV4 AS "Reporting IP",
+            reptDevName AS "Reporting Device",
+            user AS "User Name",
+            srcIpAddrV4 AS "Source IP",
+            metrics_string.value[indexOf(metrics_string.name,'sessionId')] AS "Session ID",
+            phRecvTime AS "Session Start Time",
+            row_number() OVER (
+                PARTITION BY user,
+                             metrics_string.value[indexOf(metrics_string.name,'sessionId')]
+                ORDER BY phRecvTime
+            ) AS sessionIndex
+        FROM fsiem.events
+        WHERE eventType IN (
+            'Win-TerminalServices-LocalSessionManager-21',
+            'Win-TerminalServices-LocalSessionManager-25'
+        )
+        AND phRecvTime >= now() - INTERVAL 14 DAY
+    ),
+
+    session_end_events AS (
+        SELECT
+            reptDevIpAddrV4 AS "Reporting IP",
+            reptDevName AS "Reporting Device",
+            user AS "User Name",
+            NULLIF(srcIpAddrV4,'') AS "Source IP",
+            metrics_string.value[indexOf(metrics_string.name,'sessionId')] AS "Session ID",
+            phRecvTime AS "Session End Time",
+            row_number() OVER (
+                PARTITION BY user,
+                             metrics_string.value[indexOf(metrics_string.name,'sessionId')]
+                ORDER BY phRecvTime
+            ) AS sessionEndIndex
+        FROM fsiem.events
+        WHERE eventType IN (
+            'Win-TerminalServices-LocalSessionManager-24',
+            'Win-TerminalServices-LocalSessionManager-23'
+        )
+        AND phRecvTime >= now() - INTERVAL 14 DAY
+    )
+
+SELECT *
+FROM (
+    SELECT
+        ss."Reporting IP",
+        ss."Reporting Device",
+        ss."User Name",
+        ss."Source IP" AS "Start Source IP",
+        ss."Session ID",
+        ss."Session Start Time" AS "Logon/Reconnection Time",
+        se."Session End Time" AS "Disconnect/Logoff Time",
+
+        multiIf(formatDateTime(ss."Session Start Time",'%w') = '0','Sunday',
+                formatDateTime(ss."Session Start Time",'%w') = '1','Monday',
+                formatDateTime(ss."Session Start Time",'%w') = '2','Tuesday',
+                formatDateTime(ss."Session Start Time",'%w') = '3','Wednesday',
+                formatDateTime(ss."Session Start Time",'%w') = '4','Thursday',
+                formatDateTime(ss."Session Start Time",'%w') = '5','Friday',
+                'Saturday') AS "Logon Day",
+
+        multiIf(formatDateTime(se."Session End Time",'%w') = '0','Sunday',
+                formatDateTime(se."Session End Time",'%w') = '1','Monday',
+                formatDateTime(se."Session End Time",'%w') = '2','Tuesday',
+                formatDateTime(se."Session End Time",'%w') = '3','Wednesday',
+                formatDateTime(se."Session End Time",'%w') = '4','Thursday',
+                formatDateTime(se."Session End Time",'%w') = '5','Friday',
+                'Saturday') AS "Logout Day",
+
+        greatest(se."Session End Time" - ss."Session Start Time", 0) AS "Duration Seconds",
+
+        concat(
+            toString(intDiv(greatest(se."Session End Time" - ss."Session Start Time", 0), 3600)), 'h ',
+            toString(intDiv(greatest(se."Session End Time" - ss."Session Start Time", 0) % 3600, 60)), 'm ',
+            toString(greatest(se."Session End Time" - ss."Session Start Time", 0) % 60), 's'
+        ) AS "Session Duration",
+
+        multiIf(
+            (toHour(ss."Session Start Time") BETWEEN 8 AND 17)
+            AND formatDateTime(ss."Session Start Time",'%w') IN ('1','2','3','4','5'),
+            'Business Hours',
+            'Non-Business Hours'
+        ) AS "Business Logon Hours"
+    FROM session_start_events ss
+    JOIN session_end_events se
+        ON ss."User Name" = se."User Name"
+        AND ss."Source IP" = se."Source IP"
+        AND ss."Session ID" = se."Session ID"
+        AND ss.sessionIndex = se.sessionEndIndex
+        AND ss."Reporting Device" = se."Reporting Device"
+
+    UNION ALL
+
+    SELECT
+        ss."Reporting IP",
+        ss."Reporting Device",
+        ss."User Name",
+        ss."Source IP" AS "Start Source IP",
+        ss."Session ID",
+        ss."Session Start Time" AS "Logon/Reconnection Time",
+        se."Session End Time" AS "Disconnect/Logoff Time",
+
+        multiIf(formatDateTime(ss."Session Start Time",'%w') = '0','Sunday',
+                formatDateTime(ss."Session Start Time",'%w') = '1','Monday',
+                formatDateTime(ss."Session Start Time",'%w') = '2','Tuesday',
+                formatDateTime(ss."Session Start Time",'%w') = '3','Wednesday',
+                formatDateTime(ss."Session Start Time",'%w') = '4','Thursday',
+                formatDateTime(ss."Session Start Time",'%w') = '5','Friday',
+                'Saturday') AS "Logon Day",
+
+        multiIf(formatDateTime(se."Session End Time",'%w') = '0','Sunday',
+                formatDateTime(se."Session End Time",'%w') = '1','Monday',
+                formatDateTime(se."Session End Time",'%w') = '2','Tuesday',
+                formatDateTime(se."Session End Time",'%w') = '3','Wednesday',
+                formatDateTime(se."Session End Time",'%w') = '4','Thursday',
+                formatDateTime(se."Session End Time",'%w') = '5','Friday',
+                'Saturday') AS "Logout Day",
+
+        greatest(se."Session End Time" - ss."Session Start Time", 0) AS "Duration Seconds",
+
+        concat(
+            toString(intDiv(greatest(se."Session End Time" - ss."Session Start Time", 0), 3600)), 'h ',
+            toString(intDiv(greatest(se."Session End Time" - ss."Session Start Time", 0) % 3600, 60)), 'm ',
+            toString(greatest(se."Session End Time" - ss."Session Start Time", 0) % 60), 's'
+        ) AS "Session Duration",
+
+        multiIf(
+            (toHour(ss."Session Start Time") BETWEEN 8 AND 17)
+            AND formatDateTime(ss."Session Start Time",'%w') IN ('1','2','3','4','5'),
+            'Business Hours',
+            'Non-Business Hours'
+        ) AS "Business Logon Hours"
+    FROM session_start_events ss
+    JOIN session_end_events se
+        ON ss."User Name" = se."User Name"
+        AND se."Source IP" IS NULL
+        AND ss."Session ID" = se."Session ID"
+        AND ss.sessionIndex = se.sessionEndIndex
+        AND ss."Reporting Device" = se."Reporting Device"
+) AS combined_results
+WHERE "Duration Seconds" >= 3600
+ORDER BY "Duration Seconds" DESC, "User Name";
+	
+      
+NameWindows: Suspicious PowerShell Cmdlet Match
+DescriptionDetects Windows Active Directory commands that those specified in the LOLAD (Living Off The Land and Exploitation Active Directory) project. Details can be found in https://lolad-project.github.io/. This is a collection of Active Directory techniques, commands, and functions that can be used natively to support offensive security operations and Red Team exercises. This query requires that you import data into the LOLAD Lookup Table by creating CSV file from https://lolad-project.github.io/ and then import into the (already created) LOLAD FortiSIEM Lookup Table.
+Data SourceMicrosoft Windows Security Log via OMI or FortiSIEM Agent, Microsoft Windows Sysmon via FortiSIEM Agent
+Result TypeQuery
+SQL Query
+        
+SELECT
+    phRecvTime,
+    reptDevName,
+    metrics_string.value[indexOf(metrics_string.name, 'script')] AS script,
+    arrayStringConcat(groupArrayDistinct(dict.description), ', ') AS description,
+    arrayStringConcat(groupArrayDistinct(dict.toolkit), ', ') AS toolkit,
+    arrayStringConcat(groupArrayDistinct(dict.cmdlet), ', ') AS commandMatch
+FROM fsiem.events
+CROSS JOIN fsiem.MaliciousPowershellCmdlet_0 AS dict
+WHERE (indexOf(metrics_string.name, 'script') > 0) AND (eventType IN ('Win-PowerShell-4104')) AND match(metrics_string.value[indexOf(metrics_string.name, 'script')], CONCAT('(?i)(^|\\s)', dict.cmdlet, '(\\s|$)')) AND (phRecvTime >= (now() - toIntervalDay(7)))
+GROUP BY
+    phRecvTime,
+    reptDevName,
+    script
+	
+      
+
+
+

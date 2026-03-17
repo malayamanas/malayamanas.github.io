@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Windows Ntlm</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Windows Ntlm</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">3 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="low" data-title="NTLM Logon">
+  <h2>NTLM Logon</h2>
+  <div class="rule-meta">
+    <span class="badge badge-low">low</span>
+    <span>FSM Severity: 3</span>
+    <span>MITRE: T1550.002</span>
+    <span>Author: Florian Roth (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects logons using NTLM, which could be caused by a legacy source or attackers</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/ntlm/win_susp_ntlm_auth.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        NTLM Logon
+-- Sigma ID:     98c3bcf1-56f2-49dc-9d8d-c66cf190238b
+-- Level:        low  |  FSM Severity: 3
+-- Status:       test
+-- MITRE:        T1550.002
+-- Author:       Florian Roth (Nextron Systems)
+-- Date:         2018-06-08
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/ntlm/win_susp_ntlm_auth.yml
+-- Unmapped:     (none)
+-- False Pos:    Legacy hosts
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/ntlm
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND winEventId = '8002'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legacy hosts</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="NTLM Brute Force">
+  <h2>NTLM Brute Force</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: T1110</span>
+    <span>Author: Jerry Shockley '@jsh0x'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects common NTLM brute force device names</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/ntlm/win_susp_ntlm_brute_force.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        NTLM Brute Force
+-- Sigma ID:     9c8acf1a-cbf9-4db6-b63c-74baabe03e59
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        T1110
+-- Author:       Jerry Shockley '@jsh0x'
+-- Date:         2022-02-02
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/ntlm/win_susp_ntlm_brute_force.yml
+-- Unmapped:     WorkstationName
+-- False Pos:    Systems with names equal to the spoofed ones used by the brute force tools
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/ntlm
+-- UNMAPPED_FIELD: WorkstationName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (winEventId = '8004'
+  AND rawEventMsg IN ('Rdesktop', 'Remmina', 'Freerdp', 'Windows7', 'Windows8', 'Windows2012', 'Windows2016', 'Windows2019'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Systems with names equal to the spoofed ones used by the brute force tools</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Potential Remote Desktop Connection to Non-Domain Host">
+  <h2>Potential Remote Desktop Connection to Non-Domain Host</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: T1219.002</span>
+    <span>Author: James Pemberton</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects logons using NTLM to hosts that are potentially not part of the domain.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/ntlm/win_susp_ntlm_rdp.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Potential Remote Desktop Connection to Non-Domain Host
+-- Sigma ID:     ce5678bb-b9aa-4fb5-be4b-e57f686256ad
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        T1219.002
+-- Author:       James Pemberton
+-- Date:         2020-05-22
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/ntlm/win_susp_ntlm_rdp.yml
+-- Unmapped:     TargetName
+-- False Pos:    Host connections to valid domains, exclude these.; Host connections not using host FQDN.; Host connections to external legitimate domains.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/ntlm
+-- UNMAPPED_FIELD: TargetName
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (winEventId = '8001'
+    AND rawEventMsg LIKE 'TERMSRV%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Host connections to valid domains, exclude these.; Host connections not using host FQDN.; Host connections to external legitimate domains.</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

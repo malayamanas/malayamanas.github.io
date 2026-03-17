@@ -1,0 +1,26 @@
+title: Registry Run Key Persistence
+id: d5e3f2a3-4567-789a-bcde-f01234567890
+status: stable
+description: Detects adding a registry run key for persistence
+author: Test Author
+date: 2024-04-05
+level: high
+tags:
+  - attack.persistence
+  - attack.t1547.001
+logsource:
+  product: windows
+  category: registry_set
+detection:
+  selection_main:
+    TargetObject|contains:
+      - '\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\'
+      - '\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce\'
+  filter_legit:
+    Image|contains:
+      - '\OneDrive.exe'
+      - '\Teams.exe'
+  condition: selection_main and not filter_legit
+falsepositives:
+  - Legitimate software installations
+references: []

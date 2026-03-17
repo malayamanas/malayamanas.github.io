@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Windows Process Access</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Windows Process Access</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">23 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="high" data-title="CMSTP Execution Process Access">
+  <h2>CMSTP Execution Process Access</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: execution, T1218.003, T1559.001</span>
+    <span>Author: Nik Seetharaman</span>
+    <span>Status: stable</span>
+  </div>
+  <div class="description">Detects various indicators of Microsoft Connection Manager Profile Installer execution</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_cmstp_execution_by_access.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CMSTP Execution Process Access
+-- Sigma ID:     3b4b232a-af90-427c-a22f-30b0c0837b95
+-- Level:        high  |  FSM Severity: 7
+-- Status:       stable
+-- MITRE:        execution | T1218.003, T1559.001
+-- Author:       Nik Seetharaman
+-- Date:         2018-07-16
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_cmstp_execution_by_access.yml
+-- Unmapped:     CallTrace
+-- False Pos:    Legitimate CMSTP use (unlikely in modern enterprise environments)
+-- ============================================================
+-- UNMAPPED_FIELD: CallTrace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg LIKE '%cmlua.dll%'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate CMSTP use (unlikely in modern enterprise environments)</div>
+</div>
+<div class="rule-card" data-level="high" data-title="HackTool - CobaltStrike BOF Injection Pattern">
+  <h2>HackTool - CobaltStrike BOF Injection Pattern</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: execution, T1106, T1562.001</span>
+    <span>Author: Christian Burkard (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects a typical pattern of a CobaltStrike BOF which inject into other processes</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_hktl_cobaltstrike_bof_injection_pattern.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        HackTool - CobaltStrike BOF Injection Pattern
+-- Sigma ID:     09706624-b7f6-455d-9d02-adee024cee1d
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        execution | T1106, T1562.001
+-- Author:       Christian Burkard (Nextron Systems)
+-- Date:         2021-08-04
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_hktl_cobaltstrike_bof_injection_pattern.yml
+-- Unmapped:     CallTrace, GrantedAccess
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: CallTrace
+-- UNMAPPED_FIELD: GrantedAccess
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (match(rawEventMsg, '^C:\\Windows\\SYSTEM32\\ntdll\.dll\+[a-z0-9]{4,6}\|C:\\Windows\\System32\\KERNELBASE\.dll\+[a-z0-9]{4,6}\|UNKNOWN\([A-Z0-9]{16}\)$')
+    AND rawEventMsg IN ('0x1028', '0x1fffff'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="HackTool - Generic Process Access">
+  <h2>HackTool - Generic Process Access</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1003.001</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems), Swachchhanda Shrawan Poudel</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects process access requests from hacktool processes based on their default image name</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_hktl_generic_access.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        HackTool - Generic Process Access
+-- Sigma ID:     d0d2f720-d14f-448d-8242-51ff396a334e
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1003.001
+-- Author:       Nasreddine Bencherchali (Nextron Systems), Swachchhanda Shrawan Poudel
+-- Date:         2023-11-27
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_hktl_generic_access.yml
+-- Unmapped:     SourceImage
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_FIELD: SourceImage
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND ((rawEventMsg LIKE '%\\Akagi.exe' OR rawEventMsg LIKE '%\\Akagi64.exe' OR rawEventMsg LIKE '%\\atexec\_windows.exe' OR rawEventMsg LIKE '%\\Certify.exe' OR rawEventMsg LIKE '%\\Certipy.exe' OR rawEventMsg LIKE '%\\CoercedPotato.exe' OR rawEventMsg LIKE '%\\crackmapexec.exe' OR rawEventMsg LIKE '%\\CreateMiniDump.exe' OR rawEventMsg LIKE '%\\dcomexec\_windows.exe' OR rawEventMsg LIKE '%\\dpapi\_windows.exe' OR rawEventMsg LIKE '%\\findDelegation\_windows.exe' OR rawEventMsg LIKE '%\\GetADUsers\_windows.exe' OR rawEventMsg LIKE '%\\GetNPUsers\_windows.exe' OR rawEventMsg LIKE '%\\getPac\_windows.exe' OR rawEventMsg LIKE '%\\getST\_windows.exe' OR rawEventMsg LIKE '%\\getTGT\_windows.exe' OR rawEventMsg LIKE '%\\GetUserSPNs\_windows.exe' OR rawEventMsg LIKE '%\\gmer.exe' OR rawEventMsg LIKE '%\\hashcat.exe' OR rawEventMsg LIKE '%\\htran.exe' OR rawEventMsg LIKE '%\\ifmap\_windows.exe' OR rawEventMsg LIKE '%\\impersonate.exe' OR rawEventMsg LIKE '%\\Inveigh.exe' OR rawEventMsg LIKE '%\\LocalPotato.exe' OR rawEventMsg LIKE '%\\mimikatz\_windows.exe' OR rawEventMsg LIKE '%\\mimikatz.exe' OR rawEventMsg LIKE '%\\netview\_windows.exe' OR rawEventMsg LIKE '%\\nmapAnswerMachine\_windows.exe' OR rawEventMsg LIKE '%\\opdump\_windows.exe' OR rawEventMsg LIKE '%\\PasswordDump.exe' OR rawEventMsg LIKE '%\\Potato.exe' OR rawEventMsg LIKE '%\\PowerTool.exe' OR rawEventMsg LIKE '%\\PowerTool64.exe' OR rawEventMsg LIKE '%\\psexec\_windows.exe' OR rawEventMsg LIKE '%\\PurpleSharp.exe' OR rawEventMsg LIKE '%\\pypykatz.exe' OR rawEventMsg LIKE '%\\QuarksPwDump.exe' OR rawEventMsg LIKE '%\\rdp\_check\_windows.exe' OR rawEventMsg LIKE '%\\Rubeus.exe' OR rawEventMsg LIKE '%\\SafetyKatz.exe' OR rawEventMsg LIKE '%\\sambaPipe\_windows.exe' OR rawEventMsg LIKE '%\\SelectMyParent.exe' OR rawEventMsg LIKE '%\\SharpChisel.exe' OR rawEventMsg LIKE '%\\SharPersist.exe' OR rawEventMsg LIKE '%\\SharpEvtMute.exe' OR rawEventMsg LIKE '%\\SharpImpersonation.exe' OR rawEventMsg LIKE '%\\SharpLDAPmonitor.exe' OR rawEventMsg LIKE '%\\SharpLdapWhoami.exe' OR rawEventMsg LIKE '%\\SharpUp.exe' OR rawEventMsg LIKE '%\\SharpView.exe' OR rawEventMsg LIKE '%\\smbclient\_windows.exe' OR rawEventMsg LIKE '%\\smbserver\_windows.exe' OR rawEventMsg LIKE '%\\sniff\_windows.exe' OR rawEventMsg LIKE '%\\sniffer\_windows.exe' OR rawEventMsg LIKE '%\\split\_windows.exe' OR rawEventMsg LIKE '%\\SpoolSample.exe' OR rawEventMsg LIKE '%\\Stracciatella.exe' OR rawEventMsg LIKE '%\\SysmonEOP.exe' OR rawEventMsg LIKE '%\\temp\\rot.exe' OR rawEventMsg LIKE '%\\ticketer\_windows.exe' OR rawEventMsg LIKE '%\\TruffleSnout.exe' OR rawEventMsg LIKE '%\\winPEASany\_ofs.exe' OR rawEventMsg LIKE '%\\winPEASany.exe' OR rawEventMsg LIKE '%\\winPEASx64\_ofs.exe' OR rawEventMsg LIKE '%\\winPEASx64.exe' OR rawEventMsg LIKE '%\\winPEASx86\_ofs.exe' OR rawEventMsg LIKE '%\\winPEASx86.exe' OR rawEventMsg LIKE '%\\xordump.exe'))
+  OR ((rawEventMsg LIKE '%\\goldenPac%' OR rawEventMsg LIKE '%\\just\_dce\_%' OR rawEventMsg LIKE '%\\karmaSMB%' OR rawEventMsg LIKE '%\\kintercept%' OR rawEventMsg LIKE '%\\LocalPotato%' OR rawEventMsg LIKE '%\\ntlmrelayx%' OR rawEventMsg LIKE '%\\rpcdump%' OR rawEventMsg LIKE '%\\samrdump%' OR rawEventMsg LIKE '%\\secretsdump%' OR rawEventMsg LIKE '%\\smbexec%' OR rawEventMsg LIKE '%\\smbrelayx%' OR rawEventMsg LIKE '%\\wmiexec%' OR rawEventMsg LIKE '%\\wmipersist%' OR rawEventMsg LIKE '%HotPotato%' OR rawEventMsg LIKE '%Juicy Potato%' OR rawEventMsg LIKE '%JuicyPotato%' OR rawEventMsg LIKE '%PetitPotam%' OR rawEventMsg LIKE '%RottenPotato%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="HackTool - HandleKatz Duplicating LSASS Handle">
+  <h2>HackTool - HandleKatz Duplicating LSASS Handle</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: execution, T1106, T1003.001</span>
+    <span>Author: Bhabesh Raj (rule), @thefLinkk</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects HandleKatz opening LSASS to duplicate its handle to later dump the memory without opening any new handles</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_hktl_handlekatz_lsass_access.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        HackTool - HandleKatz Duplicating LSASS Handle
+-- Sigma ID:     b1bd3a59-c1fd-4860-9f40-4dd161a7d1f5
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        execution | T1106, T1003.001
+-- Author:       Bhabesh Raj (rule), @thefLinkk
+-- Date:         2022-06-27
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_hktl_handlekatz_lsass_access.yml
+-- Unmapped:     TargetImage, GrantedAccess, CallTrace
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: GrantedAccess
+-- UNMAPPED_FIELD: CallTrace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\lsass.exe'
+    AND rawEventMsg = '0x1440'
+    AND rawEventMsg LIKE 'C:\\Windows\\System32\\ntdll.dll+%'
+    AND rawEventMsg LIKE '%|UNKNOWN(%'
+    AND rawEventMsg LIKE '%)')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="HackTool - LittleCorporal Generated Maldoc Injection">
+  <h2>HackTool - LittleCorporal Generated Maldoc Injection</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: execution, T1204.002, T1055.003</span>
+    <span>Author: Christian Burkard (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the process injection of a LittleCorporal generated Maldoc.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_hktl_littlecorporal_generated_maldoc.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        HackTool - LittleCorporal Generated Maldoc Injection
+-- Sigma ID:     7bdde3bf-2a42-4c39-aa31-a92b3e17afac
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        execution | T1204.002, T1055.003
+-- Author:       Christian Burkard (Nextron Systems)
+-- Date:         2021-08-09
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_hktl_littlecorporal_generated_maldoc.yml
+-- Unmapped:     SourceImage, CallTrace
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: SourceImage
+-- UNMAPPED_FIELD: CallTrace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\winword.exe'
+    AND rawEventMsg LIKE '%:\\Windows\\Microsoft.NET\\Framework64\\v2.%' AND rawEventMsg LIKE '%UNKNOWN%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="HackTool - SysmonEnte Execution">
+  <h2>HackTool - SysmonEnte Execution</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1562.002</span>
+    <span>Author: Florian Roth (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the use of SysmonEnte, a tool to attack the integrity of Sysmon</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_hktl_sysmonente.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        HackTool - SysmonEnte Execution
+-- Sigma ID:     d29ada0f-af45-4f27-8f32-f7b77c3dbc4e
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1562.002
+-- Author:       Florian Roth (Nextron Systems)
+-- Date:         2022-09-07
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_hktl_sysmonente.yml
+-- Unmapped:     CallTrace
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: CallTrace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'Ente'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Lsass Memory Dump via Comsvcs DLL">
+  <h2>Lsass Memory Dump via Comsvcs DLL</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1003.001</span>
+    <span>Author: Roberto Rodriguez (Cyb3rWard0g), OTR (Open Threat Research)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects adversaries leveraging the MiniDump export function from comsvcs.dll via rundll32 to perform a memory dump from lsass.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_dump_comsvcs_dll.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Lsass Memory Dump via Comsvcs DLL
+-- Sigma ID:     a49fa4d5-11db-418c-8473-1e014a8dd462
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1003.001
+-- Author:       Roberto Rodriguez (Cyb3rWard0g), OTR (Open Threat Research)
+-- Date:         2020-10-20
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_dump_comsvcs_dll.yml
+-- Unmapped:     TargetImage, SourceImage, CallTrace
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: SourceImage
+-- UNMAPPED_FIELD: CallTrace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\lsass.exe'
+    AND rawEventMsg LIKE '%\\rundll32.exe'
+    AND rawEventMsg LIKE '%comsvcs.dll%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="LSASS Memory Access by Tool With Dump Keyword In Name">
+  <h2>LSASS Memory Access by Tool With Dump Keyword In Name</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1003.001</span>
+    <span>Author: Florian Roth (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects LSASS process access requests from a source process with the &quot;dump&quot; keyword in its image name.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_dump_keyword_image.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        LSASS Memory Access by Tool With Dump Keyword In Name
+-- Sigma ID:     9bd012ee-0dff-44d7-84a0-aa698cfd87a3
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1003.001
+-- Author:       Florian Roth (Nextron Systems)
+-- Date:         2022-02-10
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_dump_keyword_image.yml
+-- Unmapped:     TargetImage, SourceImage, GrantedAccess
+-- False Pos:    Rare programs that contain the word dump in their name and access lsass
+-- ============================================================
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: SourceImage
+-- UNMAPPED_FIELD: GrantedAccess
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\lsass.exe'
+    AND rawEventMsg LIKE '%dump%'
+    AND (rawEventMsg LIKE '%10' OR rawEventMsg LIKE '%30' OR rawEventMsg LIKE '%50' OR rawEventMsg LIKE '%70' OR rawEventMsg LIKE '%90' OR rawEventMsg LIKE '%B0' OR rawEventMsg LIKE '%D0' OR rawEventMsg LIKE '%F0' OR rawEventMsg LIKE '%18' OR rawEventMsg LIKE '%38' OR rawEventMsg LIKE '%58' OR rawEventMsg LIKE '%78' OR rawEventMsg LIKE '%98' OR rawEventMsg LIKE '%B8' OR rawEventMsg LIKE '%D8' OR rawEventMsg LIKE '%F8' OR rawEventMsg LIKE '%1A' OR rawEventMsg LIKE '%3A' OR rawEventMsg LIKE '%5A' OR rawEventMsg LIKE '%7A' OR rawEventMsg LIKE '%9A' OR rawEventMsg LIKE '%BA' OR rawEventMsg LIKE '%DA' OR rawEventMsg LIKE '%FA' OR rawEventMsg LIKE '%0x14C2' OR rawEventMsg LIKE '%FF'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Rare programs that contain the word dump in their name and access lsass</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Potential Credential Dumping Activity Via LSASS">
+  <h2>Potential Credential Dumping Activity Via LSASS</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: T1003.001</span>
+    <span>Author: Samir Bousseaden, Michael Haag</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects process access requests to the LSASS process with specific call trace calls and access masks.
+This behaviour is expressed by many credential dumping tools such as Mimikatz, NanoDump, Invoke-Mimikatz, Procdump and even the Taskmgr dumping feature.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_memdump.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Potential Credential Dumping Activity Via LSASS
+-- Sigma ID:     5ef9853e-4d0e-4a70-846f-a9ca37d876da
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        T1003.001
+-- Author:       Samir Bousseaden, Michael Haag
+-- Date:         2019-04-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_memdump.yml
+-- Unmapped:     TargetImage, GrantedAccess, CallTrace
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: GrantedAccess
+-- UNMAPPED_FIELD: CallTrace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\lsass.exe'
+    AND (rawEventMsg LIKE '%0x1038%' OR rawEventMsg LIKE '%0x1438%' OR rawEventMsg LIKE '%0x143a%' OR rawEventMsg LIKE '%0x1fffff%')
+    AND (rawEventMsg LIKE '%dbgcore.dll%' OR rawEventMsg LIKE '%dbghelp.dll%' OR rawEventMsg LIKE '%kernel32.dll%' OR rawEventMsg LIKE '%kernelbase.dll%' OR rawEventMsg LIKE '%ntdll.dll%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Credential Dumping Activity By Python Based Tool">
+  <h2>Credential Dumping Activity By Python Based Tool</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1003.001</span>
+    <span>Author: Bhabesh Raj, Jonhnathan Ribeiro</span>
+    <span>Status: stable</span>
+  </div>
+  <div class="description">Detects LSASS process access for potential credential dumping by a Python-like tool such as LaZagne or Pypykatz.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_python_based_tool.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Credential Dumping Activity By Python Based Tool
+-- Sigma ID:     f8be3e82-46a3-4e4e-ada5-8e538ae8b9c9
+-- Level:        high  |  FSM Severity: 7
+-- Status:       stable
+-- MITRE:        T1003.001
+-- Author:       Bhabesh Raj, Jonhnathan Ribeiro
+-- Date:         2023-11-27
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_python_based_tool.yml
+-- Unmapped:     TargetImage, CallTrace, GrantedAccess
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: CallTrace
+-- UNMAPPED_FIELD: GrantedAccess
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\lsass.exe'
+    AND rawEventMsg LIKE '%\_ctypes.pyd+%' AND rawEventMsg LIKE '%:\\Windows\\System32\\KERNELBASE.dll+%' AND rawEventMsg LIKE '%:\\Windows\\SYSTEM32\\ntdll.dll+%'
+    AND (rawEventMsg LIKE '%python27.dll+%' OR rawEventMsg LIKE '%python3*.dll+%')
+    AND rawEventMsg = '0x1FFFFF')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Remote LSASS Process Access Through Windows Remote Management">
+  <h2>Remote LSASS Process Access Through Windows Remote Management</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: execution, T1003.001, T1059.001, T1021.006</span>
+    <span>Author: Patryk Prauze - ING Tech</span>
+    <span>Status: stable</span>
+  </div>
+  <div class="description">Detects remote access to the LSASS process via WinRM. This could be a sign of credential dumping from tools like mimikatz.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_remote_access_trough_winrm.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Remote LSASS Process Access Through Windows Remote Management
+-- Sigma ID:     aa35a627-33fb-4d04-a165-d33b4afca3e8
+-- Level:        high  |  FSM Severity: 7
+-- Status:       stable
+-- MITRE:        execution | T1003.001, T1059.001, T1021.006
+-- Author:       Patryk Prauze - ING Tech
+-- Date:         2019-05-20
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_remote_access_trough_winrm.yml
+-- Unmapped:     TargetImage, SourceImage
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: SourceImage
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\lsass.exe'
+    AND rawEventMsg LIKE '%:\\Windows\\system32\\wsmprovhost.exe')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Suspicious LSASS Access Via MalSecLogon">
+  <h2>Suspicious LSASS Access Via MalSecLogon</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1003.001</span>
+    <span>Author: Samir Bousseaden (original elastic rule), Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects suspicious access to LSASS handle via a call trace to &quot;seclogon.dll&quot; with a suspicious access right.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_seclogon_access.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Suspicious LSASS Access Via MalSecLogon
+-- Sigma ID:     472159c5-31b9-4f56-b794-b766faa8b0a7
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1003.001
+-- Author:       Samir Bousseaden (original elastic rule), Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-06-29
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_seclogon_access.yml
+-- Unmapped:     TargetImage, SourceImage, GrantedAccess, CallTrace
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: SourceImage
+-- UNMAPPED_FIELD: GrantedAccess
+-- UNMAPPED_FIELD: CallTrace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\lsass.exe'
+    AND rawEventMsg LIKE '%\\svchost.exe'
+    AND rawEventMsg = '0x14c0'
+    AND rawEventMsg LIKE '%seclogon.dll%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Potentially Suspicious GrantedAccess Flags On LSASS">
+  <h2>Potentially Suspicious GrantedAccess Flags On LSASS</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: T1003.001</span>
+    <span>Author: Florian Roth, Roberto Rodriguez, Dimitrios Slamaris, Mark Russinovich, Thomas Patzke, Teymur Kheirkhabarov, Sherif Eldeeb, James Dickenson, Aleksey Potapov, oscd.community</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects process access requests to LSASS process with potentially suspicious access flags</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_susp_access_flag.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Potentially Suspicious GrantedAccess Flags On LSASS
+-- Sigma ID:     a18dd26b-6450-46de-8c91-9659150cf088
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        T1003.001
+-- Author:       Florian Roth, Roberto Rodriguez, Dimitrios Slamaris, Mark Russinovich, Thomas Patzke, Teymur Kheirkhabarov, Sherif Eldeeb, James Dickenson, Aleksey Potapov, oscd.community
+-- Date:         2021-11-22
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_susp_access_flag.yml
+-- Unmapped:     (none)
+-- False Pos:    Legitimate software such as AV and EDR
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND 1=1
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate software such as AV and EDR</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Credential Dumping Attempt Via WerFault">
+  <h2>Credential Dumping Attempt Via WerFault</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1003.001</span>
+    <span>Author: Florian Roth (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects process LSASS memory dump using Mimikatz, NanoDump, Invoke-Mimikatz, Procdump or Taskmgr based on the CallTrace pointing to ntdll.dll, dbghelp.dll or dbgcore.dll for win10, server2016 and up.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_werfault.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Credential Dumping Attempt Via WerFault
+-- Sigma ID:     e5b33f7d-eb93-48b6-9851-09e1e610b6d7
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1003.001
+-- Author:       Florian Roth (Nextron Systems)
+-- Date:         2012-06-27
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_werfault.yml
+-- Unmapped:     SourceImage, TargetImage, GrantedAccess
+-- False Pos:    Actual failures in lsass.exe that trigger a crash dump (unlikely); Unknown cases in which WerFault accesses lsass.exe
+-- ============================================================
+-- UNMAPPED_FIELD: SourceImage
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: GrantedAccess
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\WerFault.exe'
+    AND rawEventMsg LIKE '%\\lsass.exe'
+    AND rawEventMsg = '0x1FFFFF')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Actual failures in lsass.exe that trigger a crash dump (unlikely); Unknown cases in which WerFault accesses lsass.exe</div>
+</div>
+<div class="rule-card" data-level="high" data-title="LSASS Access From Potentially White-Listed Processes">
+  <h2>LSASS Access From Potentially White-Listed Processes</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1003.001</span>
+    <span>Author: Florian Roth (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects a possible process memory dump that uses a white-listed filename like TrolleyExpress.exe as a way to dump the LSASS process memory without Microsoft Defender interference
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_whitelisted_process_names.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        LSASS Access From Potentially White-Listed Processes
+-- Sigma ID:     4be8b654-0c01-4c9d-a10c-6b28467fc651
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1003.001
+-- Author:       Florian Roth (Nextron Systems)
+-- Date:         2022-02-10
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_lsass_whitelisted_process_names.yml
+-- Unmapped:     TargetImage, SourceImage, GrantedAccess
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: SourceImage
+-- UNMAPPED_FIELD: GrantedAccess
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\lsass.exe'
+    AND (rawEventMsg LIKE '%\\TrolleyExpress.exe' OR rawEventMsg LIKE '%\\ProcessDump.exe' OR rawEventMsg LIKE '%\\dump64.exe')
+    AND (rawEventMsg LIKE '%10' OR rawEventMsg LIKE '%30' OR rawEventMsg LIKE '%50' OR rawEventMsg LIKE '%70' OR rawEventMsg LIKE '%90' OR rawEventMsg LIKE '%B0' OR rawEventMsg LIKE '%D0' OR rawEventMsg LIKE '%F0' OR rawEventMsg LIKE '%18' OR rawEventMsg LIKE '%38' OR rawEventMsg LIKE '%58' OR rawEventMsg LIKE '%78' OR rawEventMsg LIKE '%98' OR rawEventMsg LIKE '%B8' OR rawEventMsg LIKE '%D8' OR rawEventMsg LIKE '%F8' OR rawEventMsg LIKE '%1A' OR rawEventMsg LIKE '%3A' OR rawEventMsg LIKE '%5A' OR rawEventMsg LIKE '%7A' OR rawEventMsg LIKE '%9A' OR rawEventMsg LIKE '%BA' OR rawEventMsg LIKE '%DA' OR rawEventMsg LIKE '%FA' OR rawEventMsg LIKE '%0x14C2' OR rawEventMsg LIKE '%FF'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="low" data-title="Uncommon Process Access Rights For Target Image">
+  <h2>Uncommon Process Access Rights For Target Image</h2>
+  <div class="rule-meta">
+    <span class="badge badge-low">low</span>
+    <span>FSM Severity: 3</span>
+    <span>MITRE: T1055.011</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems), frack113</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects process access request to uncommon target images with a &quot;PROCESS_ALL_ACCESS&quot; access mask.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_susp_all_access_uncommon_target.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Uncommon Process Access Rights For Target Image
+-- Sigma ID:     a24e5861-c6ca-4fde-a93c-ba9256feddf0
+-- Level:        low  |  FSM Severity: 3
+-- Status:       test
+-- MITRE:        T1055.011
+-- Author:       Nasreddine Bencherchali (Nextron Systems), frack113
+-- Date:         2024-05-27
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_susp_all_access_uncommon_target.yml
+-- Unmapped:     TargetImage, GrantedAccess
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: GrantedAccess
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND ((rawEventMsg LIKE '%\\calc.exe' OR rawEventMsg LIKE '%\\calculator.exe' OR rawEventMsg LIKE '%\\mspaint.exe' OR rawEventMsg LIKE '%\\notepad.exe' OR rawEventMsg LIKE '%\\ping.exe' OR rawEventMsg LIKE '%\\wordpad.exe' OR rawEventMsg LIKE '%\\write.exe')
+    AND rawEventMsg = '0x1FFFFF')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Suspicious Process Access to LSASS with Dbgcore/Dbghelp DLLs">
+  <h2>Suspicious Process Access to LSASS with Dbgcore/Dbghelp DLLs</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1003.001, T1562.001</span>
+    <span>Author: Swachchhanda Shrawan Poudel (Nextron Systems)</span>
+    <span>Status: experimental</span>
+  </div>
+  <div class="description">Detects suspicious process access to LSASS.exe from processes located in uncommon locations with dbgcore.dll or dbghelp.dll in the call trace.
+These DLLs contain functions like MiniDumpWriteDump that can be abused for credential dumping purposes. While modern tools like Mimikatz have moved to using ntdll.dll,
+dbgcore.dll and dbghelp.dll are still used by basic credential dumping utilities and legacy tools for LSASS memory access and process suspension techniques.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_susp_dbgcore_dbghelp_load.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Suspicious Process Access to LSASS with Dbgcore/Dbghelp DLLs
+-- Sigma ID:     9f5c1d59-33be-4e60-bcab-85d2f566effd
+-- Level:        high  |  FSM Severity: 7
+-- Status:       experimental
+-- MITRE:        T1003.001, T1562.001
+-- Author:       Swachchhanda Shrawan Poudel (Nextron Systems)
+-- Date:         2025-11-27
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_susp_dbgcore_dbghelp_load.yml
+-- Unmapped:     TargetImage, CallTrace, SourceImage
+-- False Pos:    Possibly during software installation or update processes
+-- ============================================================
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: CallTrace
+-- UNMAPPED_FIELD: SourceImage
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND ((rawEventMsg LIKE '%\\lsass.exe'
+    AND (rawEventMsg LIKE '%dbgcore.dll%' OR rawEventMsg LIKE '%dbghelp.dll%'))
+  AND (rawEventMsg LIKE '%:\\Perflogs\\%' OR rawEventMsg LIKE '%:\\Temp\\%' OR rawEventMsg LIKE '%:\\Users\\Public\\%' OR rawEventMsg LIKE '%\\$Recycle.Bin\\%' OR rawEventMsg LIKE '%\\AppData\\Roaming\\%' OR rawEventMsg LIKE '%\\Contacts\\%' OR rawEventMsg LIKE '%\\Desktop\\%' OR rawEventMsg LIKE '%\\Documents\\%' OR rawEventMsg LIKE '%\\Downloads\\%' OR rawEventMsg LIKE '%\\Favorites\\%' OR rawEventMsg LIKE '%\\Favourites\\%' OR rawEventMsg LIKE '%\\inetpub\\wwwroot\\%' OR rawEventMsg LIKE '%\\Music\\%' OR rawEventMsg LIKE '%\\Pictures\\%' OR rawEventMsg LIKE '%\\Start Menu\\Programs\\Startup\\%' OR rawEventMsg LIKE '%\\Users\\Default\\%' OR rawEventMsg LIKE '%\\Videos\\%' OR rawEventMsg LIKE '%\\Windows\\Temp\\%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Possibly during software installation or update processes</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Potential Direct Syscall of NtOpenProcess">
+  <h2>Potential Direct Syscall of NtOpenProcess</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, T1106</span>
+    <span>Author: Christian Burkard (Nextron Systems), Tim Shelton (FP)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects potential calls to NtOpenProcess directly from NTDLL.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_susp_direct_ntopenprocess_call.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Potential Direct Syscall of NtOpenProcess
+-- Sigma ID:     3f3f3506-1895-401b-9cc3-e86b16e630d0
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution | T1106
+-- Author:       Christian Burkard (Nextron Systems), Tim Shelton (FP)
+-- Date:         2021-07-28
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_susp_direct_ntopenprocess_call.yml
+-- Unmapped:     CallTrace
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: CallTrace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg LIKE 'UNKNOWN%'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Credential Dumping Attempt Via Svchost">
+  <h2>Credential Dumping Attempt Via Svchost</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1548</span>
+    <span>Author: Florent Labouyrie</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects when a process tries to access the memory of svchost to potentially dump credentials.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_svchost_credential_dumping.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Credential Dumping Attempt Via Svchost
+-- Sigma ID:     174afcfa-6e40-4ae9-af64-496546389294
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1548
+-- Author:       Florent Labouyrie
+-- Date:         2021-04-30
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_svchost_credential_dumping.yml
+-- Unmapped:     TargetImage, GrantedAccess
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: GrantedAccess
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\svchost.exe'
+    AND rawEventMsg = '0x143a')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Suspicious Svchost Process Access">
+  <h2>Suspicious Svchost Process Access</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1562.002</span>
+    <span>Author: Tim Burrell</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects suspicious access to the &quot;svchost&quot; process such as that used by Invoke-Phantom to kill the thread of the Windows event logging service.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_svchost_susp_access_request.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Suspicious Svchost Process Access
+-- Sigma ID:     166e9c50-8cd9-44af-815d-d1f0c0e90dde
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1562.002
+-- Author:       Tim Burrell
+-- Date:         2020-01-02
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_svchost_susp_access_request.yml
+-- Unmapped:     TargetImage, GrantedAccess, CallTrace
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: GrantedAccess
+-- UNMAPPED_FIELD: CallTrace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%:\\Windows\\System32\\svchost.exe'
+    AND rawEventMsg = '0x1F3FFF'
+    AND rawEventMsg LIKE '%UNKNOWN%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Function Call From Undocumented COM Interface EditionUpgradeManager">
+  <h2>Function Call From Undocumented COM Interface EditionUpgradeManager</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: T1548.002</span>
+    <span>Author: oscd.community, Dmitry Uchakin</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects function calls from the EditionUpgradeManager COM interface. Which is an interface that is not used by standard executables.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_uac_bypass_editionupgrademanagerobj.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Function Call From Undocumented COM Interface EditionUpgradeManager
+-- Sigma ID:     fb3722e4-1a06-46b6-b772-253e2e7db933
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        T1548.002
+-- Author:       oscd.community, Dmitry Uchakin
+-- Date:         2020-10-07
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_uac_bypass_editionupgrademanagerobj.yml
+-- Unmapped:     CallTrace
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: CallTrace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg LIKE '%editionupgrademanagerobj.dll%'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="UAC Bypass Using WOW64 Logger DLL Hijack">
+  <h2>UAC Bypass Using WOW64 Logger DLL Hijack</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1548.002</span>
+    <span>Author: Christian Burkard (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the pattern of UAC Bypass using a WoW64 logger DLL hijack (UACMe 30)</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_uac_bypass_wow64_logger.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        UAC Bypass Using WOW64 Logger DLL Hijack
+-- Sigma ID:     4f6c43e2-f989-4ea5-bcd8-843b49a0317c
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1548.002
+-- Author:       Christian Burkard (Nextron Systems)
+-- Date:         2021-08-23
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_uac_bypass_wow64_logger.yml
+-- Unmapped:     SourceImage, GrantedAccess, CallTrace
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_FIELD: SourceImage
+-- UNMAPPED_FIELD: GrantedAccess
+-- UNMAPPED_FIELD: CallTrace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%:\\Windows\\SysWOW64\\%'
+    AND rawEventMsg = '0x1fffff'
+    AND rawEventMsg LIKE 'UNKNOWN(0000000000000000)|UNKNOWN(0000000000000000)|%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Suspicious Process Access of MsMpEng by WerFaultSecure - EDR-Freeze">
+  <h2>Suspicious Process Access of MsMpEng by WerFaultSecure - EDR-Freeze</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1562.001</span>
+    <span>Author: Swachchhanda Shrawan Poudel (Nextron Systems)</span>
+    <span>Status: experimental</span>
+  </div>
+  <div class="description">Detects process access events where WerFaultSecure accesses MsMpEng.exe with dbgcore.dll or dbghelp.dll in the call trace, indicating potential EDR freeze techniques.
+This technique leverages WerFaultSecure.exe running as a Protected Process Light (PPL) with WinTCB protection level to call MiniDumpWriteDump and suspend EDR/AV processes, allowing malicious activity to execute undetected during the suspension period.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_werfaultsecure_msmpeng_access.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Suspicious Process Access of MsMpEng by WerFaultSecure - EDR-Freeze
+-- Sigma ID:     387df17d-3b04-448f-8669-9e7fd5e5fd8c
+-- Level:        high  |  FSM Severity: 7
+-- Status:       experimental
+-- MITRE:        T1562.001
+-- Author:       Swachchhanda Shrawan Poudel (Nextron Systems)
+-- Date:         2025-11-27
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/process_access/proc_access_win_werfaultsecure_msmpeng_access.yml
+-- Unmapped:     SourceImage, TargetImage, CallTrace
+-- False Pos:    Legitimate Windows Error Reporting operations
+-- ============================================================
+-- UNMAPPED_FIELD: SourceImage
+-- UNMAPPED_FIELD: TargetImage
+-- UNMAPPED_FIELD: CallTrace
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('Win-Sysmon-10-Process-Access')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (rawEventMsg LIKE '%\\WerFaultSecure.exe'
+    AND rawEventMsg LIKE '%\\MsMpEng.exe'
+    AND (rawEventMsg LIKE '%\\dbgcore.dll%' OR rawEventMsg LIKE '%\\dbghelp.dll%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate Windows Error Reporting operations</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

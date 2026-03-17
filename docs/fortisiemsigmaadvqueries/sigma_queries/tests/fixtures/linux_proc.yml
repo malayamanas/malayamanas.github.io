@@ -1,0 +1,23 @@
+title: Linux Reverse Shell
+id: e6f4a3b4-5678-89ab-cdef-012345678901
+status: experimental
+description: Detects common reverse shell patterns on Linux
+author: Test Author
+date: 2024-05-01
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.004
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - '/dev/tcp/'
+      - 'bash -i'
+      - 'nc -e /bin/bash'
+  condition: selection
+falsepositives:
+  - Penetration testing
+references: []

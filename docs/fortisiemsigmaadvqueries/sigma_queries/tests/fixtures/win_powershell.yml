@@ -1,0 +1,22 @@
+title: Base64 Encoded PowerShell Script
+id: c4d2e1f2-3456-6789-abcd-ef0123456789
+status: test
+description: Detects base64 encoded powershell in script block
+author: Test Author
+date: 2024-03-10
+level: medium
+tags:
+  - attack.execution
+  - attack.t1059.001
+logsource:
+  product: windows
+  category: ps_script
+detection:
+  selection:
+    ScriptBlockText|base64offset|contains:
+      - 'IEX'
+      - 'Invoke-Expression'
+  condition: selection
+falsepositives:
+  - Legitimate obfuscated scripts
+references: []

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Linux File Event</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Linux File Event</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">8 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="medium" data-title="Linux Doas Conf File Creation">
+  <h2>Linux Doas Conf File Creation</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: T1548</span>
+    <span>Author: Sittikorn S, Teoderick Contreras</span>
+    <span>Status: stable</span>
+  </div>
+  <div class="description">Detects the creation of doas.conf file in linux host platform.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_doas_conf_creation.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Linux Doas Conf File Creation
+-- Sigma ID:     00eee2a5-fdb0-4746-a21d-e43fbdea5681
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       stable
+-- MITRE:        T1548
+-- Author:       Sittikorn S, Teoderick Contreras
+-- Date:         2022-01-20
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_doas_conf_creation.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'fileName')] AS targetFilename,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('LINUX_FILE_CREATE')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'fileName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '%/etc/doas.conf')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Persistence Via Cron Files">
+  <h2>Persistence Via Cron Files</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, persistence, T1053.003</span>
+    <span>Author: Roberto Rodriguez (Cyb3rWard0g), OTR (Open Threat Research), MSTIC</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects creation of cron file or files in Cron directories which could indicates potential persistence.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_persistence_cron_files.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Persistence Via Cron Files
+-- Sigma ID:     6c4e2f43-d94d-4ead-b64d-97e53fa2bd05
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution, persistence | T1053.003
+-- Author:       Roberto Rodriguez (Cyb3rWard0g), OTR (Open Threat Research), MSTIC
+-- Date:         2021-10-15
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_persistence_cron_files.yml
+-- Unmapped:     (none)
+-- False Pos:    Any legitimate cron file.
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'fileName')] AS targetFilename,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('LINUX_FILE_CREATE')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (indexOf(metrics_string.name, 'fileName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '/etc/cron.d/%' OR metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '/etc/cron.daily/%' OR metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '/etc/cron.hourly/%' OR metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '/etc/cron.monthly/%' OR metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '/etc/cron.weekly/%' OR metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '/var/spool/cron/crontabs/%'))
+  OR (indexOf(metrics_string.name, 'fileName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '%/etc/cron.allow%' OR metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '%/etc/cron.deny%' OR metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '%/etc/crontab%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Any legitimate cron file.</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Persistence Via Sudoers Files">
+  <h2>Persistence Via Sudoers Files</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: execution, persistence, T1053.003</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects creation of sudoers file or files in &quot;sudoers.d&quot; directory which can be used a potential method to persiste privileges for a specific user.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_persistence_sudoers_files.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Persistence Via Sudoers Files
+-- Sigma ID:     ddb26b76-4447-4807-871f-1b035b2bfa5d
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        execution, persistence | T1053.003
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-07-05
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_persistence_sudoers_files.yml
+-- Unmapped:     (none)
+-- False Pos:    Creation of legitimate files in sudoers.d folder part of administrator work
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'fileName')] AS targetFilename,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('LINUX_FILE_CREATE')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'fileName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '/etc/sudoers.d/%')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Creation of legitimate files in sudoers.d folder part of administrator work</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Suspicious Filename with Embedded Base64 Commands">
+  <h2>Suspicious Filename with Embedded Base64 Commands</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: execution, T1059.004, T1027</span>
+    <span>Author: @kostastsale</span>
+    <span>Status: experimental</span>
+  </div>
+  <div class="description">Detects files with specially crafted filenames that embed Base64-encoded bash payloads designed to execute when processed by shell scripts.
+These filenames exploit shell interpretation quirks to trigger hidden commands, a technique observed in VShell malware campaigns.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_susp_filename_with_embedded_base64_command.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Suspicious Filename with Embedded Base64 Commands
+-- Sigma ID:     179b3686-6271-4d87-807d-17d843a8af73
+-- Level:        high  |  FSM Severity: 7
+-- Status:       experimental
+-- MITRE:        execution | T1059.004, T1027
+-- Author:       @kostastsale
+-- Date:         2025-11-22
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_susp_filename_with_embedded_base64_command.yml
+-- Unmapped:     (none)
+-- False Pos:    Legitimate files with similar naming patterns (very unlikely).
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'fileName')] AS targetFilename,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('LINUX_FILE_CREATE')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (indexOf(metrics_string.name, 'fileName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '%{echo%' OR metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '%{base64,-d}%'))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate files with similar naming patterns (very unlikely).</div>
+</div>
+<div class="rule-card" data-level="low" data-title="Potentially Suspicious Shell Script Creation in Profile Folder">
+  <h2>Potentially Suspicious Shell Script Creation in Profile Folder</h2>
+  <div class="rule-meta">
+    <span class="badge badge-low">low</span>
+    <span>FSM Severity: 3</span>
+    <span>MITRE: persistence</span>
+    <span>Author: Joseliyo Sanchez, @Joseliyo_Jstnk</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the creation of shell scripts under the &quot;profile.d&quot; path.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_susp_shell_script_under_profile_directory.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Potentially Suspicious Shell Script Creation in Profile Folder
+-- Sigma ID:     13f08f54-e705-4498-91fd-cce9d9cee9f1
+-- Level:        low  |  FSM Severity: 3
+-- Status:       test
+-- MITRE:        persistence
+-- Author:       Joseliyo Sanchez, @Joseliyo_Jstnk
+-- Date:         2023-06-02
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_susp_shell_script_under_profile_directory.yml
+-- Unmapped:     (none)
+-- False Pos:    Legitimate shell scripts in the &quot;profile.d&quot; directory could be common in your environment. Apply additional filter accordingly via &quot;image&quot;, by adding specific filenames you &quot;trust&quot; or by correlating it with other events.; Regular file creation during system update or software installation by the package manager
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'fileName')] AS targetFilename,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('LINUX_FILE_CREATE')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (indexOf(metrics_string.name, 'fileName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '%/etc/profile.d/%')
+    AND (indexOf(metrics_string.name, 'fileName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '%.csh' OR metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '%.sh')))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate shell scripts in the &quot;profile.d&quot; directory could be common in your environment. Apply additional filter accordingly via &quot;image&quot;, by adding specific filenames you &quot;trust&quot; or by correlating it with other events.; Regular file creation during system update or software installation by the package manager</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Triple Cross eBPF Rootkit Default LockFile">
+  <h2>Triple Cross eBPF Rootkit Default LockFile</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the creation of the file &quot;rootlog&quot; which is used by the TripleCross rootkit as a way to check if the backdoor is already running.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_triple_cross_rootkit_lock_file.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Triple Cross eBPF Rootkit Default LockFile
+-- Sigma ID:     c0239255-822c-4630-b7f1-35362bcb8f44
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        (none)
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-07-05
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_triple_cross_rootkit_lock_file.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'fileName')] AS targetFilename,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('LINUX_FILE_CREATE')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'fileName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'fileName')] = '/tmp/rootlog')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Triple Cross eBPF Rootkit Default Persistence">
+  <h2>Triple Cross eBPF Rootkit Default Persistence</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: execution, persistence, T1053.003</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the creation of &quot;ebpfbackdoor&quot; files in both &quot;cron.d&quot; and &quot;sudoers.d&quot; directories. Which both are related to the TripleCross persistence method</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_triple_cross_rootkit_persistence.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Triple Cross eBPF Rootkit Default Persistence
+-- Sigma ID:     1a2ea919-d11d-4d1e-8535-06cda13be20f
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        execution, persistence | T1053.003
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-07-05
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_triple_cross_rootkit_persistence.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  metrics_string.value[indexOf(metrics_string.name,'fileName')] AS targetFilename,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('LINUX_FILE_CREATE')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND indexOf(metrics_string.name, 'fileName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '%ebpfbackdoor')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="medium" data-title="Wget Creating Files in Tmp Directory">
+  <h2>Wget Creating Files in Tmp Directory</h2>
+  <div class="rule-meta">
+    <span class="badge badge-medium">medium</span>
+    <span>FSM Severity: 5</span>
+    <span>MITRE: T1105</span>
+    <span>Author: Joseliyo Sanchez, @Joseliyo_Jstnk</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the use of wget to download content in a temporary directory such as &quot;/tmp&quot; or &quot;/var/tmp&quot;</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_wget_download_file_in_tmp_dir.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Wget Creating Files in Tmp Directory
+-- Sigma ID:     35a05c60-9012-49b6-a11f-6bab741c9f74
+-- Level:        medium  |  FSM Severity: 5
+-- Status:       test
+-- MITRE:        T1105
+-- Author:       Joseliyo Sanchez, @Joseliyo_Jstnk
+-- Date:         2023-06-02
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/linux/file_event/file_event_lnx_wget_download_file_in_tmp_dir.yml
+-- Unmapped:     (none)
+-- False Pos:    Legitimate downloads of files in the tmp folder.
+-- ============================================================
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  procName,
+  metrics_string.value[indexOf(metrics_string.name,'fileName')] AS targetFilename,
+  rawEventMsg
+FROM fsiem.events
+WHERE eventType IN ('LINUX_FILE_CREATE')
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND (procName LIKE '%/wget'
+    AND (indexOf(metrics_string.name, 'fileName') &gt; 0
+    AND (metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '/tmp/%' OR metrics_string.value[indexOf(metrics_string.name,'fileName')] LIKE '/var/tmp/%')))
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Legitimate downloads of files in the tmp folder.</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

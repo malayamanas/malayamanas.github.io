@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Windows Codeintegrity-Operational</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Windows Codeintegrity-Operational</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">10 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="low" data-title="CodeIntegrity - Unmet Signing Level Requirements By File Under Validation">
+  <h2>CodeIntegrity - Unmet Signing Level Requirements By File Under Validation</h2>
+  <div class="rule-meta">
+    <span class="badge badge-low">low</span>
+    <span>FSM Severity: 3</span>
+    <span>MITRE: execution</span>
+    <span>Author: Florian Roth (Nextron Systems), Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: experimental</span>
+  </div>
+  <div class="description">Detects attempted file load events that did not meet the signing level requirements. It often means the file's signature is revoked or a signature with the Lifetime Signing EKU has expired.
+This event is best correlated with EID 3089 to determine the error of the validation.
+</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_attempted_dll_load.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CodeIntegrity - Unmet Signing Level Requirements By File Under Validation
+-- Sigma ID:     f8931561-97f5-4c46-907f-0a4a592e47a7
+-- Level:        low  |  FSM Severity: 3
+-- Status:       experimental
+-- MITRE:        execution
+-- Author:       Florian Roth (Nextron Systems), Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-01-20
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_attempted_dll_load.yml
+-- Unmapped:     (none)
+-- False Pos:    Antivirus and other third party products are known to trigger this rule quite a lot. Initial filters and tuning is required before using this rule.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/codeintegrity-operational
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND winEventId IN ('3033', '3034')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Antivirus and other third party products are known to trigger this rule quite a lot. Initial filters and tuning is required before using this rule.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="CodeIntegrity - Disallowed File For Protected Processes Has Been Blocked">
+  <h2>CodeIntegrity - Disallowed File For Protected Processes Has Been Blocked</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects block events for files that are disallowed by code integrity for protected processes</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_blocked_protected_process_file.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CodeIntegrity - Disallowed File For Protected Processes Has Been Blocked
+-- Sigma ID:     5daf11c3-022b-4969-adb9-365e6c078c7c
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        (none)
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-06-06
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_blocked_protected_process_file.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/codeintegrity-operational
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND winEventId = '3104'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="CodeIntegrity - Blocked Image/Driver Load For Policy Violation">
+  <h2>CodeIntegrity - Blocked Image/Driver Load For Policy Violation</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1543</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects blocked load events that did not meet the authenticode signing level requirements or violated the code integrity policy.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_enforced_policy_block.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CodeIntegrity - Blocked Image/Driver Load For Policy Violation
+-- Sigma ID:     e4be5675-4a53-426a-8c81-a8bb2387e947
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1543
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2022-11-10
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_enforced_policy_block.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/codeintegrity-operational
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND winEventId = '3077'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="CodeIntegrity - Blocked Driver Load With Revoked Certificate">
+  <h2>CodeIntegrity - Blocked Driver Load With Revoked Certificate</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1543</span>
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects blocked load attempts of revoked drivers</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_revoked_driver_blocked.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CodeIntegrity - Blocked Driver Load With Revoked Certificate
+-- Sigma ID:     9b72b82d-f1c5-4632-b589-187159bc6ec1
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1543
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-06-06
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_revoked_driver_blocked.yml
+-- Unmapped:     (none)
+-- False Pos:    Unknown
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/codeintegrity-operational
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND winEventId = '3023'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unknown</div>
+</div>
+<div class="rule-card" data-level="high" data-title="CodeIntegrity - Revoked Kernel Driver Loaded">
+  <h2>CodeIntegrity - Revoked Kernel Driver Loaded</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the load of a revoked kernel driver</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_revoked_driver_loaded.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CodeIntegrity - Revoked Kernel Driver Loaded
+-- Sigma ID:     320fccbf-5e32-4101-82b8-2679c5f007c6
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        (none)
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-06-06
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_revoked_driver_loaded.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/codeintegrity-operational
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND winEventId IN ('3021', '3022')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="CodeIntegrity - Blocked Image Load With Revoked Certificate">
+  <h2>CodeIntegrity - Blocked Image Load With Revoked Certificate</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects blocked image load events with revoked certificates by code integrity.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_revoked_image_blocked.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CodeIntegrity - Blocked Image Load With Revoked Certificate
+-- Sigma ID:     6f156c48-3894-4952-baf0-16193e9067d2
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        (none)
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-06-06
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_revoked_image_blocked.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/codeintegrity-operational
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND winEventId = '3036'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="CodeIntegrity - Revoked Image Loaded">
+  <h2>CodeIntegrity - Revoked Image Loaded</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects image load events with revoked certificates by code integrity.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_revoked_image_loaded.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CodeIntegrity - Revoked Image Loaded
+-- Sigma ID:     881b7725-47cc-4055-8000-425823344c59
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        (none)
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-06-06
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_revoked_image_loaded.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/codeintegrity-operational
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND winEventId IN ('3032', '3035')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="CodeIntegrity - Unsigned Kernel Module Loaded">
+  <h2>CodeIntegrity - Unsigned Kernel Module Loaded</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects the presence of a loaded unsigned kernel module on the system.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_unsigned_driver_loaded.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CodeIntegrity - Unsigned Kernel Module Loaded
+-- Sigma ID:     951f8d29-f2f6-48a7-859f-0673ff105e6f
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        (none)
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-06-06
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_unsigned_driver_loaded.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/codeintegrity-operational
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND winEventId = '3001'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="CodeIntegrity - Unsigned Image Loaded">
+  <h2>CodeIntegrity - Unsigned Image Loaded</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects loaded unsigned image on the system</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_unsigned_image_loaded.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CodeIntegrity - Unsigned Image Loaded
+-- Sigma ID:     c92c24e7-f595-493f-9c98-53d5142f5c18
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        (none)
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-06-06
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_unsigned_image_loaded.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/codeintegrity-operational
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND winEventId = '3037'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+<div class="rule-card" data-level="high" data-title="CodeIntegrity - Unmet WHQL Requirements For Loaded Kernel Module">
+  <h2>CodeIntegrity - Unmet WHQL Requirements For Loaded Kernel Module</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    
+    <span>Author: Nasreddine Bencherchali (Nextron Systems)</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects loaded kernel modules that did not meet the WHQL signing requirements.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_whql_failure.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        CodeIntegrity - Unmet WHQL Requirements For Loaded Kernel Module
+-- Sigma ID:     2f8cd7a0-9d5a-4f62-9f8b-2c951aa0dd1f
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        (none)
+-- Author:       Nasreddine Bencherchali (Nextron Systems)
+-- Date:         2023-06-06
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/windows/builtin/code_integrity/win_codeintegrity_whql_failure.yml
+-- Unmapped:     (none)
+-- False Pos:    Unlikely
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: windows/codeintegrity-operational
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  winEventId,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND winEventId IN ('3082', '3083')
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Unlikely</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

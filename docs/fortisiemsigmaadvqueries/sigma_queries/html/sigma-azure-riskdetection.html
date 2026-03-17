@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma → FortiSIEM: Azure Riskdetection</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .page-header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 0;
+    margin-bottom: 32px;
+  }
+  .page-header .container { padding-top: 0; padding-bottom: 0; }
+  h1 { font-size: 1.6rem; color: #e6edf3; }
+  h2 { font-size: 1.2rem; color: #e6edf3; margin-bottom: 8px; }
+  .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 24px; }
+  .rule-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .rule-card h2 { margin-bottom: 6px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 6px;
+    text-transform: uppercase;
+  }
+  .badge-low    { background: #3fb950; color: #0d1117; }
+  .badge-medium { background: #d29922; color: #0d1117; }
+  .badge-high   { background: #f0883e; color: #0d1117; }
+  .badge-critical { background: #f85149; color: #fff; }
+  .badge-default  { background: #8b949e; color: #0d1117; }
+  .rule-meta { font-size: 0.82rem; color: #8b949e; margin: 8px 0 12px; }
+  .rule-meta span { margin-right: 16px; }
+  .description { font-size: 0.9rem; color: #8b949e; margin-bottom: 12px; font-style: italic; }
+  .github-link { font-size: 0.85rem; margin-bottom: 12px; display: inline-block; }
+  .fp-block { font-size: 0.82rem; color: #8b949e; margin-top: 12px; }
+  pre { margin: 0; }
+  code.language-sql { font-size: 0.82rem; }
+  .stats-bar {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-label { font-size: 0.75rem; color: #8b949e; }
+  .search-bar { margin-bottom: 20px; }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #58a6ff; }
+  .filter-pills { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #30363d;
+    background: #161b22;
+    color: #c9d1d9;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .pill:hover { border-color: #58a6ff; color: #58a6ff; }
+  .pill.active { background: #58a6ff; color: #0d1117; border-color: #58a6ff; }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .category-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .category-card h3 { font-size: 0.95rem; color: #e6edf3; margin-bottom: 4px; }
+  .category-card .cat-meta { font-size: 0.78rem; color: #8b949e; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="container">
+      <h1>Sigma → FortiSIEM: Azure Riskdetection</h1>
+    </div>
+  </div>
+  <div class="container">
+    <p class="meta">19 rules · Generated 2026-03-17 · <a href="../index.html">← Back to Index</a></p>
+    <div class="rule-card" data-level="high" data-title="Anomalous Token">
+  <h2>Anomalous Token</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1528</span>
+    <span>Author: Mark Morowczynski '@markmorow'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates that there are abnormal characteristics in the token such as an unusual token lifetime or a token that is played from an unfamiliar location.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_anomalous_token.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Anomalous Token
+-- Sigma ID:     6555754e-5e7f-4a67-ad1c-4041c413a007
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1528
+-- Author:       Mark Morowczynski '@markmorow'
+-- Date:         2023-08-07
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_anomalous_token.yml
+-- Unmapped:     riskEventType
+-- False Pos:    We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'anomalousToken'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Anomalous User Activity">
+  <h2>Anomalous User Activity</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1098</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates that there are anomalous patterns of behavior like suspicious changes to the directory.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_anomalous_user.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Anomalous User Activity
+-- Sigma ID:     258b6593-215d-4a26-a141-c8e31c1299a6
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1098
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_anomalous_user.yml
+-- Unmapped:     riskEventType
+-- False Pos:    We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'anomalousUserActivity'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Activity From Anonymous IP Address">
+  <h2>Activity From Anonymous IP Address</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Identifies that users were active from an IP address that has been identified as an anonymous proxy IP address.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_anonymous_ip_activity.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Activity From Anonymous IP Address
+-- Sigma ID:     be4d9c86-d702-4030-b52e-c7859110e5e8
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_anonymous_ip_activity.yml
+-- Unmapped:     riskEventType
+-- False Pos:    We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'riskyIPAddress'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Anonymous IP Address">
+  <h2>Anonymous IP Address</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1528</span>
+    <span>Author: Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates sign-ins from an anonymous IP address, for example, using an anonymous browser or VPN.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_anonymous_ip_address.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Anonymous IP Address
+-- Sigma ID:     53acd925-2003-440d-a1f3-71a5253fe237
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1528
+-- Author:       Gloria Lee, '@gleeiamglo'
+-- Date:         2023-08-22
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_anonymous_ip_address.yml
+-- Unmapped:     riskEventType
+-- False Pos:    We recommend investigating the sessions flagged by this detection in the context of other sign-ins
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'anonymizedIPAddress'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> We recommend investigating the sessions flagged by this detection in the context of other sign-ins</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Atypical Travel">
+  <h2>Atypical Travel</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Identifies two sign-ins originating from geographically distant locations, where at least one of the locations may also be atypical for the user, given past behavior.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_atypical_travel.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Atypical Travel
+-- Sigma ID:     1a41023f-1e70-4026-921a-4d9341a9038e
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_atypical_travel.yml
+-- Unmapped:     riskEventType
+-- False Pos:    We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'unlikelyTravel'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Impossible Travel">
+  <h2>Impossible Travel</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Identifies user activities originating from geographically distant locations within a time period shorter than the time it takes to travel from the first location to the second.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_impossible_travel.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Impossible Travel
+-- Sigma ID:     b2572bf9-e20a-4594-b528-40bde666525a
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_impossible_travel.yml
+-- Unmapped:     riskEventType
+-- False Pos:    Connecting to a VPN, performing activity and then dropping and performing additional activity.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'impossibleTravel'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Connecting to a VPN, performing activity and then dropping and performing additional activity.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Suspicious Inbox Forwarding Identity Protection">
+  <h2>Suspicious Inbox Forwarding Identity Protection</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: collection, T1114.003</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates suspicious rules such as an inbox rule that forwards a copy of all emails to an external address</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_inbox_forwarding_rule.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Suspicious Inbox Forwarding Identity Protection
+-- Sigma ID:     27e4f1d6-ae72-4ea0-8a67-77a73a289c3d
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        collection | T1114.003
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_inbox_forwarding_rule.yml
+-- Unmapped:     riskEventType
+-- False Pos:    A legitimate forwarding rule.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'suspiciousInboxForwarding'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> A legitimate forwarding rule.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Suspicious Inbox Manipulation Rules">
+  <h2>Suspicious Inbox Manipulation Rules</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1140</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects suspicious rules that delete or move messages or folders are set on a user's inbox.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_inbox_manipulation.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Suspicious Inbox Manipulation Rules
+-- Sigma ID:     ceb55fd0-726e-4656-bf4e-b585b7f7d572
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1140
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_inbox_manipulation.yml
+-- Unmapped:     riskEventType
+-- False Pos:    Actual mailbox rules that are moving items based on their workflow.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'mcasSuspiciousInboxManipulationRules'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Actual mailbox rules that are moving items based on their workflow.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Azure AD Account Credential Leaked">
+  <h2>Azure AD Account Credential Leaked</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: reconnaissance, T1589</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates that the user's valid credentials have been leaked.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_leaked_credentials.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Azure AD Account Credential Leaked
+-- Sigma ID:     19128e5e-4743-48dc-bd97-52e5775af817
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        reconnaissance | T1589
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_leaked_credentials.yml
+-- Unmapped:     riskEventType
+-- False Pos:    A rare hash collision.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'leakedCredentials'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> A rare hash collision.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Malicious IP Address Sign-In Failure Rate">
+  <h2>Malicious IP Address Sign-In Failure Rate</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1090</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates sign-in from a malicious IP address based on high failure rates.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_malicious_ip_address.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Malicious IP Address Sign-In Failure Rate
+-- Sigma ID:     a3f55ebd-0c01-4ed6-adc0-8fb76d8cd3cd
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1090
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-07
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_malicious_ip_address.yml
+-- Unmapped:     riskEventType
+-- False Pos:    We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'maliciousIPAddress'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Malicious IP Address Sign-In Suspicious">
+  <h2>Malicious IP Address Sign-In Suspicious</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1090</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates sign-in from a malicious IP address known to be malicious at time of sign-in.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_malicious_ip_address_suspicious.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Malicious IP Address Sign-In Suspicious
+-- Sigma ID:     36440e1c-5c22-467a-889b-593e66498472
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1090
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-07
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_malicious_ip_address_suspicious.yml
+-- Unmapped:     riskEventType
+-- False Pos:    We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'suspiciousIPAddress'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Sign-In From Malware Infected IP">
+  <h2>Sign-In From Malware Infected IP</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1090</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates sign-ins from IP addresses infected with malware that is known to actively communicate with a bot server.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_malware_linked_ip.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Sign-In From Malware Infected IP
+-- Sigma ID:     821b4dc3-1295-41e7-b157-39ab212dd6bd
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1090
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_malware_linked_ip.yml
+-- Unmapped:     riskEventType
+-- False Pos:    Using an IP address that is shared by many users
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'malwareInfectedIPAddress'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> Using an IP address that is shared by many users</div>
+</div>
+<div class="rule-card" data-level="high" data-title="New Country">
+  <h2>New Country</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects sign-ins from new countries. The detection considers past activity locations to determine new and infrequent locations.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_new_coutry_region.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        New Country
+-- Sigma ID:     adf9f4d2-559e-4f5c-95be-c28dff0b1476
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_new_coutry_region.yml
+-- Unmapped:     riskEventType
+-- False Pos:    We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'newCountry'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Password Spray Activity">
+  <h2>Password Spray Activity</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1110</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates that a password spray attack has been successfully performed.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_password_spray.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Password Spray Activity
+-- Sigma ID:     28ecba0a-c743-4690-ad29-9a8f6f25a6f9
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1110
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_password_spray.yml
+-- Unmapped:     riskEventType
+-- False Pos:    We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'passwordSpray'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Primary Refresh Token Access Attempt">
+  <h2>Primary Refresh Token Access Attempt</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1528</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates access attempt to the PRT resource which can be used to move laterally into an organization or perform credential theft</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_prt_access.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Primary Refresh Token Access Attempt
+-- Sigma ID:     a84fc3b1-c9ce-4125-8e74-bdcdb24021f1
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1528
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-07
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_prt_access.yml
+-- Unmapped:     riskEventType
+-- False Pos:    This detection is low-volume and is seen infrequently in most organizations. When this detection appears it's high risk, and users should be remediated.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'attemptedPrtAccess'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> This detection is low-volume and is seen infrequently in most organizations. When this detection appears it's high risk, and users should be remediated.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Suspicious Browser Activity">
+  <h2>Suspicious Browser Activity</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates anomalous behavior based on suspicious sign-in activity across multiple tenants from different countries in the same browser</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_suspicious_browser.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Suspicious Browser Activity
+-- Sigma ID:     944f6adb-7a99-4c69-80c1-b712579e93e6
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_suspicious_browser.yml
+-- Unmapped:     riskEventType
+-- False Pos:    We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'suspiciousBrowser'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Azure AD Threat Intelligence">
+  <h2>Azure AD Threat Intelligence</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates user activity that is unusual for the user or consistent with known attack patterns.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_threat_intel.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Azure AD Threat Intelligence
+-- Sigma ID:     a2cb56ff-4f46-437a-a0fa-ffa4d1303cba
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-07
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_threat_intel.yml
+-- Unmapped:     riskEventType
+-- False Pos:    We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'investigationsThreatIntelligence'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="SAML Token Issuer Anomaly">
+  <h2>SAML Token Issuer Anomaly</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: T1606</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Indicates the SAML token issuer for the associated SAML token is potentially compromised. The claims included in the token are unusual or match known attacker patterns</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_token_issuer_anomaly.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        SAML Token Issuer Anomaly
+-- Sigma ID:     e3393cba-31f0-4207-831e-aef90ab17a8c
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        T1606
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_token_issuer_anomaly.yml
+-- Unmapped:     riskEventType
+-- False Pos:    We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'tokenIssuerAnomaly'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> We recommend investigating the sessions flagged by this detection in the context of other sign-ins from the user.</div>
+</div>
+<div class="rule-card" data-level="high" data-title="Unfamiliar Sign-In Properties">
+  <h2>Unfamiliar Sign-In Properties</h2>
+  <div class="rule-meta">
+    <span class="badge badge-high">high</span>
+    <span>FSM Severity: 7</span>
+    <span>MITRE: persistence, T1078</span>
+    <span>Author: Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'</span>
+    <span>Status: test</span>
+  </div>
+  <div class="description">Detects sign-in with properties that are unfamiliar to the user. The detection considers past sign-in history to look for anomalous sign-ins.</div>
+  <a class="github-link" href="https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_unfamilar_sign_in.yml" target="_blank" rel="noopener">View on GitHub ↗</a>
+  <pre><code class="language-sql">-- ============================================================
+-- Title:        Unfamiliar Sign-In Properties
+-- Sigma ID:     128faeef-79dd-44ca-b43c-a9e236a60f49
+-- Level:        high  |  FSM Severity: 7
+-- Status:       test
+-- MITRE:        persistence | T1078
+-- Author:       Mark Morowczynski '@markmorow', Gloria Lee, '@gleeiamglo'
+-- Date:         2023-09-03
+-- GitHub:       https://github.com/SigmaHQ/sigma/blob/main/rules/cloud/azure/identity_protection/azure_identity_protection_unfamilar_sign_in.yml
+-- Unmapped:     riskEventType
+-- False Pos:    User changing to a new device, location, browser, etc.
+-- ============================================================
+-- UNMAPPED_LOGSOURCE: azure/riskdetection
+-- UNMAPPED_FIELD: riskEventType
+
+SELECT
+  phRecvTime,
+  reptDevName,
+  reptDevIpAddrV4,
+  user,
+  rawEventMsg
+FROM fsiem.events
+WHERE rawEventMsg LIKE '%'
+  AND phRecvTime &gt;= now() - INTERVAL 24 HOUR
+  AND rawEventMsg = 'unfamiliarFeatures'
+ORDER BY phRecvTime DESC
+LIMIT 1000;</code></pre>
+  <div class="fp-block"><strong>False Positives:</strong> User changing to a new device, location, browser, etc.</div>
+</div>
+
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+title: Unknown Source Alert
+id: f7a5b4c5-6789-9abc-def0-123456789012
+status: experimental
+description: Uses an unsupported logsource and unmapped field
+author: Test Author
+date: 2024-06-01
+level: low
+tags: []
+logsource:
+  product: vendor_xyz
+  category: custom_event
+detection:
+  selection:
+    SomeUnknownField|contains: suspicious_value
+  condition: selection
+falsepositives: []
+references: []
